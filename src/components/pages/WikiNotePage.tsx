@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
 import { NoteStorage } from '../../lib/db/types'
 import StorageLayout from '../atoms/StorageLayout'
-import NotePageToolbar from '../organisms/NotePageToolbar'
 import NoteDetail from '../organisms/NoteDetail'
 import {
   StorageNotesRouteParams,
@@ -22,6 +21,8 @@ import { parseNumberStringOrReturnZero } from '../../lib/string'
 import NoteContextView from '../organisms/NoteContextView'
 import CloudIntroModal from '../organisms/CloudIntroModal'
 import { useCloudIntroModal } from '../../lib/cloudIntroModal'
+import Topbar from '../v2/organisms/Topbar'
+import { mapTopbarTree } from '../../lib/v2/mappers/local/topbarTree'
 
 interface WikiNotePageProps {
   storage: NoteStorage
@@ -32,6 +33,24 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
     | StorageNotesRouteParams
     | StorageTrashCanRouteParams
     | StorageTagsRouteParams
+  const { push } = useRouter()
+  const topbarTree = useMemo(() => {
+    // if (team == null) {
+    //   return undefined
+    // }
+
+    return mapTopbarTree(undefined, true, {}, {}, {}, push)
+  }, [push])
+
+  const topbar = {
+    // ...topbar,
+    tree: topbarTree,
+    navigation: {
+      // goBack,
+      // goForward,
+    },
+  }
+
   const { hash } = useRouter()
   const { generalStatus } = useGeneralStatus()
   const { showingCloudIntroModal } = useCloudIntroModal()
@@ -111,7 +130,20 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
             note != null && generalStatus.showingNoteContextMenu ? '' : 'expand'
           }
         >
-          <NotePageToolbar note={note} storage={storage} />
+          {topbar != null ? (
+            <Topbar
+              tree={topbar.tree}
+              controls={topbar.controls}
+              navigation={topbar.navigation}
+              breadcrumbs={topbar.breadcrumbs}
+              className='topbar'
+            >
+              {topbar.children}
+            </Topbar>
+          ) : (
+            <div className='topbar topbar--placeholder'>{topbar}</div>
+          )}
+          {/*<NotePageToolbar note={note} storage={storage} />*/}
           <div className='detail'>
             {note == null ? (
               routeParams.name === 'storages.notes' ? (
