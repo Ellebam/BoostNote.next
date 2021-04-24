@@ -1,81 +1,71 @@
-import { SerializedTeam } from '../../../../cloud/interfaces/db/team'
-import { SerializedDocWithBookmark } from '../../../../cloud/interfaces/db/doc'
-import { SerializedFolderWithBookmark } from '../../../../cloud/interfaces/db/folder'
-import { SerializedWorkspace } from '../../../../cloud/interfaces/db/workspace'
 import { BreadCrumbTreeItem } from '../types'
-import { getMapValues } from '../../utils/array'
 import { mdiFileDocumentOutline, mdiLock } from '@mdi/js'
+import { FolderDoc, NoteDoc, NoteStorage, ObjectMap } from '../../../db/types'
 import {
-  getDocId,
-  getDocTitle,
-  getFolderId,
-} from '../../../../cloud/lib/utils/patterns'
-import { getFolderHref } from '../../../../cloud/components/atoms/Link/FolderLink'
-import { getDocLinkHref } from '../../../../cloud/components/atoms/Link/DocLink'
+  getFolderNameFromPathname,
+  getNoteTitle,
+  getParentFolderPathname,
+  values,
+  getFolderPathname,
+  excludeNoteIdPrefix,
+} from '../../../db/utils'
+import { topParentId } from '../cloud/topbarTree'
 
-export function mapTopbarTree(
-  team: any,
-  initialLoadDone: boolean,
-  docsMap: Map<string, SerializedDocWithBookmark>,
-  foldersMap: Map<string, SerializedFolderWithBookmark>,
-  workspacesMap: Map<string, SerializedWorkspace>,
+export function mapTopBarTree(
+  noteMap: ObjectMap<NoteDoc>,
+  foldersMap: ObjectMap<FolderDoc>,
+  workspace: NoteStorage,
   push: (url: string) => void
 ) {
-  if (!initialLoadDone) {
-    return undefined
-  }
-
   const items = new Map<string, BreadCrumbTreeItem[]>()
 
-  const [docs, folders, workspaces] = [
-    getMapValues(docsMap),
-    getMapValues(foldersMap),
-    getMapValues(workspacesMap),
-  ]
+  const [notes, folders] = [values(noteMap), values(foldersMap)]
+  // todo: maybe implement all file system storages and navigate through them?
+  const href = `/app/storage/${workspace.id}`
+  items.set(topParentId, [
+    {
+      id: workspace.id,
+      label: workspace.name,
+      parentId: topParentId,
+      defaultIcon: mdiLock,
+      link: {
+        href,
+        navigateTo: () => push(href),
+      },
+    },
+  ] as BreadCrumbTreeItem[])
 
-  // items.set(
-  //   topParentId,
-  //   workspaces.reduce((acc, wp) => {
-  //     const href = `${process.env.BOOST_HUB_BASE_URL}${getWorkspaceHref(
-  //       wp,
-  //       team,
-  //       'index'
-  //     )}`
-  //
-  //     acc.push({
-  //       id: wp.id,
-  //       label: wp.name,
-  //       parentId: topParentId,
-  //       defaultIcon: !wp.public ? mdiLock : undefined,
-  //       link: {
-  //         href,
-  //         navigateTo: () => push(href),
-  //       },
-  //     })
-  //
-  //     return acc
-  //   }, [] as BreadCrumbTreeItem[])
-  // )
-
-  folders.forEach((folder) => {
-    const folderId = getFolderId(folder)
-    const href = `${process.env.BOOST_HUB_BASE_URL}${getFolderHref(
-      folder,
-      team,
-      'index'
-    )}`
-
+  folders.forEach((folder: FolderDoc) => {
+    const folderPathname = getFolderPathname(folder._id)
+    console.log('got pathname', folderPathname)
+    // if (folderPathname == '/') return
+    const href = `/app/storages/${workspace.id}/${
+      folderPathname == '/' ? '' : 'notes' + folderPathname
+    }`
+    const folderId = folderPathname == '/' ? workspace.id : folder._id
+    const parentFolderDoc =
+      workspace.folderMap[getParentFolderPathname(folderPathname)]
+    console.log('parnet folder doc', parentFolderDoc)
     const parentId =
-      folder.parentFolderId == null
-        ? folder.workspaceId
-        : getFolderId({ id: folder.parentFolderId } as any)
+      parentFolderDoc != null
+        ? parentFolderDoc.pathname == '/'
+          ? workspace.id
+          : parentFolderDoc._id
+        : workspace.id
 
+    let folderLabel = getFolderNameFromPathname(folderPathname)
+    console.log('Folder label', folderLabel, folderPathname)
+    if (folderLabel == null) {
+      folderLabel = workspace.name
+    }
     const parentArray = items.get(parentId) || []
     parentArray.push({
       id: folderId,
-      label: folder.name,
-      emoji: folder.emoji,
-      parentId,
+      label: folderLabel,
+      emoji: undefined,
+      parentId:
+        // parentFolderDoc != null ? parentFolderDoc.pathname : workspace.id,
+        parentFolderDoc != null ? parentFolderDoc._id : workspace.id,
       link: {
         href,
         navigateTo: () => push(href),
@@ -84,28 +74,34 @@ export function mapTopbarTree(
     items.set(parentId, parentArray)
   })
 
-  docs
-    .filter((doc) => doc.archivedAt == null)
-    .forEach((doc) => {
-      const docId = getDocId(doc)
-      const href = `${process.env.BOOST_HUB_BASE_URL}${getDocLinkHref(
-        doc,
-        team,
-        'index'
+  notes
+    .filter((note) => !note.trashed)
+    .forEach((note) => {
+      const noteId = note._id
+      console.log('note id is', noteId)
+      const href = `/app/storages/${workspace.id}/notes/${excludeNoteIdPrefix(
+        note._id
       )}`
-
+      const parentFolderDoc =
+        workspace.folderMap[getParentFolderPathname(note.folderPathname)]
+      console.log('looking for', parentFolderDoc, note.folderPathname)
       const parentId =
-        doc.parentFolderId == null
-          ? doc.workspaceId
-          : getFolderId({ id: doc.parentFolderId } as any)
+        parentFolderDoc != null
+          ? parentFolderDoc.pathname == '/'
+            ? workspace.id
+            : parentFolderDoc._id
+          : workspace.id
+
       const parentArray = items.get(parentId) || []
+      console.log('Setting parent id', parentId)
       parentArray.push({
-        id: docId,
-        label: getDocTitle(doc, 'Untitled'),
-        emoji: doc.emoji,
+        id: noteId,
+        label: getNoteTitle(note, 'Untitled'),
+        emoji: undefined,
         defaultIcon: mdiFileDocumentOutline,
         parentId:
-          doc.parentFolderId == null ? doc.workspaceId : doc.parentFolderId,
+          // parentFolderDoc != null ? parentFolderDoc.pathname : workspace.id,
+          parentFolderDoc != null ? parentFolderDoc._id : workspace.id,
         link: {
           href,
           navigateTo: () => push(href),
@@ -114,5 +110,6 @@ export function mapTopbarTree(
       items.set(parentId, parentArray)
     })
 
+  console.log('Got items', items)
   return items
 }

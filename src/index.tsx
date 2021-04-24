@@ -17,6 +17,21 @@ import { BoostHubStoreProvider } from './lib/boosthub'
 import { CreateWorkspaceModalProvider } from './lib/createWorkspaceModal'
 import { CloudIntroModalProvider } from './lib/cloudIntroModal'
 import { MigrationProvider } from './lib/migrate/store'
+import { V2ToastProvider } from './lib/v2/stores/toast'
+import { V2EmojiProvider } from './lib/v2/stores/emoji'
+import { V2WindowProvider } from './lib/v2/stores/window'
+import { V2ContextMenuProvider } from './lib/v2/stores/contextMenu'
+import { V2ModalProvider } from './lib/v2/stores/modal'
+import { V2DialogProvider } from './lib/v2/stores/dialog'
+
+const V2CombinedProvider = combineProviders(
+  V2ToastProvider,
+  V2EmojiProvider,
+  V2WindowProvider,
+  V2ContextMenuProvider,
+  V2ModalProvider,
+  V2DialogProvider
+)
 
 const CombinedProvider = combineProviders(
   BoostHubStoreProvider,
@@ -33,7 +48,8 @@ const CombinedProvider = combineProviders(
   ToastProvider,
   CheckedFeaturesProvider,
   CreateWorkspaceModalProvider,
-  CloudIntroModalProvider
+  CloudIntroModalProvider,
+  V2CombinedProvider
 )
 
 function render(Component: typeof App) {

@@ -21,8 +21,9 @@ import { parseNumberStringOrReturnZero } from '../../lib/string'
 import NoteContextView from '../organisms/NoteContextView'
 import CloudIntroModal from '../organisms/CloudIntroModal'
 import { useCloudIntroModal } from '../../lib/cloudIntroModal'
-import Topbar from '../v2/organisms/Topbar'
-import { mapTopbarTree } from '../../lib/v2/mappers/local/topbarTree'
+import Topbar, { TopbarProps } from '../v2/organisms/Topbar'
+import { mapTopBarTree } from '../../lib/v2/mappers/local/topbarTree'
+import { mdiFileDocumentOutline } from '@mdi/js'
 
 interface WikiNotePageProps {
   storage: NoteStorage
@@ -35,21 +36,45 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
     | StorageTagsRouteParams
   const { push } = useRouter()
   const topbarTree = useMemo(() => {
-    // if (team == null) {
-    //   return undefined
-    // }
+    return mapTopBarTree(storage.noteMap, storage.folderMap, storage, push)
+  }, [push, storage])
 
-    return mapTopbarTree(undefined, true, {}, {}, {}, push)
-  }, [push])
-
-  const topbar = {
-    // ...topbar,
-    tree: topbarTree,
-    navigation: {
-      // goBack,
-      // goForward,
-    },
-  }
+  const href = `/app/storages/${storage.id}`
+  const topbar = useMemo(() => {
+    return {
+      ...({
+        breadcrumbs: [
+          {
+            id: storage.id,
+            label: storage.name,
+            emoji: undefined,
+            defaultIcon: mdiFileDocumentOutline,
+            parentId: 'root',
+            link: {
+              href,
+              navigateTo: () => push(href),
+            },
+          },
+          {
+            id: 'folder:/test_sub',
+            label: 'test_sub',
+            emoji: undefined,
+            defaultIcon: mdiFileDocumentOutline,
+            parentId: storage.id,
+            link: {
+              href,
+              navigateTo: () => push(href),
+            },
+          },
+        ],
+      } as TopbarProps),
+      tree: topbarTree,
+      navigation: {
+        // goBack,
+        // goForward,
+      },
+    }
+  }, [href, push, storage.id, storage.name, topbarTree])
 
   const { hash } = useRouter()
   const { generalStatus } = useGeneralStatus()

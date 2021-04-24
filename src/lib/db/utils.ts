@@ -44,6 +44,10 @@ export function prependNoteIdPrefix(noteId: string): string {
   return noteId
 }
 
+export function getNoteTitle(note: NoteDoc, fallback: string) {
+  return note.title != '' ? note.title : fallback
+}
+
 export function getFolderId(pathname: string): string {
   return `${FOLDER_ID_PREFIX}${pathname}`
 }
