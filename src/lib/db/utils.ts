@@ -6,6 +6,7 @@ import {
   FolderDoc,
   TagDoc,
   PouchNoteStorageData,
+  NoteStorage,
 } from './types'
 import { generateId, escapeRegExp } from '../string'
 
@@ -44,8 +45,16 @@ export function prependNoteIdPrefix(noteId: string): string {
   return noteId
 }
 
+export function getStorageHref(storage: NoteStorage, query?: any): string {
+  return `/app/storage/${storage.id}?${query}`
+}
+
 export function getNoteTitle(note: NoteDoc, fallback: string) {
   return note.title != '' ? note.title : fallback
+}
+
+export function getNoteHref(note: NoteDoc, storageId: string) {
+  return `/app/storages/${storageId}/notes/${note._id}`
 }
 
 export function getFolderId(pathname: string): string {
@@ -63,6 +72,19 @@ export function getParentFolderPathname(pathname: string): string {
 export function getFolderNameFromPathname(pathname: string): string | null {
   if (pathname === '/') return null
   return pathname.split('/').slice(-1)[0]
+}
+
+export function getFolderHref(
+  folder: FolderDoc,
+  storageId: string,
+  query?: any
+): string {
+  const folderPathname = getFolderPathname(folder._id)
+  return `/app/storages/${storageId}/${
+    folderPathname == '/'
+      ? ''
+      : 'notes' + folderPathname + `${query != null ? '?' + query : ''}`
+  }`
 }
 
 export function getTagId(name: string): string {

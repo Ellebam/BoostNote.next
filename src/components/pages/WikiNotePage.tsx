@@ -23,7 +23,8 @@ import CloudIntroModal from '../organisms/CloudIntroModal'
 import { useCloudIntroModal } from '../../lib/cloudIntroModal'
 import Topbar, { TopbarProps } from '../v2/organisms/Topbar'
 import { mapTopBarTree } from '../../lib/v2/mappers/local/topbarTree'
-import { mdiFileDocumentOutline } from '@mdi/js'
+import { mapTopbarBreadcrumbs } from '../../lib/v2/mappers/local/topbarBreadcrumbs'
+import { useLocalUI } from '../../lib/v2/hooks/local/useLocalUI'
 
 interface WikiNotePageProps {
   storage: NoteStorage
@@ -34,47 +35,20 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
     | StorageNotesRouteParams
     | StorageTrashCanRouteParams
     | StorageTagsRouteParams
-  const { push } = useRouter()
+  const { push, goBack, goForward } = useRouter()
   const topbarTree = useMemo(() => {
     return mapTopBarTree(storage.noteMap, storage.folderMap, storage, push)
   }, [push, storage])
-
-  const href = `/app/storages/${storage.id}`
-  const topbar = useMemo(() => {
-    return {
-      ...({
-        breadcrumbs: [
-          {
-            id: storage.id,
-            label: storage.name,
-            emoji: undefined,
-            defaultIcon: mdiFileDocumentOutline,
-            parentId: 'root',
-            link: {
-              href,
-              navigateTo: () => push(href),
-            },
-          },
-          {
-            id: 'folder:/test_sub',
-            label: 'test_sub',
-            emoji: undefined,
-            defaultIcon: mdiFileDocumentOutline,
-            parentId: storage.id,
-            link: {
-              href,
-              navigateTo: () => push(href),
-            },
-          },
-        ],
-      } as TopbarProps),
-      tree: topbarTree,
-      navigation: {
-        // goBack,
-        // goForward,
-      },
-    }
-  }, [href, push, storage.id, storage.name, topbarTree])
+  const {
+    openWorkspaceEditForm,
+    openNewDocForm,
+    openNewFolderForm,
+    openRenameFolderForm,
+    openRenameNoteForm,
+    deleteFolder,
+    // deleteWorkspace,
+    deleteOrTrashNote,
+  } = useLocalUI()
 
   const { hash } = useRouter()
   const { generalStatus } = useGeneralStatus()
@@ -122,6 +96,55 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
     }
     return undefined
   }, [routeParams, storage.noteMap])
+
+  const noteFolder = useMemo(() => {
+    if (note != null) {
+      return storage.folderMap[note.folderPathname]
+    } else {
+      return undefined
+    }
+  }, [note, storage.folderMap])
+
+  const topbar = useMemo(() => {
+    return {
+      ...({
+        breadcrumbs: mapTopbarBreadcrumbs(
+          storage.folderMap,
+          storage,
+          push,
+          { pageNote: note, pageFolder: noteFolder },
+          openRenameFolderForm,
+          openRenameNoteForm,
+          openNewDocForm,
+          openNewFolderForm,
+          openWorkspaceEditForm,
+          deleteOrTrashNote,
+          (storageName, folder) => deleteFolder({ storageName, folder }),
+          undefined
+        ),
+      } as TopbarProps),
+      tree: topbarTree,
+      navigation: {
+        goBack,
+        goForward,
+      },
+    }
+  }, [
+    deleteFolder,
+    deleteOrTrashNote,
+    goBack,
+    goForward,
+    note,
+    noteFolder,
+    openNewDocForm,
+    openNewFolderForm,
+    openRenameFolderForm,
+    openRenameNoteForm,
+    openWorkspaceEditForm,
+    push,
+    storage,
+    topbarTree,
+  ])
 
   const { updateNote, addAttachments } = useDb()
 

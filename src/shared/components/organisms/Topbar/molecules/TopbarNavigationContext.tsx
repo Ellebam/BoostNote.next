@@ -90,7 +90,6 @@ const getTreeItemAndItsChildren = (
   toggle: (id: string) => void
 ) => {
   const hasChildren = tree.has(item.id)
-  console.log('Tree got children', tree, hasChildren)
   return (
     <React.Fragment key={item.id}>
       <TopbarTreeItem

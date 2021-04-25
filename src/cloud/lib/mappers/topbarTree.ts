@@ -113,6 +113,5 @@ export function mapTopbarTree(
       })
       items.set(parentId, parentArray)
     })
-  console.log('Got items in cloud', items)
   return items
 }
