@@ -1,4 +1,3 @@
-import { BreadCrumbTreeItem } from '../types'
 import { mdiFileDocumentOutline, mdiLock } from '@mdi/js'
 import { FolderDoc, NoteDoc, NoteStorage, ObjectMap } from '../../../db/types'
 import {
@@ -8,7 +7,8 @@ import {
   values,
   getFolderPathname,
 } from '../../../db/utils'
-import { topParentId } from '../cloud/topbarTree'
+import { topParentId } from '../../../../cloud/lib/mappers/topbarTree'
+import { BreadCrumbTreeItem } from '../../../../shared/lib/mappers/types'
 
 export function mapTopBarTree(
   noteMap: ObjectMap<NoteDoc>,

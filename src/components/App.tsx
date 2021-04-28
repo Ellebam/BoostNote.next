@@ -50,6 +50,7 @@ import { useStorageRouter } from '../lib/storageRouter'
 import ExternalStyle from './ExternalStyle'
 import { useDialog, DialogIconTypes } from '../lib/dialog'
 import { selectV2Theme } from '../shared/lib/styled/styleFunctions'
+import Modal from '../shared/components/organisms/Modal'
 
 const LoadingText = styled.div`
   margin: 30px;
@@ -383,6 +384,7 @@ const App = () => {
           ) : (
             <LoadingText>Loading Data...</LoadingText>
           )}
+          <Modal />
           <GlobalStyle />
           <Dialog />
           <PreferencesModal />

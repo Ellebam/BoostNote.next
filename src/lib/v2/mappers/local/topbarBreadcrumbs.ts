@@ -8,10 +8,6 @@ import {
   mdiTextBoxPlusOutline,
   mdiTrashCanOutline,
 } from '@mdi/js'
-import { FormRowProps } from '../../../../components/v2/molecules/Form'
-import { TopbarBreadcrumbProps } from '../../../../components/v2/organisms/Topbar'
-import { PromiseWrapperCallbacks } from '../../types'
-import { topParentId } from '../cloud/topbarTree'
 import {
   FolderDoc,
   NoteDoc,
@@ -30,6 +26,9 @@ import {
   getStorageHref,
 } from '../../../db/utils'
 import { LocalNewResourceRequestBody } from '../../hooks/local/useLocalUI'
+import { FormRowProps } from '../../../../shared/components/molecules/Form'
+import { TopbarBreadcrumbProps } from '../../../../shared/components/organisms/Topbar'
+import { topParentId } from '../../../../cloud/lib/mappers/topbarTree'
 
 type AddedProperties =
   | { type: 'folder'; item: FolderDoc }
@@ -52,12 +51,10 @@ export function mapTopbarBreadcrumbs(
   renameNote?: (storageId: string, note: NoteDoc) => void,
   openNewDocForm?: (
     body: LocalNewResourceRequestBody,
-    wrappers?: PromiseWrapperCallbacks,
     prevRows?: FormRowProps[]
   ) => void,
   openNewFolderForm?: (
     body: LocalNewResourceRequestBody,
-    wrappers?: PromiseWrapperCallbacks,
     prevRows?: FormRowProps[]
   ) => void,
   editWorkspace?: (storage: NoteStorage) => void,
@@ -109,8 +106,8 @@ export function mapTopbarBreadcrumbs(
         pageFolder,
         storage,
         push,
-        openNewFolderForm,
         openNewDocForm,
+        openNewFolderForm,
         renameFolder,
         deleteFolder
       )
@@ -266,12 +263,10 @@ function getFolderBreadcrumb(
   push: (url: string) => void,
   openNewNoteForm?: (
     body: LocalNewResourceRequestBody,
-    wrappers?: PromiseWrapperCallbacks,
     prevRows?: FormRowProps[]
   ) => void,
   openNewFolderForm?: (
     body: LocalNewResourceRequestBody,
-    wrappers?: PromiseWrapperCallbacks,
     prevRows?: FormRowProps[]
   ) => void,
   renameFolder?: (storageId: string, folder: FolderDoc) => void,
@@ -282,7 +277,7 @@ function getFolderBreadcrumb(
   const parentFolderId = storage.folderMap[parentFolderPathname]?._id
   const newResourceBody = {
     storageId: storage.id, // folder storage ID (only one)
-    parentFolderId: getFolderNameFromPathname(folderPathname) ?? storage.id, // todo: Is this parent one?
+    parentFolderPathname: folderPathname,
   }
   const currentPath = `${storage.name}${folderPathname}`
   return {
@@ -303,7 +298,7 @@ function getFolderBreadcrumb(
               icon: mdiTextBoxPlusOutline,
               label: 'Create a document',
               onClick: () =>
-                openNewNoteForm(newResourceBody, undefined, [
+                openNewNoteForm(newResourceBody, [
                   {
                     description: currentPath,
                   },
@@ -317,7 +312,7 @@ function getFolderBreadcrumb(
               icon: mdiFolderPlusOutline,
               label: 'Create a folder',
               onClick: () =>
-                openNewFolderForm(newResourceBody, undefined, [
+                openNewFolderForm(newResourceBody, [
                   {
                     description: currentPath,
                   },
@@ -352,12 +347,10 @@ export function mapStorageBreadcrumb(
   push: (url: string) => void,
   openNewDocForm?: (
     body: LocalNewResourceRequestBody,
-    wrappers?: PromiseWrapperCallbacks,
     prevRows?: FormRowProps[]
   ) => void,
   openNewFolderForm?: (
     body: LocalNewResourceRequestBody,
-    wrappers?: PromiseWrapperCallbacks,
     prevRows?: FormRowProps[]
   ) => void,
   editWorkspace?: (storage: NoteStorage) => void,
@@ -385,7 +378,7 @@ export function mapStorageBreadcrumb(
               icon: mdiTextBoxPlusOutline,
               label: 'Create a document',
               onClick: () =>
-                openNewDocForm(newResourceBody, undefined, [
+                openNewDocForm(newResourceBody, [
                   {
                     description: storage.name,
                   },
@@ -399,7 +392,7 @@ export function mapStorageBreadcrumb(
               icon: mdiFolderPlusOutline,
               label: 'Create a folder',
               onClick: () =>
-                openNewFolderForm(newResourceBody, undefined, [
+                openNewFolderForm(newResourceBody, [
                   {
                     description: storage.name,
                   },

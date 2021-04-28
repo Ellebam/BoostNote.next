@@ -1,10 +1,5 @@
-import { useModal } from '../../stores/modal'
-import { DialogIconTypes, useDialog } from '../../stores/dialog'
 import React, { useCallback } from 'react'
-import EmojiInputForm from '../../../../components/v2/organisms/EmojiInputForm'
 import { mdiFileDocumentOutline, mdiFolderOutline, mdiPencil } from '@mdi/js'
-import { PromiseWrapperCallbacks } from '../../types'
-import { FormRowProps } from '../../../../components/v2/molecules/Form'
 import { FolderDoc, NoteDoc, NoteStorage } from '../../../db/types'
 import { useDb } from '../../../db'
 import {
@@ -13,8 +8,17 @@ import {
   getNoteTitle,
 } from '../../../db/utils'
 import { join } from 'path'
+import BasicInputFormLocal from '../../../../components/v2/organisms/BasicInputFormLocal'
+import { FormRowProps } from '../../../../shared/components/molecules/Form'
+import { useModal } from '../../../../shared/lib/stores/modal'
+import {
+  DialogIconTypes,
+  useDialog,
+} from '../../../../shared/lib/stores/dialog'
+
 export function useLocalUI() {
   const { openModal, closeLastModal } = useModal()
+  // todo: see if we can use standard message box from local dialog!
   const { messageBox } = useDialog()
   const {
     updateNote,
@@ -39,7 +43,7 @@ export function useLocalUI() {
       const folderPathname = getFolderPathname(folder._id)
       const folderName = getFolderNameFromPathname(folderPathname)
       openModal(
-        <EmojiInputForm
+        <BasicInputFormLocal
           defaultIcon={mdiFolderOutline}
           defaultInputValue={folderName != null ? folderName : 'Untitled'}
           defaultEmoji={undefined}
@@ -69,7 +73,7 @@ export function useLocalUI() {
   const openRenameNoteForm = useCallback(
     (storageId: string, note: NoteDoc) => {
       openModal(
-        <EmojiInputForm
+        <BasicInputFormLocal
           defaultIcon={mdiFileDocumentOutline}
           defaultInputValue={getNoteTitle(note, 'Untitled')}
           defaultEmoji={mdiPencil}
@@ -94,13 +98,9 @@ export function useLocalUI() {
   )
 
   const openNewFolderForm = useCallback(
-    (
-      body: LocalNewResourceRequestBody,
-      sending?: PromiseWrapperCallbacks,
-      prevRows?: FormRowProps[]
-    ) => {
+    (body: LocalNewResourceRequestBody, prevRows?: FormRowProps[]) => {
       openModal(
-        <EmojiInputForm
+        <BasicInputFormLocal
           defaultIcon={mdiFolderOutline}
           placeholder='Folder name'
           submitButtonProps={{
@@ -112,22 +112,19 @@ export function useLocalUI() {
               return
             }
 
-            if (sending != null) {
-              sending.before()
-            }
-            await createFolder(
-              // {
-              body.storageId,
-              // parentFolderId: body.parentFolderId,
-              inputValue
-              // folderName: inputValue,
-              // description: '',
-              // emoji,
-              // },
-              // closeLastModal
-            )
-            if (sending != null) {
-              sending.after()
+            try {
+              if (inputValue.endsWith('/')) {
+                inputValue = inputValue.slice(0, inputValue.length - 1)
+              }
+              const folderPathname = join(
+                body.parentFolderPathname != null
+                  ? body.parentFolderPathname
+                  : '/',
+                inputValue
+              )
+              await createFolder(body.storageId, folderPathname)
+            } finally {
+              closeLastModal()
             }
           }}
         />,
@@ -138,17 +135,13 @@ export function useLocalUI() {
         }
       )
     },
-    [openModal, createFolder]
+    [openModal, createFolder, closeLastModal]
   )
 
   const openNewDocForm = useCallback(
-    (
-      body: LocalNewResourceRequestBody,
-      sending?: PromiseWrapperCallbacks,
-      prevRows?: FormRowProps[]
-    ) => {
+    (body: LocalNewResourceRequestBody, prevRows?: FormRowProps[]) => {
       openModal(
-        <EmojiInputForm
+        <BasicInputFormLocal
           defaultIcon={mdiFileDocumentOutline}
           placeholder='Note title'
           submitButtonProps={{
@@ -160,17 +153,14 @@ export function useLocalUI() {
               return
             }
 
-            if (sending != null) {
-              sending.before()
-            }
-            await createNote(
-              body.storageId,
-              { title: inputValue }
-              // closeLastModal
-            )
-            if (sending != null) {
-              sending.after()
-            }
+            await createNote(body.storageId, {
+              title: inputValue,
+              folderPathname:
+                body.parentFolderPathname != null
+                  ? body.parentFolderPathname
+                  : '/',
+            })
+            closeLastModal()
           }}
         />,
         {
@@ -180,7 +170,7 @@ export function useLocalUI() {
         }
       )
     },
-    [openModal, createNote]
+    [openModal, createNote, closeLastModal]
   )
 
   // const deleteWorkspace = useCallback(
@@ -243,6 +233,7 @@ export function useLocalUI() {
       trashed?: boolean,
       title = 'this document'
     ) => {
+      console.log('Got to message box...', trashed, noteId, title)
       if (trashed != null) {
         return messageBox({
           title: `Archive ${title}`,
@@ -303,5 +294,5 @@ export function useLocalUI() {
 
 export interface LocalNewResourceRequestBody {
   storageId?: string
-  parentFolderId?: string
+  parentFolderPathname?: string
 }

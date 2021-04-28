@@ -21,10 +21,10 @@ import { parseNumberStringOrReturnZero } from '../../lib/string'
 import NoteContextView from '../organisms/NoteContextView'
 import CloudIntroModal from '../organisms/CloudIntroModal'
 import { useCloudIntroModal } from '../../lib/cloudIntroModal'
-import Topbar, { TopbarProps } from '../v2/organisms/Topbar'
 import { mapTopBarTree } from '../../lib/v2/mappers/local/topbarTree'
 import { mapTopbarBreadcrumbs } from '../../lib/v2/mappers/local/topbarBreadcrumbs'
 import { useLocalUI } from '../../lib/v2/hooks/local/useLocalUI'
+import Topbar, { TopbarProps } from '../../shared/components/organisms/Topbar'
 
 interface WikiNotePageProps {
   storage: NoteStorage
