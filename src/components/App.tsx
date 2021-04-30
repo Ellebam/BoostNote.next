@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react'
 import Router from './Router'
 import GlobalStyle from './GlobalStyle'
 import { ThemeProvider } from 'styled-components'
-import { selectTheme } from '../themes'
 import Dialog from './organisms/Dialog'
 import { useDb } from '../lib/db'
 import PreferencesModal from './PreferencesModal/PreferencesModal'
@@ -364,35 +363,33 @@ const App = () => {
   } = useCreateWorkspaceModal()
 
   return (
-    <ThemeProvider theme={selectTheme(preferences['general.theme'])}>
-      <ThemeProvider theme={selectV2Theme(preferences['general.theme'] as any)}>
-        <AppContainer
-          onDrop={(event: React.DragEvent) => {
-            event.preventDefault()
-          }}
-        >
-          {initialized ? (
-            <>
-              <AppNavigator />
-              <Router />
-              {showCreateWorkspaceModal && (
-                <CreateWorkspaceModal
-                  closeModal={toggleShowCreateWorkspaceModal}
-                />
-              )}
-            </>
-          ) : (
-            <LoadingText>Loading Data...</LoadingText>
-          )}
-          <Modal />
-          <GlobalStyle />
-          <Dialog />
-          <PreferencesModal />
-          <ToastList />
-          <CodeMirrorStyle />
-          <ExternalStyle />
-        </AppContainer>
-      </ThemeProvider>
+    <ThemeProvider theme={selectV2Theme(preferences['general.theme'] as any)}>
+      <AppContainer
+        onDrop={(event: React.DragEvent) => {
+          event.preventDefault()
+        }}
+      >
+        {initialized ? (
+          <>
+            <AppNavigator />
+            <Router />
+            {showCreateWorkspaceModal && (
+              <CreateWorkspaceModal
+                closeModal={toggleShowCreateWorkspaceModal}
+              />
+            )}
+          </>
+        ) : (
+          <LoadingText>Loading Data...</LoadingText>
+        )}
+        <Modal />
+        <GlobalStyle />
+        <Dialog />
+        <PreferencesModal />
+        <ToastList />
+        <CodeMirrorStyle />
+        <ExternalStyle />
+      </AppContainer>
     </ThemeProvider>
   )
 }

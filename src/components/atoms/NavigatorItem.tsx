@@ -1,9 +1,9 @@
 import React from 'react'
 import cc from 'classcat'
-import styled from '../../lib/styled'
 import Icon from './Icon'
 import { mdiChevronDown, mdiChevronRight, mdiCircleSmall } from '@mdi/js'
 import { textOverflow } from '../../lib/styled/styleFunctions'
+import styled from '../../shared/lib/styled'
 
 const Container = styled.div`
   position: relative;
@@ -42,14 +42,14 @@ const FoldButton = styled.button`
   justify-content: center;
 
   transition: color 200ms ease-in-out;
-  color: ${({ theme }) => theme.navButtonColor};
+  color: ${({ theme }) => theme.colors.text.primary};
   &:hover {
-    color: ${({ theme }) => theme.navButtonHoverColor};
+    color: ${({ theme }) => theme.colors.text.secondary};
   }
 
   &:active,
   .active {
-    color: ${({ theme }) => theme.navButtonActiveColor};
+    color: ${({ theme }) => theme.colors.text.link};
   }
 `
 
@@ -65,32 +65,32 @@ const ClickableContainer = styled.button`
   overflow: hidden;
   cursor: pointer;
 
-  color: ${({ theme }) => theme.navItemColor};
-  background-color: ${({ theme }) => theme.navItemBackgroundColor};
+  color: ${({ theme }) => theme.colors.text.primary};
+  background-color: ${({ theme }) => theme.colors.background.primary};
   &:hover {
-    background-color: ${({ theme }) => theme.navItemHoverBackgroundColor};
+    background-color: ${({ theme }) => theme.colors.background.secondary};
   }
   &:active,
   &.active {
-    background-color: ${({ theme }) => theme.navItemActiveBackgroundColor};
+    background-color: ${({ theme }) => theme.colors.background.tertiary};
   }
   &:hover:active,
   &:hover.active {
-    background-color: ${({ theme }) => theme.navItemHoverActiveBackgroundColor};
+    background-color: ${({ theme }) => theme.colors.background.tertiary};
   }
 
   &.subtle {
-    color: ${({ theme }) => theme.disabledUiTextColor};
+    color: ${({ theme }) => theme.colors.text.subtle};
   }
 `
 
 const Label = styled.div`
-  ${textOverflow}
+  ${textOverflow};
   flex: 1;
   font-size: 14px;
 
   &.subtle {
-    color: ${({ theme }) => theme.disabledUiTextColor};
+    color: ${({ theme }) => theme.colors.text.subtle};
   }
 `
 
