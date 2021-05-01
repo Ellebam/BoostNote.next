@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react'
-import styled from '../../lib/styled'
 import {
   Section,
   SectionHeader,
@@ -10,6 +9,7 @@ import { openNew } from '../../lib/platform'
 import Image from '../atoms/Image'
 import { useTranslation } from 'react-i18next'
 import SubscribeNewsLettersForm from '../organisms/SubscribeNewsLettersForm'
+import styled from '../../shared/lib/styled'
 
 const AboutContents = styled.div`
   max-width: 360px;

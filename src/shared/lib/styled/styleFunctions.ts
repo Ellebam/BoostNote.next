@@ -86,9 +86,17 @@ export const scrollbarOverlay = (
 /* ———————————–———————————–———————————–——–——
     Border
 ———————————–———————————–———————————–——–—— */
+export const backgroundColor = ({ theme }: StyledProps) =>
+  `background-color: ${theme.colors.background.primary};`
+
+export const border = ({ theme }: StyledProps) =>
+  `border: 1px solid ${theme.colors.border.main};`
 
 export const borderBottom = ({ theme }: StyledProps) =>
   `border-bottom: 1px solid ${theme.colors.border.main};`
+
+export const borderLeft = ({ theme }: StyledProps) =>
+  `border-left: 1px solid ${theme.colors.border.main};`
 
 export const hideScroll = () => `
   overflow-y: scroll;
@@ -113,6 +121,14 @@ export const hideScroll = () => `
 /* ———————————–———————————–———————————–——–——
     Button
 ———————————–———————————–———————————–——–—— */
+export const closeIconColor = ({ theme }: StyledProps) => `
+color: ${theme.colors.text.subtle};
+transition: 200ms color;
+&:hover,
+&:active,
+&:focus {
+  color: ${theme.colors.text.link};
+}`
 
 /* ———————————–———————————–———————————–——–——
     Form

@@ -1,19 +1,11 @@
 import React, { useMemo, useCallback } from 'react'
-import styled from '../../lib/styled'
 import { usePreferences } from '../../lib/preferences'
 import { useGlobalKeyDownHandler } from '../../lib/keyboard'
 import GeneralTab from './GeneralTab'
 import EditorTab from './EditorTab'
 import MarkdownTab from './MarkdownTab'
 import AboutTab from './AboutTab'
-import {
-  backgroundColor,
-  closeIconColor,
-  border,
-  flexCenter,
-  borderBottom,
-  borderLeft,
-} from '../../lib/styled/styleFunctions'
+import { flexCenter } from '../../lib/styled/styleFunctions'
 import { useTranslation } from 'react-i18next'
 import Icon from '../atoms/Icon'
 import { mdiClose, mdiHammerWrench } from '@mdi/js'
@@ -23,6 +15,14 @@ import StorageTab from './StorageTab'
 import MigrationPage from './MigrationTab'
 import { useMigrations } from '../../lib/migrate/store'
 import KeymapTab from './KeymapTab'
+import styled from '../../shared/lib/styled'
+import {
+  border,
+  backgroundColor,
+  borderBottom,
+  borderLeft,
+  closeIconColor,
+} from '../../shared/lib/styled/styleFunctions'
 import SettingNavButtonItem from '../../shared/components/organisms/Settings/atoms/SettingNavItem'
 
 const FullScreenContainer = styled.div`

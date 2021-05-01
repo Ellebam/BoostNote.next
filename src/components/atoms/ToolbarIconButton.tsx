@@ -1,7 +1,7 @@
-import React from 'react'
-import styled from '../../lib/styled'
-import Icon from './Icon'
+import React, { Ref } from 'react'
 import { flexCenter } from '../../lib/styled/styleFunctions'
+import styled from '../../shared/lib/styled'
+import Icon from './Icon'
 
 const Container = styled.button`
   height: 32px;
@@ -12,21 +12,21 @@ const Container = styled.button`
   padding: 0 5px;
 
   background-color: transparent;
-  ${flexCenter}
+  ${flexCenter};
 
   border: none;
   border-radius: 3px;
   cursor: pointer;
 
   transition: color 200ms ease-in-out;
-  color: ${({ theme }) => theme.navItemColor};
+  color: ${({ theme }) => theme.colors.text.primary};
   &:hover {
-    background-color: ${({ theme }) => theme.navItemHoverBackgroundColor};
+    background-color: ${({ theme }) => theme.colors.background.quaternary};
   }
   &:hover,
   &:active,
   &.active {
-    color: ${({ theme }) => theme.navButtonActiveColor};
+    color: ${({ theme }) => theme.colors.text.primary};
   }
 `
 
@@ -47,8 +47,18 @@ const ToolbarIconButton = React.forwardRef(
       active = false,
       title,
     }: ToolbarButtonProps,
-    ref
+    ref: Ref<HTMLButtonElement>
   ) => (
+    // <Button
+    //   variant='primary'
+    //   id='tab_local_btn'
+    //   onClick={onClick}
+    //   onContextMenu={onContextMenu}
+    //   active={active}
+    //   ref={ref}
+    //   iconSize={20}
+    //   iconPath={iconPath}
+    // />
     <Container
       onClick={onClick}
       onContextMenu={onContextMenu}

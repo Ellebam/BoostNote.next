@@ -466,6 +466,16 @@ export const inputStyle = ({ theme }: StyledProps) => `
   }
 `
 
+export const selectStyle = ({ theme }: StyledProps) => `
+  background-color: ${theme.subtleBackgroundColor};
+  border: ${theme.baseBorderColor};
+  color: ${theme.emphasizedTextColor};
+
+  &:focus {
+    box-shadow: 0 0 0 2px ${theme.primaryBorderColor};
+  }
+`
+
 export const borderedInputStyle = ({ theme }: StyledProps) => `
   background: none;
   border: 1px solid ${theme.subtleBackgroundColor};

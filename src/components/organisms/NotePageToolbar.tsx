@@ -1,4 +1,9 @@
-import React, { useCallback, MouseEventHandler, useEffect } from 'react'
+import React, {
+  useCallback,
+  MouseEventHandler,
+  useEffect,
+  useMemo,
+} from 'react'
 import styled from '../../lib/styled'
 import { NoteDoc, NoteStorage } from '../../lib/db/types'
 import {
@@ -13,7 +18,6 @@ import {
 import { borderBottom, flexCenter } from '../../lib/styled/styleFunctions'
 import ToolbarIconButton from '../atoms/ToolbarIconButton'
 import { useGeneralStatus } from '../../lib/generalStatus'
-import NotePageToolbarNoteHeader from '../molecules/NotePageToolbarNoteHeader'
 import {
   exportNoteAsHtmlFile,
   exportNoteAsMarkdownFile,
@@ -23,7 +27,6 @@ import { usePreferences } from '../../lib/preferences'
 import { usePreviewStyle } from '../../lib/preview'
 import { useTranslation } from 'react-i18next'
 import { useDb } from '../../lib/db'
-import { useRouteParams } from '../../lib/routeParams'
 import { useToast } from '../../lib/toast'
 import {
   openContextMenu,
@@ -33,10 +36,16 @@ import {
   removeIpcListener,
   writeFile,
 } from '../../lib/electronOnly'
-import NotePageToolbarFolderHeader from '../molecules/NotePageToolbarFolderHeader'
 import path from 'path'
 import pathParse from 'path-parse'
 import { filenamify } from '../../lib/string'
+import Topbar, { TopbarProps } from '../../shared/components/organisms/Topbar'
+import { mapTopbarBreadcrumbs } from '../../lib/v2/mappers/local/topbarBreadcrumbs'
+import { useRouter } from '../../lib/router'
+import { mapTopBarTree } from '../../lib/v2/mappers/local/topbarTree'
+import { useLocalUI } from '../../lib/v2/hooks/local/useLocalUI'
+import NotePageToolbarFolderHeader from '../molecules/NotePageToolbarFolderHeader'
+import { useRouteParams } from '../../lib/routeParams'
 
 const Container = styled.div`
   display: flex;
@@ -76,9 +85,24 @@ const NotePageToolbar = ({ storage, note }: NotePageToolbarProps) => {
   const { pushMessage } = useToast()
 
   const storageId = storage.id
-  const storageName = storage.name
+  // const storageName = storage.name
 
   const noteId = note?._id
+
+  const { push, goBack, goForward } = useRouter()
+  const topbarTree = useMemo(() => {
+    return mapTopBarTree(storage.noteMap, storage.folderMap, storage, push)
+  }, [push, storage])
+  const {
+    openWorkspaceEditForm,
+    openNewDocForm,
+    openNewFolderForm,
+    openRenameFolderForm,
+    openRenameNoteForm,
+    deleteFolder,
+    // deleteWorkspace,
+    deleteOrTrashNote,
+  } = useLocalUI()
 
   const bookmark = useCallback(async () => {
     if (noteId == null) {
@@ -253,14 +277,6 @@ const NotePageToolbar = ({ storage, note }: NotePageToolbarProps) => {
     storage.attachmentMap,
   ])
 
-  const routeParams = useRouteParams()
-  const folderPathname =
-    note == null
-      ? routeParams.name === 'storages.notes'
-        ? routeParams.folderPathname
-        : '/'
-      : note.folderPathname
-
   const openTopbarSwitchSelectorContextMenu: MouseEventHandler<HTMLDivElement> = useCallback(
     (event) => {
       event.preventDefault()
@@ -316,22 +332,84 @@ const NotePageToolbar = ({ storage, note }: NotePageToolbarProps) => {
     })
   }, [setGeneralStatus])
 
+  const noteFolder = useMemo(() => {
+    if (note != null) {
+      return storage.folderMap[note.folderPathname]
+    } else {
+      return undefined
+    }
+  }, [note, storage.folderMap])
+
+  const topbar = useMemo(() => {
+    return {
+      ...({
+        breadcrumbs: mapTopbarBreadcrumbs(
+          storage.folderMap,
+          storage,
+          push,
+          { pageNote: note, pageFolder: noteFolder },
+          openRenameFolderForm,
+          openRenameNoteForm,
+          openNewDocForm,
+          openNewFolderForm,
+          openWorkspaceEditForm,
+          deleteOrTrashNote,
+          (storageName, folder) => deleteFolder({ storageName, folder }),
+          undefined
+        ),
+      } as TopbarProps),
+      tree: topbarTree,
+      navigation: {
+        goBack,
+        goForward,
+      },
+    }
+  }, [
+    deleteFolder,
+    deleteOrTrashNote,
+    goBack,
+    goForward,
+    note,
+    noteFolder,
+    openNewDocForm,
+    openNewFolderForm,
+    openRenameFolderForm,
+    openRenameNoteForm,
+    openWorkspaceEditForm,
+    push,
+    storage,
+    topbarTree,
+  ])
+
+  const routeParams = useRouteParams()
+  const folderPathname =
+    note == null
+      ? routeParams.name === 'storages.notes'
+        ? routeParams.folderPathname
+        : '/'
+      : note.folderPathname
+
   return (
     <Container>
+      {/* todo: implement no note breadcrumbs! */}
       <div className='left'>
         {note == null ? (
           <NotePageToolbarFolderHeader
             storageId={storageId}
             folderPathname={folderPathname}
           />
+        ) : topbar != null ? (
+          <Topbar
+            tree={topbar.tree}
+            controls={topbar.controls}
+            navigation={topbar.navigation}
+            breadcrumbs={topbar.breadcrumbs}
+            className='topbar'
+          >
+            {topbar.children}
+          </Topbar>
         ) : (
-          <NotePageToolbarNoteHeader
-            storageId={storageId}
-            storageName={storageName}
-            noteId={note?._id}
-            noteTitle={note?.title}
-            noteFolderPathname={folderPathname}
-          />
+          <div className='topbar topbar--placeholder'>{topbar}</div>
         )}
       </div>
 
