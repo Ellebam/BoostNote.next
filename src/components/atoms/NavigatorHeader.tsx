@@ -1,8 +1,8 @@
 import React from 'react'
-import styled from '../../lib/styled'
 import { textOverflow } from '../../lib/styled/styleFunctions'
 import Icon from './Icon'
 import { mdiChevronRight, mdiChevronDown } from '@mdi/js'
+import styled from '../../shared/lib/styled'
 
 const HeaderContainer = styled.header`
   position: relative;
@@ -54,24 +54,24 @@ const ClickableContainer = styled.div`
   flex: 1;
   overflow: hidden;
   cursor: pointer;
-  color: ${({ theme }) => theme.disabledUiTextColor};
-  background-color: ${({ theme }) => theme.navItemBackgroundColor};
+  color: ${({ theme }) => theme.colors.text.disabled};
+
   &:hover {
-    background-color: ${({ theme }) => theme.navItemHoverBackgroundColor};
-    color: ${({ theme }) => theme.navItemColor};
+    background-color: ${({ theme }) => theme.colors.background.quaternary};
+    color: ${({ theme }) => theme.colors.text.secondary};
   }
   &:active,
   &.active {
-    background-color: ${({ theme }) => theme.navItemActiveBackgroundColor};
-    color: ${({ theme }) => theme.navItemColor};
+    background-color: ${({ theme }) => theme.colors.background.secondary};
+    color: ${({ theme }) => theme.colors.text.secondary};
   }
   &:hover:active,
   &:hover.active {
-    background-color: ${({ theme }) => theme.navItemHoverActiveBackgroundColor};
+    background-color: ${({ theme }) => theme.colors.background.tertiary};
   }
 
   &.subtle {
-    color: ${({ theme }) => theme.disabledUiTextColor};
+    color: ${({ theme }) => theme.colors.text.subtle};
   }
 `
 

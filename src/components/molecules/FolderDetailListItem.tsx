@@ -1,12 +1,9 @@
 import React, { ReactNode, MouseEventHandler } from 'react'
-import styled from '../../lib/styled'
-import {
-  borderBottom,
-  textOverflow,
-  flexCenter,
-} from '../../lib/styled/styleFunctions'
+import { textOverflow, flexCenter } from '../../lib/styled/styleFunctions'
 import Icon from '../atoms/Icon'
 import cc from 'classcat'
+import styled from '../../shared/lib/styled'
+import { borderBottom } from '../../shared/lib/styled/styleFunctions'
 
 interface FolderDetailListItemProps {
   iconPath?: string
@@ -47,7 +44,7 @@ const Container = styled.li`
   height: 40px;
   ${borderBottom}
   &:hover {
-    background-color: ${({ theme }) => theme.noteNavItemBackgroundColor};
+    background-color: ${({ theme }) => theme.colors.background.secondary};
     & > .control {
       display: flex;
     }
@@ -70,14 +67,14 @@ const Container = styled.li`
     flex: 1;
     ${textOverflow}
     &.subtle {
-      color: ${({ theme }) => theme.disabledUiTextColor};
+      color: ${({ theme }) => theme.colors.text.subtle};
     }
   }
   & > .control {
     display: none;
   }
   & > .meta {
-    color: ${({ theme }) => theme.disabledUiTextColor};
+    color: ${({ theme }) => theme.colors.text.disabled};
     ${textOverflow}
   }
 `

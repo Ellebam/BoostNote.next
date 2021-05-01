@@ -1,6 +1,6 @@
 import React from 'react'
-import styled from '../../lib/styled'
 import Icon from './Icon'
+import styled from '../../shared/lib/styled'
 
 const ButtonContainer = styled.button`
   width: 24px;
@@ -16,14 +16,14 @@ const ButtonContainer = styled.button`
   cursor: pointer;
 
   transition: color 200ms ease-in-out;
-  color: ${({ theme }) => theme.navButtonColor};
+  color: ${({ theme }) => theme.colors.text.primary};
   &:hover {
-    color: ${({ theme }) => theme.navButtonHoverColor};
+    color: ${({ theme }) => theme.colors.text.secondary};
   }
 
   &:active,
   &.active {
-    color: ${({ theme }) => theme.navButtonActiveColor};
+    color: ${({ theme }) => theme.colors.text.link};
   }
 `
 

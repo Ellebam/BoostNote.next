@@ -66,7 +66,6 @@ const ClickableContainer = styled.button`
   cursor: pointer;
 
   color: ${({ theme }) => theme.colors.text.primary};
-  background-color: ${({ theme }) => theme.colors.background.primary};
   &:hover {
     background-color: ${({ theme }) => theme.colors.background.secondary};
   }

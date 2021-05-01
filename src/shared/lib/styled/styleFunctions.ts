@@ -87,6 +87,9 @@ export const scrollbarOverlay = (
     Border
 ———————————–———————————–———————————–——–—— */
 
+export const borderBottom = ({ theme }: StyledProps) =>
+  `border-bottom: 1px solid ${theme.colors.border.main};`
+
 export const hideScroll = () => `
   overflow-y: scroll;
 
@@ -114,6 +117,16 @@ export const hideScroll = () => `
 /* ———————————–———————————–———————————–——–——
     Form
 ———————————–———————————–———————————–——–—— */
+export const selectStyle = ({
+  theme,
+}: StyledProps) => `background-color: ${theme.colors.background.tertiary};
+border: 1px solid ${theme.colors.border.main};
+border-radius: 2px;
+color: ${theme.colors.text.primary};
+&:focus {
+  box-shadow: 0 0 0 2px ${theme.colors.background.primary};
+}
+`
 
 export const contextMenuFormItem = (
   { theme }: StyledProps,

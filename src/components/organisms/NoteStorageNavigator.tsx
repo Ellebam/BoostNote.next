@@ -1,7 +1,6 @@
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { useRouter } from '../../lib/router'
 import { useDb } from '../../lib/db'
-import styled from '../../lib/styled'
 import { useDialog, DialogIconTypes } from '../../lib/dialog'
 import { usePreferences } from '../../lib/preferences'
 import StorageNavigatorFragment from '../molecules/StorageNavigatorFragment'
@@ -12,17 +11,18 @@ import {
   addIpcListener,
   removeIpcListener,
 } from '../../lib/electronOnly'
-import { values, getFolderNameFromPathname } from '../../lib/db/utils'
+import { values } from '../../lib/db/utils'
 import { MenuItemConstructorOptions } from 'electron'
 import { useStorageRouter } from '../../lib/storageRouter'
 import { useRouteParams } from '../../lib/routeParams'
-import { mdiPlus, mdiFolderOutline, mdiTag } from '@mdi/js'
-import Icon from '../atoms/Icon'
-import { flexCenter, textOverflow } from '../../lib/styled/styleFunctions'
+import { mdiTextBoxPlusOutline } from '@mdi/js'
+import { textOverflow } from '../../lib/styled/styleFunctions'
 import { noteDetailFocusTitleInputEventEmitter } from '../../lib/events'
 import NavigatorSeparator from '../atoms/NavigatorSeparator'
 import { useTranslation } from 'react-i18next'
 import { useSearchModal } from '../../lib/searchModal'
+import styled from '../../shared/lib/styled'
+import Button from '../../shared/components/atoms/Button'
 
 interface NoteStorageNavigatorProps {
   storage: NoteStorage
@@ -161,28 +161,28 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
     ]
   )
 
-  const extraNewNoteLabel = useMemo<React.ReactNode | null>(() => {
-    switch (routeParams.name) {
-      case 'storages.notes':
-        if (routeParams.folderPathname !== '/') {
-          return (
-            <>
-              in <Icon className='icon' path={mdiFolderOutline} />{' '}
-              {getFolderNameFromPathname(routeParams.folderPathname)}
-            </>
-          )
-        }
-        break
-      case 'storages.tags.show':
-        return (
-          <>
-            with <Icon className='icon' path={mdiTag} />
-            {routeParams.tagName}
-          </>
-        )
-    }
-    return null
-  }, [routeParams])
+  // const extraNewNoteLabel = useMemo<React.ReactNode | null>(() => {
+  //   switch (routeParams.name) {
+  //     case 'storages.notes':
+  //       if (routeParams.folderPathname !== '/') {
+  //         return (
+  //           <>
+  //             in <Icon className='icon' path={mdiFolderOutline} />{' '}
+  //             {getFolderNameFromPathname(routeParams.folderPathname)}
+  //           </>
+  //         )
+  //       }
+  //       break
+  //     case 'storages.tags.show':
+  //       return (
+  //         <>
+  //           with <Icon className='icon' path={mdiTag} />
+  //           {routeParams.tagName}
+  //         </>
+  //       )
+  //   }
+  //   return null
+  // }, [routeParams])
 
   const createNoteByRoute = useCallback(async () => {
     let folderPathname = '/'
@@ -249,15 +249,25 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
         <div className='topButtonLabel'>{storage.name}</div>
       </TopButton>
 
-      <NewNoteButton onClick={createNoteByRoute}>
-        <div className='icon'>
-          <Icon path={mdiPlus} />
-        </div>
-        <div className='label'>New Note</div>
-        {extraNewNoteLabel != null && (
-          <div className='extra'>{extraNewNoteLabel}</div>
-        )}
-      </NewNoteButton>
+      <Button
+        variant='primary'
+        iconPath={mdiTextBoxPlusOutline}
+        id='sidebar-newdoc-btn'
+        iconSize={16}
+        onClick={createNoteByRoute}
+      >
+        Create new note
+      </Button>
+
+      {/*<NewNoteButton onClick={createNoteByRoute}>*/}
+      {/*  <div className='icon'>*/}
+      {/*    <Icon path={mdiPlus} />*/}
+      {/*  </div>*/}
+      {/*  <div className='label'>New Note</div>*/}
+      {/*  {extraNewNoteLabel != null && (*/}
+      {/*    <div className='extra'>{extraNewNoteLabel}</div>*/}
+      {/*  )}*/}
+      {/*</NewNoteButton>*/}
 
       <ScrollableContainer>
         <BookmarkNavigatorFragment storage={storage} />
@@ -274,7 +284,7 @@ const NavigatorContainer = styled.nav`
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: ${({ theme }) => theme.navBackgroundColor};
+  background-color: ${({ theme }) => theme.colors.background.primary};
 `
 
 const ScrollableContainer = styled.div`
@@ -292,9 +302,8 @@ const TopButton = styled.button`
   text-align: left;
   padding: 0 16px;
   border: none;
-  color: ${({ theme }) => theme.navLabelColor};
+  color: ${({ theme }) => theme.colors.text.secondary};
   background-color: transparent;
-  background-color: ${({ theme }) => theme.navItemBackgroundColor};
   margin: 4px 0;
   & > .topButtonLabel {
     font-size: 14px;
@@ -303,46 +312,46 @@ const TopButton = styled.button`
   }
 `
 
-const NewNoteButton = styled.button`
-  margin: 4px 8px;
-  height: 28px;
-  color: ${({ theme }) => theme.primaryButtonLabelColor};
-  background-color: ${({ theme }) => theme.primaryButtonBackgroundColor};
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  text-align: left;
-  align-items: center;
-  display: flex;
-  padding: 0 8px 0 4px;
-  font-size: 14px;
-  &:hover {
-    background-color: ${({ theme }) => theme.primaryButtonHoverBackgroundColor};
-    .extra {
-      display: flex;
-    }
-  }
-
-  & > .icon {
-    width: 28px;
-    height: 28px;
-    ${flexCenter};
-    flex-shrink: 0;
-    font-size: 20px;
-  }
-  & > .label {
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  & > .extra {
-    display: none;
-    font-size: 12px;
-    margin-left: 5px;
-    ${textOverflow};
-    align-items: center;
-    & > .icon {
-      flex-shrink: 0;
-      margin: 0 4px;
-    }
-  }
-`
+// const NewNoteButton = styled.button`
+//   margin: 4px 8px;
+//   height: 28px;
+//   color: ${({ theme }) => theme.colors.text.primary};
+//   background-color: ${({ theme }) => theme.colors.variants.primary.base};
+//   border: none;
+//   border-radius: 3px;
+//   cursor: pointer;
+//   text-align: left;
+//   align-items: center;
+//   display: flex;
+//   padding: 0 8px 0 4px;
+//   font-size: 14px;
+//   &:hover {
+//     background-color: ${({ theme }) => theme.colors.background.secondary};
+//     .extra {
+//       display: flex;
+//     }
+//   }
+//
+//   & > .icon {
+//     width: 28px;
+//     height: 28px;
+//     ${flexCenter};
+//     flex-shrink: 0;
+//     font-size: 20px;
+//   }
+//   & > .label {
+//     white-space: nowrap;
+//     flex-shrink: 0;
+//   }
+//   & > .extra {
+//     display: none;
+//     font-size: 12px;
+//     margin-left: 5px;
+//     ${textOverflow};
+//     align-items: center;
+//     & > .icon {
+//       flex-shrink: 0;
+//       margin: 0 4px;
+//     }
+//   }
+// `
