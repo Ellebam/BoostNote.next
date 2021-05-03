@@ -5,15 +5,15 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import styled from '../../lib/styled'
 import {
   getGenericShortcutString,
   KeymapItemEditableProps,
 } from '../../lib/keymap'
-import { inputStyle } from '../../lib/styled/styleFunctions'
 import cc from 'classcat'
 import { useToast } from '../../lib/toast'
 import { KeymapItemButton } from '../PreferencesModal/KeymapTab'
+import styled from '../../shared/lib/styled'
+import { inputStyle } from '../../shared/lib/styled/styleFunctions'
 
 const invalidShortcutInputs = [' ']
 const rejectedShortcutInputs = [' ', 'control', 'alt', 'shift']
@@ -184,9 +184,10 @@ const ShortcutItemStyle = styled.div`
   align-items: center;
   justify-content: center;
 
-  background-color: ${({ theme }) => theme.primaryButtonBackgroundColor};
-  color: ${({ theme }) => theme.primaryButtonLabelColor};
-  border: 1px solid ${({ theme }) => theme.borderColor};
+  background-color: ${({ theme }) => theme.colors.background.tertiary};
+  color: ${({ theme }) => theme.colors.text.primary};
+
+  border: 1px solid ${({ theme }) => theme.colors.border.main};
   border-radius: 4px;
 `
 

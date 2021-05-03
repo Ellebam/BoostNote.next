@@ -4,7 +4,7 @@ import { usePreferences } from '../../lib/preferences'
 import { getGenericShortcutString, KeymapItem } from '../../lib/keymap'
 import { useTranslation } from 'react-i18next'
 import KeymapItemSection from '../atoms/KeymapItemSection'
-import styled from '../../lib/styled/styled'
+import styled from '../../shared/lib/styled'
 
 const KeymapTab = () => {
   const {
@@ -84,19 +84,19 @@ export const KeymapItemButton = styled.button`
 
   cursor: pointer;
 
-  background-color: ${({ theme }) => theme.primaryButtonBackgroundColor};
-  border: 1px solid ${({ theme }) => theme.borderColor};
+  background-color: ${({ theme }) => theme.colors.background.tertiary};
+  border: 1px solid ${({ theme }) => theme.colors.border.main};
   border-radius: 4px;
 
   transition: color 200ms ease-in-out;
-  color: ${({ theme }) => theme.primaryButtonLabelColor};
+  color: ${({ theme }) => theme.colors.text.primary};
 
   text-align: center;
   padding: 5px;
 
   &:hover {
-    border-color: ${({ theme }) => theme.borderColor};
-    background: ${({ theme }) => theme.primaryButtonHoverBackgroundColor};
+    border-color: ${({ theme }) => theme.colors.text.secondary};
+    background: ${({ theme }) => theme.colors.background.quaternary};
   }
 `
 

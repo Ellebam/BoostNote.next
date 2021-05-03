@@ -98,6 +98,12 @@ export const borderBottom = ({ theme }: StyledProps) =>
 export const borderLeft = ({ theme }: StyledProps) =>
   `border-left: 1px solid ${theme.colors.border.main};`
 
+export const borderTop = ({ theme }: StyledProps) =>
+  `border-top: 1px solid ${theme.colors.border.main};`
+
+export const borderRight = ({ theme }: StyledProps) =>
+  `border-right: 1px solid  ${theme.colors.border.main};`
+
 export const hideScroll = () => `
   overflow-y: scroll;
 
@@ -162,6 +168,19 @@ padding: 2px 8px;
 export const formInputHeight = () => `
   height: 32px;
   min-height: 32px;
+`
+
+export const inputStyle = ({ theme }: StyledProps) =>
+  `background-color: ${theme.colors.background.quaternary};
+border: 1px solid ${theme.colors.border.main};
+border-radius: 2px;
+color: ${theme.colors.text.primary};
+&:focus {
+  box-shadow: 0 0 0 2px ${theme.colors.background.primary};
+}
+&::placeholder {
+  color: ${theme.colors.text.primary};
+}
 `
 
 /* ———————————–———————————–———————————–——–——

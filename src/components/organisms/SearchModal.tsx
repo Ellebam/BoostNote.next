@@ -5,19 +5,12 @@ import React, {
   useRef,
   KeyboardEvent,
 } from 'react'
-import styled from '../../lib/styled'
 import { NoteDoc, NoteStorage } from '../../lib/db/types'
 import { useEffectOnce, useDebounce } from 'react-use'
 import { excludeNoteIdPrefix, values } from '../../lib/db/utils'
 import { escapeRegExp } from '../../lib/string'
 import { useSearchModal } from '../../lib/searchModal'
-import {
-  border,
-  borderBottom,
-  borderTop,
-  flexCenter,
-  textOverflow,
-} from '../../lib/styled/styleFunctions'
+import { flexCenter, textOverflow } from '../../lib/styled/styleFunctions'
 import { mdiMagnify, mdiClose, mdiCardTextOutline } from '@mdi/js'
 import Icon from '../atoms/Icon'
 import SearchModalNoteResultItem from '../molecules/SearchModalNoteResultItem'
@@ -33,8 +26,14 @@ import {
 } from '../../lib/search/search'
 import CustomizedCodeEditor from '../atoms/CustomizedCodeEditor'
 import CodeMirror from 'codemirror'
-import { BaseTheme } from '../../lib/styled/BaseTheme'
 import cc from 'classcat'
+import styled from '../../shared/lib/styled'
+import { BaseTheme } from '../../shared/lib/styled/types'
+import {
+  border,
+  borderBottom,
+  borderTop,
+} from '../../shared/lib/styled/styleFunctions'
 
 interface SearchModalProps {
   storage: NoteStorage
@@ -379,7 +378,7 @@ const Container = styled.div<BaseTheme & TextAreaProps>`
   & > .container {
     position: relative;
     margin: 50px auto 0;
-    background-color: ${({ theme }) => theme.navBackgroundColor};
+    background-color: ${({ theme }) => theme.colors.background.primary};
     width: calc(100% - 15px);
     max-width: 720px;
     overflow: hidden;
@@ -399,7 +398,7 @@ const Container = styled.div<BaseTheme & TextAreaProps>`
         flex: 1;
         background-color: transparent;
         border: none;
-        color: ${({ theme }) => theme.uiTextColor};
+        color: ${({ theme }) => theme.colors.text.primary};
 
         resize: none;
         max-height: 4em;
@@ -413,12 +412,12 @@ const Container = styled.div<BaseTheme & TextAreaProps>`
       flex: 1;
       & > .searching {
         text-align: center;
-        color: ${({ theme }) => theme.disabledUiTextColor};
+        color: ${({ theme }) => theme.colors.text.disabled};
         padding: 10px;
       }
       & > .empty {
         text-align: center;
-        color: ${({ theme }) => theme.disabledUiTextColor};
+        color: ${({ theme }) => theme.colors.text.disabled};
         padding: 10px;
       }
       & > .item {
@@ -438,9 +437,8 @@ const Container = styled.div<BaseTheme & TextAreaProps>`
 
 const EditorPreview = styled.div`
   .marked {
-    background-color: ${({ theme }) =>
-      theme.searchHighlightSubtleBackgroundColor};
-    color: ${({ theme }) => theme.searchHighlightTextColor} !important;
+    background-color: #ffdb70;
+    color: ${({ theme }) => theme.colors.background.tertiary} !important;
     padding: 3px;
   }
 
@@ -450,10 +448,10 @@ const EditorPreview = styled.div`
   }
 
   .selected {
-    background-color: ${({ theme }) => theme.searchHighlightBackgroundColor};
+    background-color: #ffc107;
   }
 
-  background-color: ${({ theme }) => theme.navBackgroundColor};
+  background-color: ${({ theme }) => theme.colors.background.primary};
 
   ${borderTop};
   width: 100%;
@@ -477,7 +475,7 @@ const EditorPreview = styled.div`
         flex: 1;
         ${textOverflow}
         &.empty {
-          color: ${({ theme }) => theme.disabledUiTextColor};
+          color: ${({ theme }) => theme.colors.text.disabled};
         }
       }
       & > .icon {
@@ -502,14 +500,14 @@ const EditorPreview = styled.div`
       cursor: pointer;
 
       transition: color 200ms ease-in-out;
-      color: ${({ theme }) => theme.navItemColor};
+      color: ${({ theme }) => theme.colors.text.secondary};
       &:hover {
-        color: ${({ theme }) => theme.navButtonHoverColor};
+        color: ${({ theme }) => theme.colors.text.subtle};
       }
 
       &:active,
       &.active {
-        color: ${({ theme }) => theme.navButtonActiveColor};
+        color: ${({ theme }) => theme.colors.text.link};
       }
     }
   }

@@ -5,14 +5,8 @@ import {
   Attachment,
   NoteStorage,
 } from '../../lib/db/types'
-import styled from '../../lib/styled'
 import CustomizedCodeEditor from '../atoms/CustomizedCodeEditor'
 import CustomizedMarkdownPreviewer from '../atoms/CustomizedMarkdownPreviewer'
-import {
-  borderRight,
-  backgroundColor,
-  borderTop,
-} from '../../lib/styled/styleFunctions'
 import { ViewModeType } from '../../lib/generalStatus'
 import {
   convertItemListToArray,
@@ -28,6 +22,12 @@ import { addIpcListener, removeIpcListener } from '../../lib/electronOnly'
 import { Position } from 'codemirror'
 import LocalSearch from './LocalSearch'
 import { SearchReplaceOptions } from '../../lib/search/search'
+import {
+  borderTop,
+  backgroundColor,
+  borderRight,
+} from '../../shared/lib/styled/styleFunctions'
+import styled from '../../shared/lib/styled'
 
 type NoteDetailProps = {
   note: NoteDoc
