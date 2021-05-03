@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import Router from './Router'
-import GlobalStyle from './GlobalStyle'
 import { ThemeProvider } from 'styled-components'
 import Dialog from './organisms/Dialog'
 import { useDb } from '../lib/db'
@@ -50,6 +49,7 @@ import ExternalStyle from './ExternalStyle'
 import { useDialog, DialogIconTypes } from '../lib/dialog'
 import { selectV2Theme } from '../shared/lib/styled/styleFunctions'
 import Modal from '../shared/components/organisms/Modal'
+import GlobalStyle from '../shared/components/atoms/GlobalStyle'
 
 const LoadingText = styled.div`
   margin: 30px;
