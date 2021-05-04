@@ -74,8 +74,7 @@ export function mapTopbarBreadcrumbs(
     | undefined
 
   if (pageNote != null) {
-    const parentFolderDoc =
-      foldersMap[getParentFolderPathname(pageNote.folderPathname)]
+    const parentFolderDoc = foldersMap[pageNote.folderPathname]
     parent =
       parentFolderDoc != null && pageNote.folderPathname != '/'
         ? { type: 'folder', item: parentFolderDoc }
@@ -101,17 +100,20 @@ export function mapTopbarBreadcrumbs(
       parentFolderDoc != null && parentFolderPathname != '/'
         ? { type: 'folder', item: parentFolderDoc }
         : { type: 'storage', item: storage }
-    items.unshift(
-      getFolderBreadcrumb(
-        pageFolder,
-        storage,
-        push,
-        openNewDocForm,
-        openNewFolderForm,
-        renameFolder,
-        deleteFolder
+    const pageFolderPathname = getFolderPathname(pageFolder._id)
+    if (pageFolderPathname != '/') {
+      items.unshift(
+        getFolderBreadcrumb(
+          pageFolder,
+          storage,
+          push,
+          openNewDocForm,
+          openNewFolderForm,
+          renameFolder,
+          deleteFolder
+        )
       )
-    )
+    }
   }
 
   let reversedToTop = false
@@ -185,14 +187,14 @@ export function mapTopbarBreadcrumbs(
         parent = undefined
       } else {
         const folderPathname = getFolderPathname(parent.item._id)
-        const parentFolderDoc =
-          foldersMap[getParentFolderPathname(folderPathname)]
+        const parentFolderPathname = getParentFolderPathname(folderPathname)
+        const parentFolderDoc = foldersMap[parentFolderPathname]
         parent =
-          parentFolderDoc != null && folderPathname != '/'
+          parentFolderDoc != null && parentFolderPathname != '/'
             ? { type: 'folder', item: parentFolderDoc }
             : {
                 type: 'storage',
-                item: storage, // todo: we only have one storage here - one workspace
+                item: storage,
               }
       }
     }
@@ -277,7 +279,7 @@ function getFolderBreadcrumb(
   const parentFolderId = storage.folderMap[parentFolderPathname]?._id
   const newResourceBody = {
     storageId: storage.id, // folder storage ID (only one)
-    parentFolderPathname: folderPathname,
+    parentFolderPathname: parentFolderPathname,
   }
   const currentPath = `${storage.name}${folderPathname}`
   return {

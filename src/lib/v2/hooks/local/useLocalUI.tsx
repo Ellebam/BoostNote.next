@@ -6,6 +6,7 @@ import {
   getFolderNameFromPathname,
   getFolderPathname,
   getNoteTitle,
+  getParentFolderPathname,
 } from '../../../db/utils'
 import { join } from 'path'
 import BasicInputFormLocal from '../../../../components/v2/organisms/BasicInputFormLocal'
@@ -15,10 +16,12 @@ import {
   DialogIconTypes,
   useDialog,
 } from '../../../../shared/lib/stores/dialog'
+import { useToast } from '../../../../shared/lib/stores/toast'
+import { useGeneralStatus } from '../../../generalStatus'
 
 export function useLocalUI() {
+  const { openSideNavFolderItemRecursively } = useGeneralStatus()
   const { openModal, closeLastModal } = useModal()
-  // todo: see if we can use standard message box from local dialog!
   const { messageBox } = useDialog()
   const {
     updateNote,
@@ -28,14 +31,40 @@ export function useLocalUI() {
     removeFolder,
     trashNote,
     purgeNote,
+    renameStorage,
   } = useDb()
+  const { pushMessage } = useToast()
 
   const openWorkspaceEditForm = useCallback(
     (storage: NoteStorage) => {
-      // openModal(<EditWorkspaceModal workspace={wp} />)
-      openModal(<div>Not yet implement {storage.name}</div>)
+      openModal(
+        <BasicInputFormLocal
+          defaultIcon={mdiFolderOutline}
+          defaultInputValue={storage != null ? storage.name : 'Untitled'}
+          defaultEmoji={undefined}
+          placeholder='Storage name'
+          submitButtonProps={{
+            label: 'Update',
+          }}
+          onSubmit={async (storageName: string) => {
+            if (storageName == '') {
+              pushMessage({
+                title: 'Cannot rename storage',
+                description: 'Storage name should not be empty.',
+              })
+            }
+            await renameStorage(storage.id, storageName)
+            closeLastModal()
+          }}
+        />,
+        {
+          showCloseIcon: true,
+          size: 'default',
+          title: 'Rename storage',
+        }
+      )
     },
-    [openModal]
+    [closeLastModal, openModal, pushMessage, renameStorage]
   )
 
   const openRenameFolderForm = useCallback(
@@ -51,12 +80,37 @@ export function useLocalUI() {
           submitButtonProps={{
             label: 'Update',
           }}
-          onSubmit={async (inputValue: string) => {
+          onSubmit={async (folderName: string) => {
+            if (folderName == '') {
+              pushMessage({
+                title: 'Cannot rename folder',
+                description: 'Folder name should not be empty.',
+              })
+            }
+            const newFolderPathname = join(
+              getParentFolderPathname(folderPathname),
+              folderName
+            )
             await renameFolder(
               storageId,
               folderPathname,
-              join(folderPathname, inputValue)
-            )
+              newFolderPathname
+            ).catch((err) => {
+              pushMessage({
+                title: 'Cannot rename folder',
+                description:
+                  err != null
+                    ? err.message != null
+                      ? err.message
+                      : `${err}`
+                    : 'Unknown error',
+              })
+            })
+
+            // Should update the UI, again works weirdly in pouch DB, works ok in FS storage but opens folder?
+            // does not update the note properly?
+            // push(`/app/storages/${storageId}/notes${newFolderPathname}`)
+            openSideNavFolderItemRecursively(storageId, newFolderPathname)
             closeLastModal()
           }}
         />,
@@ -67,7 +121,13 @@ export function useLocalUI() {
         }
       )
     },
-    [openModal, renameFolder, closeLastModal]
+    [
+      openModal,
+      renameFolder,
+      closeLastModal,
+      openSideNavFolderItemRecursively,
+      pushMessage,
+    ]
   )
 
   const openRenameNoteForm = useCallback(
@@ -233,7 +293,6 @@ export function useLocalUI() {
       trashed?: boolean,
       title = 'this document'
     ) => {
-      console.log('Got to message box...', trashed, noteId, title)
       if (trashed != null) {
         return messageBox({
           title: `Archive ${title}`,
