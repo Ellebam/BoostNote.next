@@ -1,13 +1,13 @@
 import React from 'react'
 import CodeMirror, { getCodeMirrorTheme } from '../../lib/CodeMirror'
-import styled from '../../lib/styled'
-import { borderRight } from '../../lib/styled/styleFunctions'
 import {
   EditorIndentTypeOptions,
   EditorIndentSizeOptions,
   EditorKeyMapOptions,
 } from '../../lib/preferences'
 import { osName } from '../../lib/platform'
+import styled from '../../shared/lib/styled'
+import { borderRight } from '../../shared/lib/styled/styleFunctions'
 
 const StyledContainer = styled.div`
   .CodeMirror {
@@ -21,7 +21,7 @@ const StyledContainer = styled.div`
     line-height: 26px;
     padding: 0 15px;
     transition: color 200ms ease-in-out;
-    color: ${({ theme }) => theme.primaryDarkerColor};
+    color: ${({ theme }) => theme.colors.text.primary};
     border: none;
     ${borderRight}
     &:last-child {
@@ -30,14 +30,13 @@ const StyledContainer = styled.div`
   }
 
   .CodeMirror-dialog button:hover {
-    color: ${({ theme }) => theme.primaryButtonLabelColor};
-    background-color: ${({ theme }) => theme.primaryColor};
+    color: ${({ theme }) => theme.colors.text.secondary};
+    background-color: ${({ theme }) => theme.colors.background.primary};
   }
 
   .marked {
-    background-color: ${({ theme }) =>
-      theme.searchHighlightSubtleBackgroundColor};
-    color: ${({ theme }) => theme.searchHighlightTextColor} !important;
+    background-color: #ffdb70;
+    color: #212121 !important;
     padding: 3px;
   }
 
@@ -47,7 +46,7 @@ const StyledContainer = styled.div`
   }
 
   .selected {
-    background-color: ${({ theme }) => theme.searchHighlightBackgroundColor};
+    background-color: #ffc107;
     border: 1px solid #fffae3;
   }
 `
