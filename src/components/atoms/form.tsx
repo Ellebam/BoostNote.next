@@ -1,11 +1,11 @@
 import React from 'react'
-import styled from '../../lib/styled'
+import styled from '../../shared/lib/styled'
 import {
   border,
+  selectStyle,
   primaryButtonStyle,
   secondaryButtonStyle,
-} from '../../lib/styled/styleFunctions'
-import { selectStyle } from '../../lib/styled/styleFunctions'
+} from '../../shared/lib/styled/styleFunctions'
 
 interface FormHeadingProps {
   depth?: number
@@ -69,7 +69,7 @@ export const FormTextInput = styled.input`
   padding: 0.375rem 0.75rem;
   line-height: 1.5;
   border-radius: 0.25rem;
-  ${border}
+  ${border};
   background-color: white;
   &:disabled {
     color: gray;
@@ -84,17 +84,17 @@ export const FormBlockquote = styled.blockquote<{
     ${({ theme, variant }) => {
       switch (variant) {
         case 'danger':
-          return theme.dangerColor
+          return theme.colors.variants.danger.base
         case 'primary':
         default:
-          return theme.primaryColor
+          return theme.colors.variants.primary.base
       }
     }};
   margin-left: 0;
   padding: 0.5em 1em;
 
   a {
-    color: ${({ theme }) => theme.primaryColor};
+    color: ${({ theme }) => theme.colors.text.primary};
   }
 `
 
@@ -208,8 +208,8 @@ export const FormSecondaryButton = styled.button`
 export const FormTransparentButton = styled.button`
   background-color: transparent;
   border: none;
-  color: ${({ theme }) => theme.navItemColor};
-  background-color: ${({ theme }) => theme.navItemBackgroundColor};
+  color: ${({ theme }) => theme.colors.text.primary};
+  background-color: ${({ theme }) => theme.colors.background.primary};
   padding: 0.375rem 0.75rem;
   font-size: 1rem;
   line-height: 1.5;
@@ -221,8 +221,8 @@ export const FormTransparentButton = styled.button`
   }
 
   &:hover {
-    color: ${({ theme }) => theme.navItemActiveColor};
-    background-color: ${({ theme }) => theme.navItemHoverBackgroundColor};
+    color: ${({ theme }) => theme.colors.text.secondary};
+    background-color: ${({ theme }) => theme.colors.background.secondary};
   }
 `
 
@@ -247,7 +247,7 @@ export const FormLabelGroup = styled.div`
   &:last-child {
     margin-bottom: 0;
   }
-  justify-content: flexend;
+  justify-content: flex-end;
   display: flex;
   align-items: center;
 `

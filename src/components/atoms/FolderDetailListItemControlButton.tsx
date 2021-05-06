@@ -1,6 +1,6 @@
 import React, { MouseEventHandler } from 'react'
-import styled from '../../lib/styled'
 import Icon from './Icon'
+import styled from '../../shared/lib/styled'
 
 interface FolderDetailListItemControlButtonProps {
   onClick?: MouseEventHandler<HTMLButtonElement>
@@ -29,8 +29,8 @@ const FolderDetailListItemControlButton = ({
 export default FolderDetailListItemControlButton
 
 const Container = styled.button`
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   font-size: 18px;
   display: flex;
   align-items: center;
@@ -42,13 +42,13 @@ const Container = styled.button`
   cursor: pointer;
 
   transition: color 200ms ease-in-out;
-  color: ${({ theme }) => theme.navButtonColor};
+  color: ${({ theme }) => theme.colors.text.secondary};
   &:hover {
-    color: ${({ theme }) => theme.navButtonHoverColor};
+    color: ${({ theme }) => theme.colors.text.primary};
   }
 
   &:active,
   &.active {
-    color: ${({ theme }) => theme.navButtonActiveColor};
+    color: ${({ theme }) => theme.colors.text.link};
   }
 `

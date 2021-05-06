@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo } from 'react'
-import styled from '../../lib/styled'
 import { NoteDoc, NoteStorage } from '../../lib/db/types'
 import Icon from '../atoms/Icon'
 import {
@@ -31,6 +30,8 @@ import {
 import { usePreferences } from '../../lib/preferences'
 import { usePreviewStyle } from '../../lib/preview'
 import { useCloudIntroModal } from '../../lib/cloudIntroModal'
+import styled from '../../shared/lib/styled'
+import { borderLeft } from '../../shared/lib/styled/styleFunctions'
 
 interface NoteContextViewProps {
   storage: NoteStorage
@@ -325,15 +326,15 @@ const Container = styled.div`
   flex-direction: column;
   width: 350px;
   overflow-y: auto;
-  border-left: solid 1px ${({ theme }) => theme.borderColor};
+  ${borderLeft};
   flex-shrink: 0;
-  color: ${({ theme }) => theme.uiTextColor};
+  color: ${({ theme }) => theme.colors.text.primary};
 `
 
 const Separator = styled.div`
   height: 1px;
   margin: 8px 16px;
-  background-color: ${({ theme }) => theme.borderColor};
+  background-color: ${({ theme }) => theme.colors.border.main};
   flex-shrink: 0;
 `
 
@@ -341,7 +342,7 @@ const ControlItem = styled.div`
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  color: ${({ theme }) => theme.navItemColor};
+  color: ${({ theme }) => theme.colors.text.secondary};
   font-size: 14px;
 `
 
@@ -406,8 +407,8 @@ const CloudIntroItemContent = styled.div`
 `
 
 const TryCloudButton = styled.button`
-  background-color: ${({ theme }) => theme.primaryColor};
-  color: ${({ theme }) => theme.primaryButtonLabelColor};
+  background-color: ${({ theme }) => theme.colors.variants.primary.base};
+  color: ${({ theme }) => theme.colors.variants.primary.text};
   font-size: 12px;
   border: none;
 
@@ -417,7 +418,7 @@ const TryCloudButton = styled.button`
     cursor: pointer;
   }
   &:focus {
-    box-shadow: 0 0 0 2px ${({ theme }) => theme.primaryColor};
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.background.tertiary};
   }
   &:disabled,
   &.disabled {
@@ -438,19 +439,19 @@ const ButtonItem = styled.button`
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  color: ${({ theme }) => theme.navItemColor};
+  color: ${({ theme }) => theme.colors.text.secondary};
   font-size: 14px;
-  background-color: ${({ theme }) => theme.navItemBackgroundColor};
+  background-color: ${({ theme }) => theme.colors.background.primary};
   &:hover {
-    background-color: ${({ theme }) => theme.navItemHoverBackgroundColor};
+    background-color: ${({ theme }) => theme.colors.background.secondary};
   }
   &:active,
   &.active {
-    background-color: ${({ theme }) => theme.navItemActiveBackgroundColor};
+    background-color: ${({ theme }) => theme.colors.background.tertiary};
   }
   &:hover:active,
   &:hover.active {
-    background-color: ${({ theme }) => theme.navItemHoverActiveBackgroundColor};
+    background-color: ${({ theme }) => theme.colors.background.quaternary};
   }
 `
 

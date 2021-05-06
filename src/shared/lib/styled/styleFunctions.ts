@@ -1,6 +1,8 @@
 import { darkTheme } from './dark'
 import { lightTheme } from './light'
 import { BaseTheme, ThemeTypes } from './types'
+import { isColorBright } from '../../../lib/colors'
+import { TagStyleProps } from '../../../lib/styled/styleFunctions'
 
 export interface StyledProps {
   theme: BaseTheme
@@ -83,6 +85,20 @@ export const scrollbarOverlay = (
   }
 `
 
+export const tagBackgroundColor = ({
+  theme,
+  color,
+}: StyledProps & TagStyleProps) => `
+background-color: ${color || theme.colors.background.secondary};
+  &:hover {
+    filter: brightness(${
+      isColorBright(color || theme.colors.background.secondary) ? 85 : 115
+    }%
+    );
+    background-color: ${color || theme.colors.background.secondary};
+  }
+}`
+
 /* ———————————–———————————–———————————–——–——
     Border
 ———————————–———————————–———————————–——–—— */
@@ -127,6 +143,49 @@ export const hideScroll = () => `
 /* ———————————–———————————–———————————–——–——
     Button
 ———————————–———————————–———————————–——–—— */
+export const primaryButtonStyle = ({ theme }: StyledProps) => `border: none;
+background-color: ${theme.colors.variants.primary.base};
+color: ${theme.colors.variants.primary.text};
+font-size: 13px;
+
+&:hover,
+&:active,
+&.active {
+  cursor: pointer;
+}
+&:focus {
+  box-shadow: 0 0 0 2px ${theme.colors.variants.primary.base};
+}
+&:disabled,
+&.disabled {
+  opacity: .5;
+  cursor: default;
+}
+`
+
+export const secondaryButtonStyle = ({ theme }: StyledProps) => `border: none;
+background-color: ${theme.colors.variants.secondary.base};
+color: ${theme.colors.variants.secondary.text};
+${border};
+font-size: 13px;
+
+&:hover,
+&:active,
+&.active {
+  cursor: pointer;
+  color: ${theme.colors.text.secondary};
+  background-color: ${theme.colors.variants.primary.base};
+}
+&:focus {
+  box-shadow: 0 0 0 2px ${theme.colors.variants.secondary.base};
+}
+&:disabled,
+&.disabled {
+  opacity: .5;
+  cursor: default;
+}
+`
+
 export const closeIconColor = ({ theme }: StyledProps) => `
 color: ${theme.colors.text.subtle};
 transition: 200ms color;

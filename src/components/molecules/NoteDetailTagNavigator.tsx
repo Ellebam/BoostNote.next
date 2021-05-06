@@ -1,5 +1,4 @@
 import React, { useMemo, useState, useRef, useCallback, useEffect } from 'react'
-import styled from '../../lib/styled'
 import { mdiPlus } from '@mdi/js'
 import { useRouteParams } from '../../lib/routeParams'
 import ToolbarIconButton from '../atoms/ToolbarIconButton'
@@ -8,6 +7,7 @@ import TagNavigatorNewTagPopup from '../atoms/TagNavigatorNewTagPopup'
 import { useTranslation } from 'react-i18next'
 import { PopulatedTagDoc, NoteStorage } from '../../lib/db/types'
 import { entries } from '../../lib/db/utils'
+import styled from '../../shared/lib/styled'
 
 const Container = styled.div`
   display: flex;

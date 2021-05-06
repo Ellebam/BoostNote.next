@@ -61,7 +61,7 @@ export function mapTopbarBreadcrumbs(
   deleteOrTrashNote?: (
     storageId: string,
     noteId: string,
-    trashed?: boolean
+    trashed: boolean
   ) => Promise<void>,
   deleteFolder?: (storageName: string, folder: FolderDoc) => void,
   deleteWorkspace?: (storage: NoteStorage) => void

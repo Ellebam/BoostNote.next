@@ -13,11 +13,11 @@ import NoteSortingOptionsFragment from '../molecules/NoteSortingOptionsFragment'
 import { NoteSortingOptions } from '../../lib/sort'
 import FolderDetailListItem from '../molecules/FolderDetailListItem'
 import { useRouter } from '../../lib/router'
-import styled from '../../shared/lib/styled'
 import {
   borderBottom,
   selectStyle,
 } from '../../shared/lib/styled/styleFunctions'
+import styled from '../../shared/lib/styled'
 
 interface FolderDetailProps {
   storage: NoteStorage

@@ -1,8 +1,8 @@
 import React, { MouseEventHandler } from 'react'
-import styled from '../../lib/styled'
 import Icon from './Icon'
 import { flexCenter, textOverflow } from '../../lib/styled/styleFunctions'
 import cc from 'classcat'
+import styled from '../../shared/lib/styled'
 
 interface ToolbarButtonProps {
   iconPath?: string
@@ -45,7 +45,7 @@ const Container = styled.button`
   outline: none;
 
   background-color: transparent;
-  ${flexCenter}
+  ${flexCenter};
   overflow: hidden;
 
   border: none;
@@ -70,13 +70,13 @@ const Container = styled.button`
   }
 
   transition: color 200ms ease-in-out;
-  color: ${({ theme }) => theme.navItemColor};
+  color: ${({ theme }) => theme.colors.text.secondary};
   &:hover {
-    color: ${({ theme }) => theme.navButtonHoverColor};
+    color: ${({ theme }) => theme.colors.text.primary};
   }
 
   &:active,
   &.active {
-    color: ${({ theme }) => theme.navButtonActiveColor};
+    color: ${({ theme }) => theme.colors.text.link};
   }
 `

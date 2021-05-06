@@ -3,8 +3,8 @@ import Icon from './Icon'
 import styled from '../../shared/lib/styled'
 
 const ButtonContainer = styled.button`
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   font-size: 18px;
   display: flex;
   align-items: center;
