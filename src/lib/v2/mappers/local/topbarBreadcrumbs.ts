@@ -212,7 +212,7 @@ function getDocBreadcrumb(
   deleteOrTrashNote?: (
     storageId: string,
     noteId: string,
-    trashed?: boolean
+    trashed: boolean
   ) => void
 ): TopbarBreadcrumbProps & AddedProperties {
   const parentFolderId = getFolderId(note.folderPathname)
@@ -242,16 +242,18 @@ function getDocBreadcrumb(
         : []),
       ...(deleteOrTrashNote != null
         ? [
-            note.trashed != null
+            note.trashed
               ? {
                   icon: mdiTrashCanOutline,
                   label: 'Delete',
-                  onClick: () => deleteOrTrashNote(storageId, note._id),
+                  onClick: () =>
+                    deleteOrTrashNote(storageId, note._id, note.trashed),
                 }
               : {
                   icon: mdiArchive,
                   label: 'Archive',
-                  onClick: () => deleteOrTrashNote(storageId, note._id),
+                  onClick: () =>
+                    deleteOrTrashNote(storageId, note._id, note.trashed),
                 },
           ]
         : []),

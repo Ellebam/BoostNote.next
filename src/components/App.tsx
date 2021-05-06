@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import Router from './Router'
 import { ThemeProvider } from 'styled-components'
-import Dialog from './organisms/Dialog'
 import { useDb } from '../lib/db'
 import PreferencesModal from './PreferencesModal/PreferencesModal'
 import { usePreferences } from '../lib/preferences'
@@ -46,10 +45,11 @@ import { useCreateWorkspaceModal } from '../lib/createWorkspaceModal'
 import CreateWorkspaceModal from './organisms/CreateWorkspaceModal'
 import { useStorageRouter } from '../lib/storageRouter'
 import ExternalStyle from './ExternalStyle'
-import { useDialog, DialogIconTypes } from '../lib/dialog'
 import { selectV2Theme } from '../shared/lib/styled/styleFunctions'
 import Modal from '../shared/components/organisms/Modal'
 import GlobalStyle from '../shared/components/atoms/GlobalStyle'
+import { DialogIconTypes, useDialog } from '../shared/lib/stores/dialog'
+import Dialog from '../shared/components/organisms/Dialog/Dialog'
 
 const LoadingText = styled.div`
   margin: 30px;
@@ -116,25 +116,32 @@ const App = () => {
         messageBox({
           title: 'Sign In',
           message: 'Your cloud access token has been expired.',
-          buttons: ['Sign In Again', 'Cancel'],
-          defaultButtonIndex: 0,
+          buttons: [
+            {
+              label: 'Sign In Again',
+              defaultButton: true,
+              onClick: () => {
+                push(`/app/boosthub/login`)
+                setTimeout(() => {
+                  boostHubLoginRequestEventEmitter.dispatch()
+                }, 1000)
+              },
+            },
+            {
+              label: 'Cancel',
+              cancelButton: true,
+              onClick: () => {
+                setPreferences({
+                  'cloud.user': undefined,
+                })
+                setGeneralStatus({
+                  boostHubTeams: [],
+                })
+              },
+            },
+          ],
+          // defaultButtonIndex: 0,
           iconType: DialogIconTypes.Warning,
-          onClose: (value: number | null) => {
-            if (value === 0) {
-              push(`/app/boosthub/login`)
-              setTimeout(() => {
-                boostHubLoginRequestEventEmitter.dispatch()
-              }, 1000)
-              return
-            }
-
-            setPreferences({
-              'cloud.user': undefined,
-            })
-            setGeneralStatus({
-              boostHubTeams: [],
-            })
-          },
         })
         return
       }

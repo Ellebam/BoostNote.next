@@ -263,8 +263,12 @@ export function useLocalUI() {
     async (target: { storageName: string; folder: FolderDoc }) => {
       const folderPathname = getFolderPathname(target.folder._id)
       messageBox({
-        title: `Delete ${folderPathname}`,
-        message: `Are you sure to remove this folder and delete completely its notes`,
+        title: `Delete folder '${
+          folderPathname.startsWith('/')
+            ? folderPathname.substr(1)
+            : folderPathname
+        }'`,
+        message: `Are you sure you want to remove this folder and its notes`,
         iconType: DialogIconTypes.Warning,
         buttons: [
           {
@@ -290,10 +294,10 @@ export function useLocalUI() {
     async (
       storageId: string,
       noteId: string,
-      trashed?: boolean,
-      title = 'this document'
+      trashed: boolean,
+      title = 'this note'
     ) => {
-      if (trashed != null) {
+      if (!trashed) {
         return messageBox({
           title: `Archive ${title}`,
           message: `Are you sure you want to archive this content?`,
@@ -307,7 +311,7 @@ export function useLocalUI() {
             },
             {
               variant: 'warning',
-              label: 'archive',
+              label: 'Archive',
               onClick: async () => {
                 await trashNote(storageId, noteId)
               },
@@ -317,7 +321,7 @@ export function useLocalUI() {
       }
       messageBox({
         title: `Delete ${title}`,
-        message: `Are you sure you want to delete this content?`,
+        message: `Are you sure you want to delete this note?`,
         iconType: DialogIconTypes.Warning,
         buttons: [
           {
