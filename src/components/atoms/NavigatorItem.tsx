@@ -53,7 +53,7 @@ const FoldButton = styled.button`
   }
 `
 
-const ClickableContainer = styled.button`
+const ClickableContainer = styled.div`
   background-color: transparent;
   height: 28px;
   border: none;
@@ -200,6 +200,7 @@ const NavigatorItem = ({
           </IconContainer>
         )}
         <Label className={cc([subtle && 'subtle'])}>{label}</Label>
+        {/* todo: button inside button if control here is button elements, might be no need for this when we replace all components */}
         {control && <Control className='control'>{control}</Control>}
       </ClickableContainer>
     </Container>

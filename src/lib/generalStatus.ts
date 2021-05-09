@@ -4,6 +4,7 @@ import { useSetState } from 'react-use'
 import { generalStatusKey } from './localStorageKeys'
 import { createStoreContext } from './context'
 import { getFolderItemId, getStorageItemId } from './nav'
+import { SidebarTreeSortingOrder } from '../shared/lib/sidebar'
 
 export type ViewModeType = 'edit' | 'preview' | 'split'
 
@@ -20,6 +21,7 @@ export interface GeneralStatus {
     iconUrl?: string
   }[]
   showingNoteContextMenu: boolean
+  sidebarTreeSortingOrder: SidebarTreeSortingOrder
 }
 
 function loadGeneralStatus(): Partial<GeneralStatus> {
@@ -48,6 +50,7 @@ const baseGeneralStatus: GeneralStatus = {
   sideNavOpenedItemList: [],
   boostHubTeams: [],
   showingNoteContextMenu: false,
+  sidebarTreeSortingOrder: 'last-updated',
 }
 
 function useGeneralStatusStore() {

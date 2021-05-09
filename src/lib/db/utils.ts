@@ -49,12 +49,27 @@ export function getStorageHref(storage: NoteStorage, query?: any): string {
   return `/app/storage/${storage.id}?${query}`
 }
 
+export function getTimelineHref(storage: NoteStorage, query?: any): string {
+  return `/app/storage/${storage.id}/timeline?${query}`
+}
+
 export function getNoteTitle(note: NoteDoc, fallback: string) {
   return note.title != '' ? note.title : fallback
 }
 
 export function getNoteHref(note: NoteDoc, storageId: string) {
   return `/app/storages/${storageId}/notes/${note._id}`
+}
+
+export function getFolderName(
+  folderDoc: FolderDoc,
+  fallback = 'Untitled'
+): string {
+  const folderName = getFolderNameFromPathname(getFolderPathname(folderDoc._id))
+  if (folderName != null) {
+    return folderName
+  }
+  return fallback
 }
 
 export function getFolderId(pathname: string): string {

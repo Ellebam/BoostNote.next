@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from '../../lib/router'
 import { useDb } from '../../lib/db'
 import { useDialog, DialogIconTypes } from '../../lib/dialog'
@@ -11,7 +11,7 @@ import {
   addIpcListener,
   removeIpcListener,
 } from '../../lib/electronOnly'
-import { values } from '../../lib/db/utils'
+import { getTimelineHref, values } from '../../lib/db/utils'
 import { MenuItemConstructorOptions } from 'electron'
 import { useStorageRouter } from '../../lib/storageRouter'
 import { useRouteParams } from '../../lib/routeParams'
@@ -23,6 +23,33 @@ import { useTranslation } from 'react-i18next'
 import { useSearchModal } from '../../lib/searchModal'
 import styled from '../../shared/lib/styled'
 import Button from '../../shared/components/atoms/Button'
+import Sidebar from '../../shared/components/organisms/Sidebar'
+import cc from 'classcat'
+import {
+  SidebarState,
+  SidebarTreeSortingOrders,
+} from '../../shared/lib/sidebar'
+import { MenuTypes, useContextMenu } from '../../shared/lib/stores/contextMenu'
+import ButtonGroup from '../../shared/components/atoms/ButtonGroup'
+import { appIsElectron } from '../../lib/platform'
+import { SidebarToolbarRow } from '../../shared/components/organisms/Sidebar/molecules/SidebarToolbar'
+import { mapToolbarRows } from '../../lib/v2/mappers/local/sidebarRows'
+import { mapStorages } from '../../lib/v2/mappers/local/sidebarStorages'
+import { buildSpacesBottomRows } from '../../cloud/components/Application'
+import { useGeneralStatus } from '../../lib/generalStatus'
+import { mapHistory } from '../../lib/v2/mappers/local/sidebarHistory'
+import { SidebarSearchResult } from '../../shared/components/organisms/Sidebar/molecules/SidebarSearch'
+import { AppUser } from '../../shared/lib/mappers/users'
+import useApi from '../../shared/lib/hooks/useApi'
+import { GetSearchResultsRequestQuery } from '../../cloud/api/search'
+import { useDebounce } from 'react-use'
+import { NoteSearchData } from '../../lib/search/search'
+import {
+  getSearchResultItems,
+  mapSearchResults,
+} from '../../lib/v2/mappers/local/searchResults'
+import { useLocalUI } from '../../lib/v2/hooks/local/useLocalUI'
+import { mapTree } from '../../lib/v2/mappers/local/sidebarTree'
 
 interface NoteStorageNavigatorProps {
   storage: NoteStorage
@@ -39,7 +66,7 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
   const { prompt, messageBox } = useDialog()
   const { push, hash } = useRouter()
   const { navigate } = useStorageRouter()
-  const { togglePreferencesModal } = usePreferences()
+  const { openTab, togglePreferencesModal } = usePreferences()
   const routeParams = useRouteParams()
   const storageId = storage.id
   const { t } = useTranslation()
@@ -243,6 +270,108 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
     }
   }, [toggleShowSearchModal])
 
+  // Sidebar related items - properly implement after mapping
+  const { generalStatus, setGeneralStatus } = useGeneralStatus()
+  const { popup } = useContextMenu()
+  const [showSpaces, setShowSpaces] = useState(false)
+  const [sidebarState, setSidebarState] = useState<SidebarState | undefined>(
+    'tree'
+  )
+  const [sidebarSearchQuery, setSidebarSearchQuery] = useState('')
+
+  const openState = useCallback((state: SidebarState) => {
+    setSidebarState((prev) => (prev === state ? undefined : state))
+  }, [])
+  const toolbarRows: SidebarToolbarRow[] = useMemo(() => {
+    return mapToolbarRows(
+      showSpaces,
+      setShowSpaces,
+      openState,
+      openTab,
+      sidebarState
+    )
+  }, [openState, openTab, showSpaces, sidebarState])
+
+  const localSpaces = values(storageMap)
+  const storages = useMemo(() => {
+    return mapStorages(push, localSpaces, storage)
+  }, [localSpaces, push, storage])
+  const sidebarResize = useCallback(
+    (width: number) => setGeneralStatus({ sideBarWidth: width }),
+    [setGeneralStatus]
+  )
+  const setSearchQuery = useCallback((val: string) => {
+    setSidebarSearchQuery(val)
+  }, [])
+
+  const historyItems = useMemo(() => {
+    return mapHistory(
+      // implement history items for search
+      [],
+      push,
+      storage.noteMap,
+      storage.folderMap,
+      storage
+    )
+  }, [push, storage])
+  const { submit: submitSearch, sending: fetchingSearchResults } = useApi<
+    { query: any },
+    { results: NoteSearchData[] }
+  >({
+    api: ({ query }: { query: any }) => {
+      return new Promise(() => {
+        return { results: getSearchResultItems(storage, query) }
+      })
+    },
+    cb: ({ results }) =>
+      setSearchResults(mapSearchResults(results, push, storage)),
+  })
+
+  const [isNotDebouncing, cancel] = useDebounce(
+    async () => {
+      if (storage == null || sidebarSearchQuery.trim() === '') {
+        return
+      }
+
+      if (fetchingSearchResults) {
+        cancel()
+      }
+
+      const searchParams = sidebarSearchQuery
+        .split(' ')
+        .reduce<GetSearchResultsRequestQuery>(
+          (params, str) => {
+            if (str === '--body') {
+              params.body = true
+              return params
+            }
+            if (str === '--title') {
+              params.title = true
+              return params
+            }
+            params.query = params.query == '' ? str : `${params.query} ${str}`
+            return params
+          },
+          { query: '' }
+        )
+
+      // todo: implement search history for local space
+      // addToSearchHistory(searchParams.query)
+      await submitSearch({ query: searchParams })
+    },
+    600,
+    [sidebarSearchQuery]
+  )
+
+  const { openNewDocForm } = useLocalUI()
+
+  const [searchResults, setSearchResults] = useState<SidebarSearchResult[]>([])
+  const usersMap = new Map<string, AppUser>()
+
+  const tree = useMemo(() => {
+    return mapTree()
+  }, [])
+
   return (
     <NavigatorContainer onContextMenu={openStorageContextMenu}>
       <TopButton onClick={openStorageContextMenu}>
@@ -272,6 +401,115 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
       <ScrollableContainer>
         <BookmarkNavigatorFragment storage={storage} />
         <NavigatorSeparator />
+        {/* Here is side bar */}
+        <Sidebar
+          className={cc(['application__sidebar'])}
+          showToolbar={!appIsElectron}
+          showSpaces={showSpaces}
+          onSpacesBlur={() => setShowSpaces(false)}
+          toolbarRows={toolbarRows}
+          spaces={storages}
+          //  maybe remove this and provide nothing?
+          spaceBottomRows={buildSpacesBottomRows(push)}
+          sidebarExpandedWidth={generalStatus.sideBarWidth}
+          sidebarState={sidebarState}
+          tree={tree}
+          sidebarResize={sidebarResize}
+          searchQuery={sidebarSearchQuery}
+          setSearchQuery={setSearchQuery}
+          // todo: add search history for local space (or use general search history when a shared component)
+          searchHistory={[]}
+          recentPages={historyItems}
+          treeControls={[
+            {
+              icon:
+                generalStatus.sidebarTreeSortingOrder === 'a-z'
+                  ? SidebarTreeSortingOrders.aZ.icon
+                  : generalStatus.sidebarTreeSortingOrder === 'z-a'
+                  ? SidebarTreeSortingOrders.zA.icon
+                  : generalStatus.sidebarTreeSortingOrder === 'last-updated'
+                  ? SidebarTreeSortingOrders.lastUpdated.icon
+                  : SidebarTreeSortingOrders.dragDrop.icon,
+              onClick: (event) => {
+                popup(
+                  event,
+                  Object.values(SidebarTreeSortingOrders).map((sort) => {
+                    return {
+                      type: MenuTypes.Normal,
+                      onClick: () =>
+                        setGeneralStatus({
+                          sidebarTreeSortingOrder: sort.value,
+                        }),
+                      label: sort.label,
+                      icon: sort.icon,
+                      active:
+                        sort.value === generalStatus.sidebarTreeSortingOrder,
+                    }
+                  })
+                )
+              },
+            },
+          ]}
+          treeTopRows={
+            storage == null ? null : (
+              <>
+                <ButtonGroup>
+                  <Button
+                    variant='primary'
+                    size='sm'
+                    iconPath={mdiTextBoxPlusOutline}
+                    id='sidebar-newdoc-btn'
+                    iconSize={16}
+                    onClick={() =>
+                      openNewDocForm({
+                        parentFolderPathname: '/',
+                        storageId: storage.id,
+                      })
+                    }
+                  >
+                    Create new doc
+                  </Button>
+                  {/*<Button*/}
+                  {/*  variant='primary'*/}
+                  {/*  size='sm'*/}
+                  {/*  iconPath={mdiDotsHorizontal}*/}
+                  {/*  onClick={(event) => {*/}
+                  {/*    event.preventDefault()*/}
+                  {/*    popup(event, [*/}
+                  {/*      {*/}
+                  {/*        icon: mdiPencilBoxMultipleOutline,*/}
+                  {/*        type: MenuTypes.Normal,*/}
+                  {/*        label: 'Use a template',*/}
+                  {/*        onClick: () =>*/}
+                  {/*          // openModal(<TemplatesModal />, { size: 'large' }),*/}
+                  {/*      },*/}
+                  {/*    ])*/}
+                  {/*  }}*/}
+                  {/*/>*/}
+                </ButtonGroup>
+              </>
+            )
+          }
+          searchResults={searchResults}
+          // no users?
+
+          users={usersMap}
+          // todo: timeline rows implementation!
+          timelineRows={[]}
+          timelineMore={
+            storage != null
+              ? {
+                  variant: 'primary',
+                  // todo: implement timeline page - push open page with timeline
+                  onClick: () => push(getTimelineHref(storage)),
+                }
+              : undefined
+          }
+          sidebarSearchState={{
+            fetching: fetchingSearchResults,
+            isNotDebouncing: isNotDebouncing() === true,
+          }}
+        />
         <StorageNavigatorFragment storage={storage} />
       </ScrollableContainer>
     </NavigatorContainer>

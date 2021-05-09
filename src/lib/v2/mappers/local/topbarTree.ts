@@ -96,6 +96,6 @@ export function mapTopBarTree(
       items.set(parentId, parentArray)
     })
 
-  console.log('Got items', items)
+  // console.log('Got items', items)
   return items
 }

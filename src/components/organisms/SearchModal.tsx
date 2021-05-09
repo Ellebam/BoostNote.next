@@ -7,8 +7,7 @@ import React, {
 } from 'react'
 import { NoteDoc, NoteStorage } from '../../lib/db/types'
 import { useEffectOnce, useDebounce } from 'react-use'
-import { excludeNoteIdPrefix, values } from '../../lib/db/utils'
-import { escapeRegExp } from '../../lib/string'
+import { excludeNoteIdPrefix } from '../../lib/db/utils'
 import { useSearchModal } from '../../lib/searchModal'
 import { flexCenter, textOverflow } from '../../lib/styled/styleFunctions'
 import { mdiMagnify, mdiClose, mdiCardTextOutline } from '@mdi/js'
@@ -16,13 +15,11 @@ import Icon from '../atoms/Icon'
 import SearchModalNoteResultItem from '../molecules/SearchModalNoteResultItem'
 import { useStorageRouter } from '../../lib/storageRouter'
 import {
-  getMatchData,
   getSearchResultKey,
   NoteSearchData,
   SearchResult,
   SEARCH_DEBOUNCE_TIMEOUT,
   GLOBAL_MERGE_SAME_LINE_RESULTS_INTO_ONE,
-  TagSearchResult,
 } from '../../lib/search/search'
 import CustomizedCodeEditor from '../atoms/CustomizedCodeEditor'
 import CodeMirror from 'codemirror'
@@ -34,6 +31,10 @@ import {
   borderBottom,
   borderTop,
 } from '../../shared/lib/styled/styleFunctions'
+import {
+  getSearchResultItems,
+  getSearchRegex,
+} from '../../lib/v2/mappers/local/searchResults'
 
 interface SearchModalProps {
   storage: NoteStorage
@@ -68,10 +69,6 @@ const SearchModal = ({ storage }: SearchModalProps) => {
     focusTextAreaInput()
   })
 
-  const getSearchRegex = useCallback((rawSearch) => {
-    return new RegExp(escapeRegExp(rawSearch), 'gim')
-  }, [])
-
   const { navigateToNoteWithEditorFocus: _navFocusEditor } = useStorageRouter()
 
   const navFocusEditor = useCallback(
@@ -89,48 +86,13 @@ const SearchModal = ({ storage }: SearchModalProps) => {
         setSearching(false)
         return
       }
-      const notes = values(storage.noteMap)
-      const regex = getSearchRegex(searchValue)
-      // todo: [komediruzecki-01/12/2020] Here we could have buttons (toggles) for content/title/tag search! (by tag color?)
-      //  for now, it's only content search
-      const searchResultData: NoteSearchData[] = []
-      notes.forEach((note) => {
-        if (note.trashed) {
-          return
-        }
-        const matchDataContent = getMatchData(note.content, regex)
-
-        const titleMatchResult = note.title.match(regex)
-
-        const titleSearchResult =
-          titleMatchResult != null ? titleMatchResult[0] : null
-        const tagSearchResults = note.tags.reduce<TagSearchResult[]>(
-          (searchResults, tagName) => {
-            const matchResult = tagName.match(regex)
-            if (matchResult != null) {
-              searchResults.push({
-                tagName,
-                matchString: matchResult[0],
-              })
-            }
-            return searchResults
-          },
-          []
-        )
-
-        if (
-          titleSearchResult ||
-          tagSearchResults.length > 0 ||
-          matchDataContent.length > 0
-        ) {
-          const noteResultKey = excludeNoteIdPrefix(note._id)
-          noteToSearchResultMap[noteResultKey] = matchDataContent
-          searchResultData.push({
-            titleSearchResult,
-            tagSearchResults,
-            note: note,
-            results: matchDataContent,
-          })
+      const searchResultData = getSearchResultItems(storage, searchValue)
+      searchResultData.forEach((searchResult) => {
+        if (searchResult.item.type === 'note') {
+          const noteResultKey = excludeNoteIdPrefix(
+            searchResult.item.result._id
+          )
+          noteToSearchResultMap[noteResultKey] = searchResult.results
         }
       })
 
@@ -300,19 +262,23 @@ const SearchModal = ({ storage }: SearchModalProps) => {
             <div className='empty'>No Results</div>
           )}
           {!searching &&
-            resultList.map((result) => {
+            resultList.map((searchData) => {
+              if (searchData.item.type !== 'note') {
+                return
+              }
+              const noteResult: NoteDoc = searchData.item.result
               return (
                 <SearchModalNoteResultItem
-                  key={result.note._id}
-                  note={result.note}
+                  key={noteResult._id}
+                  note={noteResult}
                   selectedItemId={
-                    selectedNote != null && selectedNote._id == result.note._id
+                    selectedNote != null && selectedNote._id == noteResult._id
                       ? selectedItemId
                       : '-1'
                   }
-                  titleSearchResult={result.titleSearchResult}
-                  tagSearchResults={result.tagSearchResults}
-                  searchResults={result.results}
+                  titleSearchResult={searchData.titleSearchResult}
+                  tagSearchResults={searchData.tagSearchResults}
+                  searchResults={searchData.results}
                   updateSelectedItem={updateSelectedItems}
                   navigateToNote={navigateToNote}
                   navigateToEditorFocused={navFocusEditor}
