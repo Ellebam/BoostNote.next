@@ -53,6 +53,10 @@ export function getTimelineHref(storage: NoteStorage, query?: any): string {
   return `/app/storage/${storage.id}/timeline?${query}`
 }
 
+export function getTagHref(storage: NoteStorage, tagName: string): string {
+  return `/app/storage/${storage.id}/${tagName}`
+}
+
 export function getNoteTitle(note: NoteDoc, fallback: string) {
   return note.title != '' ? note.title : fallback
 }
