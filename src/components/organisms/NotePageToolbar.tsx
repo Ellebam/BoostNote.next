@@ -1,22 +1,16 @@
-import React, {
-  useCallback,
-  MouseEventHandler,
-  useEffect,
-  useMemo,
-} from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import styled from '../../lib/styled'
 import { NoteDoc, NoteStorage } from '../../lib/db/types'
 import {
   mdiViewSplitVertical,
   mdiStarOutline,
   mdiStar,
-  mdiEye,
   mdiPencil,
   mdiChevronRight,
   mdiChevronLeft,
+  mdiEyeOutline,
 } from '@mdi/js'
-import { borderBottom, flexCenter } from '../../lib/styled/styleFunctions'
-import ToolbarIconButton from '../atoms/ToolbarIconButton'
+import { borderBottom } from '../../lib/styled/styleFunctions'
 import { useGeneralStatus } from '../../lib/generalStatus'
 import {
   exportNoteAsHtmlFile,
@@ -29,7 +23,6 @@ import { useTranslation } from 'react-i18next'
 import { useDb } from '../../lib/db'
 import { useToast } from '../../lib/toast'
 import {
-  openContextMenu,
   showSaveDialog,
   getPathByName,
   addIpcListener,
@@ -44,7 +37,6 @@ import { mapTopbarBreadcrumbs } from '../../lib/v2/mappers/local/topbarBreadcrum
 import { useRouter } from '../../lib/router'
 import { mapTopBarTree } from '../../lib/v2/mappers/local/topbarTree'
 import { useLocalUI } from '../../lib/v2/hooks/local/useLocalUI'
-import NotePageToolbarFolderHeader from '../molecules/NotePageToolbarFolderHeader'
 import { useRouteParams } from '../../lib/routeParams'
 
 const Container = styled.div`
@@ -63,10 +55,6 @@ const Container = styled.div`
   }
 `
 
-const Control = styled.div`
-  ${flexCenter}
-`
-
 interface NotePageToolbarProps {
   storage: NoteStorage
   note?: NoteDoc
@@ -75,7 +63,7 @@ interface NotePageToolbarProps {
 const NotePageToolbar = ({ storage, note }: NotePageToolbarProps) => {
   const { t } = useTranslation()
   const { bookmarkNote, unbookmarkNote } = useDb()
-  const { setPreferences, preferences } = usePreferences()
+  const { preferences } = usePreferences()
 
   const editorControlMode = preferences['editor.controlMode']
 
@@ -85,7 +73,7 @@ const NotePageToolbar = ({ storage, note }: NotePageToolbarProps) => {
   const { pushMessage } = useToast()
 
   const storageId = storage.id
-  // const storageName = storage.name
+  const routeParams = useRouteParams()
 
   const noteId = note?._id
 
@@ -277,34 +265,34 @@ const NotePageToolbar = ({ storage, note }: NotePageToolbarProps) => {
     storage.attachmentMap,
   ])
 
-  const openTopbarSwitchSelectorContextMenu: MouseEventHandler<HTMLDivElement> = useCallback(
-    (event) => {
-      event.preventDefault()
-      openContextMenu({
-        menuItems: [
-          {
-            type: 'normal',
-            label: 'Use 2 toggles layout',
-            click: () => {
-              setPreferences({
-                'editor.controlMode': '2-toggles',
-              })
-            },
-          },
-          {
-            type: 'normal',
-            label: 'Use 3 buttons layout',
-            click: () => {
-              setPreferences({
-                'editor.controlMode': '3-buttons',
-              })
-            },
-          },
-        ],
-      })
-    },
-    [setPreferences]
-  )
+  // const openTopbarSwitchSelectorContextMenu: MouseEventHandler<HTMLDivElement> = useCallback(
+  //   (event) => {
+  //     event.preventDefault()
+  //     openContextMenu({
+  //       menuItems: [
+  //         {
+  //           type: 'normal',
+  //           label: 'Use 2 toggles layout',
+  //           click: () => {
+  //             setPreferences({
+  //               'editor.controlMode': '2-toggles',
+  //             })
+  //           },
+  //         },
+  //         {
+  //           type: 'normal',
+  //           label: 'Use 3 buttons layout',
+  //           click: () => {
+  //             setPreferences({
+  //               'editor.controlMode': '3-buttons',
+  //             })
+  //           },
+  //         },
+  //       ],
+  //     })
+  //   },
+  //   [setPreferences]
+  // )
 
   const toggleBookmark = useCallback(() => {
     if (note == null) {
@@ -332,22 +320,55 @@ const NotePageToolbar = ({ storage, note }: NotePageToolbarProps) => {
     })
   }, [setGeneralStatus])
 
-  const noteFolder = useMemo(() => {
+  const folderPathname =
+    note == null
+      ? routeParams.name === 'storages.notes'
+        ? routeParams.folderPathname
+        : '/'
+      : note.folderPathname
+
+  const noteFolderOrFolder = useMemo(() => {
     if (note != null) {
       return storage.folderMap[note.folderPathname]
+    } else if (routeParams.name === 'storages.notes') {
+      return storage.folderMap[folderPathname]
     } else {
       return undefined
     }
-  }, [note, storage.folderMap])
+  }, [folderPathname, note, routeParams.name, storage.folderMap])
 
   const topbar = useMemo(() => {
+    const sharedControls = [
+      ...(note != null
+        ? [
+            {
+              variant: 'icon' as const,
+              iconPath: note.data.bookmarked ? mdiStar : mdiStarOutline,
+              tooltip: t(
+                `bookmark.${!note.data.bookmarked ? 'add' : 'remove'}`
+              ),
+              active: !!note.data.bookmarked,
+              onClick: () => toggleBookmark(),
+            },
+          ]
+        : []),
+      {
+        variant: 'icon' as const,
+        iconPath: generalStatus.showingNoteContextMenu
+          ? mdiChevronRight
+          : mdiChevronLeft,
+        tooltip: 'Open Context View',
+        active: generalStatus.showingNoteContextMenu,
+        onClick: () => toggleContextView(),
+      },
+    ]
     return {
       ...({
         breadcrumbs: mapTopbarBreadcrumbs(
           storage.folderMap,
           storage,
           push,
-          { pageNote: note, pageFolder: noteFolder },
+          { pageNote: note, pageFolder: noteFolderOrFolder },
           openRenameFolderForm,
           openRenameNoteForm,
           openNewDocForm,
@@ -363,42 +384,99 @@ const NotePageToolbar = ({ storage, note }: NotePageToolbarProps) => {
         goBack,
         goForward,
       },
+      controls:
+        note == null
+          ? []
+          : editorControlMode === '3-buttons'
+          ? [
+              {
+                variant: 'icon' as const,
+                iconPath: mdiPencil,
+                tooltip: t('note.edit'),
+                active: noteViewMode === 'edit',
+                onClick: () => selectEditMode(),
+              },
+              {
+                variant: 'icon' as const,
+                iconPath: mdiViewSplitVertical,
+                tooltip: t('note.splitView'),
+                active: noteViewMode === 'split',
+                onClick: () => selectSplitMode(),
+              },
+              {
+                variant: 'icon' as const,
+                iconPath: mdiEyeOutline,
+                tooltip: t('note.preview'),
+                active: noteViewMode === 'preview',
+                onClick: () => selectPreviewMode(),
+              },
+              {
+                variant: 'icon' as const,
+                iconPath: note.data.bookmarked ? mdiStar : mdiStarOutline,
+                active: !!note.data.bookmarked,
+                onClick: () => toggleBookmark(),
+              },
+              ...sharedControls,
+            ]
+          : [
+              ...(noteViewMode !== 'preview'
+                ? [
+                    {
+                      variant: 'icon' as const,
+                      iconPath: mdiViewSplitVertical,
+                      tooltip: 'Toggle Split',
+                      active: noteViewMode === 'split',
+                      onClick: () => toggleSplitEditMode(),
+                    },
+                  ]
+                : []),
+              noteViewMode !== 'preview'
+                ? {
+                    variant: 'icon' as const,
+                    iconPath: mdiEyeOutline,
+                    tooltip: t('note.preview'),
+                    onClick: () => selectPreviewMode(),
+                  }
+                : {
+                    variant: 'icon' as const,
+                    iconPath: mdiPencil,
+                    tooltip: t('note.edit'),
+                    onClick: () => selectEditMode(),
+                  },
+              ...sharedControls,
+            ],
     }
   }, [
     deleteFolder,
     deleteOrTrashNote,
+    editorControlMode,
+    generalStatus.showingNoteContextMenu,
     goBack,
     goForward,
     note,
-    noteFolder,
+    noteFolderOrFolder,
+    noteViewMode,
     openNewDocForm,
     openNewFolderForm,
     openRenameFolderForm,
     openRenameNoteForm,
     openWorkspaceEditForm,
     push,
+    selectEditMode,
+    selectPreviewMode,
+    selectSplitMode,
     storage,
+    t,
+    toggleBookmark,
+    toggleContextView,
+    toggleSplitEditMode,
     topbarTree,
   ])
 
-  const routeParams = useRouteParams()
-  const folderPathname =
-    note == null
-      ? routeParams.name === 'storages.notes'
-        ? routeParams.folderPathname
-        : '/'
-      : note.folderPathname
-
   return (
     <Container>
-      {/* todo: implement no note breadcrumbs! */}
       <div className='left'>
-        {note == null ? (
-          <NotePageToolbarFolderHeader
-            storageId={storageId}
-            folderPathname={folderPathname}
-          />
-        ) : topbar != null ? (
+        {topbar != null ? (
           <Topbar
             tree={topbar.tree}
             controls={topbar.controls}
@@ -412,71 +490,6 @@ const NotePageToolbar = ({ storage, note }: NotePageToolbarProps) => {
           <div className='topbar topbar--placeholder'>{topbar}</div>
         )}
       </div>
-
-      {note != null && (
-        <Control onContextMenu={openTopbarSwitchSelectorContextMenu}>
-          {editorControlMode === '3-buttons' ? (
-            <>
-              <ToolbarIconButton
-                active={noteViewMode === 'edit'}
-                title={t('note.edit')}
-                onClick={selectEditMode}
-                iconPath={mdiPencil}
-              />
-              <ToolbarIconButton
-                active={noteViewMode === 'split'}
-                title={t('note.splitView')}
-                onClick={selectSplitMode}
-                iconPath={mdiViewSplitVertical}
-              />
-              <ToolbarIconButton
-                active={noteViewMode === 'preview'}
-                title={t('note.preview')}
-                onClick={selectPreviewMode}
-                iconPath={mdiEye}
-              />
-            </>
-          ) : (
-            <>
-              {noteViewMode !== 'preview' && (
-                <ToolbarIconButton
-                  active={noteViewMode === 'split'}
-                  title='Toggle Split'
-                  iconPath={mdiViewSplitVertical}
-                  onClick={toggleSplitEditMode}
-                />
-              )}
-              {noteViewMode !== 'preview' ? (
-                <ToolbarIconButton
-                  iconPath={mdiEye}
-                  onClick={selectPreviewMode}
-                />
-              ) : (
-                <ToolbarIconButton
-                  iconPath={mdiPencil}
-                  onClick={selectEditMode}
-                />
-              )}
-            </>
-          )}
-          <ToolbarIconButton
-            active={!!note.data.bookmarked}
-            title={t(`bookmark.${!note.data.bookmarked ? 'add' : 'remove'}`)}
-            onClick={toggleBookmark}
-            iconPath={note.data.bookmarked ? mdiStar : mdiStarOutline}
-          />
-          <ToolbarIconButton
-            active={generalStatus.showingNoteContextMenu}
-            title='Open Context View'
-            onClick={toggleContextView}
-            iconPath={
-              generalStatus.showingNoteContextMenu
-                ? mdiChevronRight
-                : mdiChevronLeft
-            }
-          />
-        </Control>
-      )}
     </Container>
   )
 }
