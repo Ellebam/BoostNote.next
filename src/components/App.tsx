@@ -50,6 +50,7 @@ import Modal from '../shared/components/organisms/Modal'
 import GlobalStyle from '../shared/components/atoms/GlobalStyle'
 import { DialogIconTypes, useDialog } from '../shared/lib/stores/dialog'
 import Dialog from '../shared/components/organisms/Dialog/Dialog'
+import ContextMenu from '../shared/components/molecules/ContextMenu'
 
 const LoadingText = styled.div`
   margin: 30px;
@@ -390,6 +391,7 @@ const App = () => {
           <LoadingText>Loading Data...</LoadingText>
         )}
         <Modal />
+        <ContextMenu />
         <GlobalStyle />
         <Dialog />
         <PreferencesModal />

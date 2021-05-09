@@ -268,7 +268,7 @@ export function useLocalUI() {
             ? folderPathname.substr(1)
             : folderPathname
         }'`,
-        message: `Are you sure you want to remove this folder and its notes`,
+        message: `Are you sure you want to remove this folder and its notes?`,
         iconType: DialogIconTypes.Warning,
         buttons: [
           {
