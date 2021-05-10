@@ -35,21 +35,26 @@ import { appIsElectron } from '../../lib/platform'
 import { SidebarToolbarRow } from '../../shared/components/organisms/Sidebar/molecules/SidebarToolbar'
 import { mapToolbarRows } from '../../lib/v2/mappers/local/sidebarRows'
 import { mapStorages } from '../../lib/v2/mappers/local/sidebarStorages'
-import { buildSpacesBottomRows } from '../../cloud/components/Application'
 import { useGeneralStatus } from '../../lib/generalStatus'
 import { mapHistory } from '../../lib/v2/mappers/local/sidebarHistory'
 import { SidebarSearchResult } from '../../shared/components/organisms/Sidebar/molecules/SidebarSearch'
 import { AppUser } from '../../shared/lib/mappers/users'
 import useApi from '../../shared/lib/hooks/useApi'
-import { GetSearchResultsRequestQuery } from '../../cloud/api/search'
 import { useDebounce } from 'react-use'
-import { NoteSearchData } from '../../lib/search/search'
+import {
+  GetSearchResultsRequestQuery,
+  NoteSearchData,
+} from '../../lib/search/search'
 import {
   getSearchResultItems,
   mapSearchResults,
 } from '../../lib/v2/mappers/local/searchResults'
 import { useLocalUI } from '../../lib/v2/hooks/local/useLocalUI'
 import { mapTree } from '../../lib/v2/mappers/local/sidebarTree'
+import { useSidebarCollapse } from '../../cloud/lib/stores/sidebarCollapse'
+import { useLocalDB } from '../../lib/v2/hooks/local/useLocalDB'
+import { useLocalDnd } from '../../lib/v2/hooks/local/useLocalDnd'
+import { buildSpacesBottomRows } from '../../cloud/components/Application'
 
 interface NoteStorageNavigatorProps {
   storage: NoteStorage
@@ -57,14 +62,14 @@ interface NoteStorageNavigatorProps {
 
 const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
   const {
+    createNote,
     createStorage,
     storageMap,
-    createNote,
     renameStorage,
     removeStorage,
   } = useDb()
   const { prompt, messageBox } = useDialog()
-  const { push, hash } = useRouter()
+  const { push, hash, pathname } = useRouter()
   const { navigate } = useStorageRouter()
   const { openTab, togglePreferencesModal } = usePreferences()
   const routeParams = useRouteParams()
@@ -363,14 +368,111 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
     [sidebarSearchQuery]
   )
 
-  const { openNewDocForm } = useLocalUI()
-
   const [searchResults, setSearchResults] = useState<SidebarSearchResult[]>([])
   const usersMap = new Map<string, AppUser>()
+  const [initialLoadDone] = useState(true)
+  const {
+    sideBarOpenedLinksIdsSet,
+    sideBarOpenedFolderIdsSet,
+    sideBarOpenedWorkspaceIdsSet,
+    // toggleItem,
+    // unfoldItem,
+    // foldItem,
+  } = useSidebarCollapse()
 
+  // const getFoldEvents = useCallback(
+  //   (type: CollapsableType, key: string) => {
+  //     return {
+  //       fold: () => foldItem(type, key),
+  //       unfold: () => unfoldItem(type, key),
+  //       toggle: () => toggleItem(type, key),
+  //     }
+  //   },
+  //   [unfoldItem, foldItem]
+  // )
+  const {
+    updateFolder,
+    updateNote,
+    createFolder,
+    createNote: createNoteApi,
+    deleteFolderApi,
+    toggleNoteTrashed,
+    toggleNoteBookmark,
+    // createStorageApi,
+    deleteStorageApi,
+  } = useLocalDB()
+  const {
+    openStorageEditForm,
+    openNewDocForm,
+    openRenameFolderForm,
+    openRenameNoteForm,
+    // deleteWorkspace,
+  } = useLocalUI()
+  const { draggedResource, dropInDocOrFolder, dropInStorage } = useLocalDnd()
+  // const { openModal } = useModal()
   const tree = useMemo(() => {
-    return mapTree()
-  }, [])
+    // draggedResource: React.MutableRefObject<NavResource | undefined>,
+    // dropInFolderOrDoc: (
+    // targetedResource: NavResource,
+    // targetedPosition: SidebarDragState
+    // ) => void,
+    //   dropInStorage: (id: string) => void,
+    //   openRenameFolderForm: (storageId: string, folder: FolderDoc) => void,
+    //   openRenameNoteForm: (storageId: string, note: NoteDoc) => void,
+    //   openStorageEditForm: (storage: NoteStorage) => void
+    return mapTree(
+      initialLoadDone,
+      generalStatus.sidebarTreeSortingOrder,
+      storage,
+      storage.noteMap,
+      storage.folderMap,
+      storage.tagMap,
+      pathname,
+      sideBarOpenedLinksIdsSet,
+      sideBarOpenedFolderIdsSet,
+      sideBarOpenedWorkspaceIdsSet,
+      // toggleItem,
+      // getFoldEvents,
+      push,
+      // (content: JSX.Element) => openModal(content),
+      toggleNoteBookmark,
+      // createStorageApi,
+      deleteStorageApi,
+      toggleNoteTrashed,
+      deleteFolderApi,
+      createFolder,
+      createNoteApi,
+      draggedResource,
+      dropInDocOrFolder,
+      (id: string) => dropInStorage(id, storage.name, updateFolder, updateNote),
+      openRenameFolderForm,
+      openRenameNoteForm,
+      openStorageEditForm
+    )
+  }, [
+    createFolder,
+    createNoteApi,
+    deleteFolderApi,
+    deleteStorageApi,
+    draggedResource,
+    dropInDocOrFolder,
+    dropInStorage,
+    generalStatus.sidebarTreeSortingOrder,
+    initialLoadDone,
+    openRenameFolderForm,
+    openRenameNoteForm,
+    openStorageEditForm,
+    pathname,
+    push,
+    sideBarOpenedFolderIdsSet,
+    sideBarOpenedLinksIdsSet,
+    sideBarOpenedWorkspaceIdsSet,
+    storage,
+    toggleNoteBookmark,
+    toggleNoteTrashed,
+    updateFolder,
+    updateNote,
+  ])
 
   return (
     <NavigatorContainer onContextMenu={openStorageContextMenu}>

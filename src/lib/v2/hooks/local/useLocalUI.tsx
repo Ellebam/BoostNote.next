@@ -35,7 +35,7 @@ export function useLocalUI() {
   } = useDb()
   const { pushMessage } = useToast()
 
-  const openWorkspaceEditForm = useCallback(
+  const openStorageEditForm = useCallback(
     (storage: NoteStorage) => {
       openModal(
         <BasicInputFormLocal
@@ -344,7 +344,7 @@ export function useLocalUI() {
   )
 
   return {
-    openWorkspaceEditForm,
+    openStorageEditForm,
     openNewDocForm,
     openNewFolderForm,
     openRenameFolderForm,

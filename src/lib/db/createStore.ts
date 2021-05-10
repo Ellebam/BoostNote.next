@@ -11,6 +11,7 @@ import {
   TagDoc,
   NoteStorageData,
   TagDocEditibleProps,
+  FolderDoc,
 } from './types'
 import { useState, useCallback } from 'react'
 import ow from 'ow'
@@ -47,7 +48,10 @@ export interface DbStore {
   ) => Promise<NoteStorage>
   removeStorage: (id: string) => Promise<void>
   renameStorage: (id: string, name: string) => void
-  createFolder: (storageName: string, pathname: string) => Promise<void>
+  createFolder: (
+    storageName: string,
+    pathname: string
+  ) => Promise<FolderDoc | undefined>
   renameFolder: (
     storageName: string,
     pathname: string,
@@ -312,6 +316,7 @@ export function createDbStoreCreator(
             })
           })
         )
+        return folder
       },
       [storageMap, setStorageMap, pushMessage]
     )

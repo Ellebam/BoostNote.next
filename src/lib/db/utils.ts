@@ -57,6 +57,10 @@ export function getTagHref(storage: NoteStorage, tagName: string): string {
   return `/app/storage/${storage.id}/${tagName}`
 }
 
+export function getAttachmentsHref(storage: NoteStorage): string {
+  return `/app/storage/${storage.id}/attachments`
+}
+
 export function getNoteTitle(note: NoteDoc, fallback: string) {
   return note.title != '' ? note.title : fallback
 }

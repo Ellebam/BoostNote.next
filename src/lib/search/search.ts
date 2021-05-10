@@ -57,6 +57,15 @@ export const SEARCH_DEBOUNCE_TIMEOUT = 350
 export const GLOBAL_MERGE_SAME_LINE_RESULTS_INTO_ONE = true
 export const LOCAL_MERGE_SAME_LINE_RESULTS_INTO_ONE = false
 
+export interface GetSearchResultsRequestQuery {
+  query: string
+  body?: boolean
+  title?: boolean
+  parentFolderId?: string
+  tagId?: string
+  archived?: boolean
+}
+
 export function getSearchResultKey(noteId: string, searchItemId: string) {
   return `${noteId}${searchItemId}`
 }

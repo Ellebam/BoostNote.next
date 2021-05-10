@@ -8,7 +8,6 @@ import {
   mdiArchiveOutline,
   mdiFileDocumentOutline,
   mdiFilePlusOutline,
-  mdiFolderOutline,
   mdiFolderPlusOutline,
   mdiLock,
   mdiPaperclip,
@@ -18,7 +17,6 @@ import {
   mdiStarOutline,
   mdiTag,
   mdiTrashCanOutline,
-  mdiWeb,
 } from '@mdi/js'
 import { MenuItem, MenuTypes } from '../../../../shared/lib/stores/contextMenu'
 import { SidebarDragState } from '../../../../shared/lib/dnd'
@@ -31,13 +29,13 @@ import React from 'react'
 import {
   FolderDoc,
   NoteDoc,
-  NoteDocEditibleProps,
   NoteStorage,
   ObjectMap,
   TagDoc,
 } from '../../../db/types'
 import { FoldingProps } from '../../../../shared/components/atoms/FoldingWrapper'
 import {
+  getAttachmentsHref,
   getFolderHref,
   getFolderId,
   getFolderName,
@@ -49,30 +47,12 @@ import {
   getTagHref,
   values,
 } from '../../../db/utils'
-import { CollapsableType } from '../../stores/types'
 import { SidebarTreeSortingOrder } from '../../../../shared/lib/sidebar'
-import BasicInputFormLocal from '../../../../components/v2/organisms/BasicInputFormLocal'
-
-type SerializedFolderNav = {
-  type: 'folder'
-  result: FolderDoc
-}
-
-type SerializedNoteNav = {
-  type: 'note'
-  result: NoteDoc
-}
-
-type SerializedPendingNav = {
-  type: 'folder' | 'note'
-  result: string
-}
-
-type NavResource = SerializedFolderNav | SerializedNoteNav
-type PendingNavResource = NavResource | SerializedPendingNav
-
-export type OrderedNavResource = NavResource & { order?: number }
-export type OrderedPendingNavResource = PendingNavResource & { order?: number }
+import {
+  CreateFolderRequestBody,
+  CreateNoteRequestBody,
+} from '../../hooks/local/useLocalDB'
+import { NavResource } from '../../interfaces/resources'
 
 type LocalTreeItem = {
   id: string
@@ -103,44 +83,40 @@ export function mapTree(
   storage: NoteStorage,
   noteMap: ObjectMap<NoteDoc>,
   folderMap: ObjectMap<FolderDoc>,
-  currentPath: string,
   tagsMap: ObjectMap<TagDoc>,
-  treeSendingMap: Map<string, string>,
+  currentPath: string,
   sideBarOpenedLinksIdsSet: Set<string>,
   sideBarOpenedFolderIdsSet: Set<string>,
   sideBarOpenedWorkspaceIdsSet: Set<string>,
-  toggleItem: (type: CollapsableType, id: string) => void,
-  getFoldEvents: (type: CollapsableType, key: string) => FoldingProps,
+  // toggleItem: (type: CollapsableType, id: string) => void,
+  // getFoldEvents: (type: CollapsableType, key: string) => FoldingProps,
   push: (url: string) => void,
-  openModal: (content: React.ReactNode) => void,
+  // openModal: (content: JSX.Element) => void,
   toggleNoteBookmark: (
     storageId: string,
     noteId: string,
     bookmarked: boolean
   ) => void,
-  createStorage: (
-    name: string,
-    props?: { type: 'fs'; location: string },
-    options?: {
-      skipRedirect?: boolean
-      afterSuccess?: (storage: NoteStorage) => void
-    }
-  ) => void,
+  // createStorage: (
+  //   body: CreateStorageRequestBody,
+  //   options: {
+  //     skipRedirect?: boolean
+  //     afterSuccess?: (storage: NoteStorage) => void
+  //   }
+  // ) => Promise<void>,
   deleteStorage: (storage: NoteStorage) => void,
-  toggleNoteArchive: (
+  toggleNoteTrashed: (
     storageId: string,
     noteId: string,
     trashed: boolean
   ) => void,
-  deleteFolder: (storageName: string, pathname: string) => Promise<void>,
-  createFolder: (
-    destinationPathname: string,
-    folderName: string
-  ) => Promise<void>,
-  createNote: (
-    storageId: string,
-    noteProps: Partial<NoteDocEditibleProps>
-  ) => Promise<void>,
+  deleteFolder: (target: {
+    storageId: string
+    storageName: string
+    pathname: string
+  }) => Promise<void>,
+  createFolder: (body: CreateFolderRequestBody) => Promise<void>,
+  createNote: (body: CreateNoteRequestBody) => Promise<void>,
   draggedResource: React.MutableRefObject<NavResource | undefined>,
   dropInFolderOrDoc: (
     targetedResource: NavResource,
@@ -166,7 +142,7 @@ export function mapTree(
     defaultIcon: mdiLock,
     children: [], // storage.positions?.orderedIds || [],
     folded: !sideBarOpenedWorkspaceIdsSet.has(storage.id),
-    folding: getFoldEvents('storages', storage.id),
+    // folding: getFoldEvents('storages', storage.id),
     href,
     active: true, //  href === currentPathWithStorage,
     navigateTo: () => push(href),
@@ -177,13 +153,20 @@ export function mapTree(
         icon: mdiFilePlusOutline,
         onClick: undefined,
         placeholder: 'Note title..',
-        create: (title: string) => createNote(storage.id, { title: title }),
+        create: (title: string) =>
+          createNote({ storageId: storage.id, noteProps: { title: title } }),
       },
       {
         icon: mdiFolderPlusOutline,
         onClick: undefined,
         placeholder: 'Folder name..',
-        create: (folderName: string) => createFolder('/', folderName),
+        create: (folderName: string) =>
+          createFolder({
+            storageId: storage.id,
+            storageName: storage.name,
+            folderName: folderName,
+            destinationPathname: '/',
+          }),
       },
     ],
     // todo: what is default for?
@@ -223,7 +206,7 @@ export function mapTree(
       // bookmarked: folder.bookmarked,
       // emoji: folder.emoji,
       folded: !sideBarOpenedFolderIdsSet.has(folderId),
-      folding: getFoldEvents('folders', folderId),
+      // folding: getFoldEvents('folders', folderId),
       href,
       active: href === currentPathWithStorage,
       navigateTo: () => push(href),
@@ -240,9 +223,12 @@ export function mapTree(
           onClick: undefined,
           placeholder: 'Doc title..',
           create: (title: string) =>
-            createNote(storage.id, {
-              title: title,
-              folderPathname: parentFolderPathname,
+            createNote({
+              storageId: storage.id,
+              noteProps: {
+                title: title,
+                folderPathname: parentFolderPathname,
+              },
             }),
         },
         {
@@ -250,7 +236,12 @@ export function mapTree(
           onClick: undefined,
           placeholder: 'Folder name..',
           create: (folderName: string) =>
-            createFolder(parentFolderPathname, folderName),
+            createFolder({
+              storageId: storage.id,
+              storageName: storage.name,
+              destinationPathname: parentFolderPathname,
+              folderName: folderName,
+            }),
         },
       ],
 
@@ -278,7 +269,12 @@ export function mapTree(
           type: MenuTypes.Normal,
           icon: mdiTrashCanOutline,
           label: 'Delete',
-          onClick: () => deleteFolder(storage.id, folderPathname),
+          onClick: () =>
+            deleteFolder({
+              storageId: storage.id,
+              storageName: storage.name,
+              pathname: folderPathname,
+            }),
         },
       ],
       parentId: parentFolderId,
@@ -317,12 +313,7 @@ export function mapTree(
         {
           type: MenuTypes.Normal,
           icon: bookmarked ? mdiStar : mdiStarOutline,
-          label:
-            treeSendingMap.get(noteId) === 'bookmark'
-              ? '...'
-              : bookmarked
-              ? 'Bookmarked'
-              : 'Bookmark',
+          label: bookmarked ? 'Bookmarked' : 'Bookmark',
           onClick: () => toggleNoteBookmark(storage.id, noteId, bookmarked),
         },
         {
@@ -335,7 +326,7 @@ export function mapTree(
           type: MenuTypes.Normal,
           icon: mdiArchiveOutline,
           label: note.trashed ? 'Restore' : 'Archive',
-          onClick: () => toggleNoteArchive(storage.id, noteId, note.trashed),
+          onClick: () => toggleNoteTrashed(storage.id, noteId, note.trashed),
         },
       ],
       parentId: parentNoterId,
@@ -453,96 +444,96 @@ export function mapTree(
     ],
   })
 
-  if (!team.personal) {
-    tree.push({
-      label: 'Private',
-      shrink: 2,
-      rows:
-        personalWorkspace != null
-          ? arrayItems
-              .filter((item) => item.parentId === personalWorkspace!.id)
-              .reduce((acc, val) => {
-                acc.push({
-                  ...val,
-                  depth: 0,
-                  rows: buildChildrenNavRows(
-                    sortingOrder,
-                    val.children,
-                    1,
-                    items
-                  ),
-                })
-                return acc
-              }, [] as SidebarTreeChildRow[])
-          : [],
-      controls: [
-        {
-          icon: mdiFilePlusOutline,
-          onClick: undefined,
-          placeholder: 'Doc title..',
-          create: async (title: string) => {
-            if (personalWorkspace == null) {
-              return createWorkspace(
-                team,
-                {
-                  personal: true,
-                  name: 'Private',
-                  permissions: [],
-                  public: false,
-                },
-                {
-                  skipRedirect: true,
-                  afterSuccess: (wp) =>
-                    createDoc(team, {
-                      workspaceId: wp.id,
-                      title,
-                    }),
-                }
-              )
-            }
-
-            return createDoc(team, {
-              workspaceId: personalWorkspace!.id,
-              title,
-            })
-          },
-        },
-        {
-          icon: mdiFolderPlusOutline,
-          onClick: undefined,
-          placeholder: 'Folder name..',
-          create: async (folderName: string) => {
-            if (personalWorkspace == null) {
-              return createWorkspace(
-                team,
-                {
-                  personal: true,
-                  name: 'Private',
-                  permissions: [],
-                  public: false,
-                },
-                {
-                  skipRedirect: true,
-                  afterSuccess: (wp) =>
-                    createFolder(team, {
-                      workspaceId: wp.id,
-                      description: '',
-                      folderName,
-                    }),
-                }
-              )
-            }
-
-            return createFolder(team, {
-              workspaceId: personalWorkspace!.id,
-              description: '',
-              folderName,
-            })
-          },
-        },
-      ],
-    })
-  }
+  // if (!team.personal) {
+  //   tree.push({
+  //     label: 'Private',
+  //     shrink: 2,
+  //     rows:
+  //       personalWorkspace != null
+  //         ? arrayItems
+  //             .filter((item) => item.parentId === personalWorkspace!.id)
+  //             .reduce((acc, val) => {
+  //               acc.push({
+  //                 ...val,
+  //                 depth: 0,
+  //                 rows: buildChildrenNavRows(
+  //                   sortingOrder,
+  //                   val.children,
+  //                   1,
+  //                   items
+  //                 ),
+  //               })
+  //               return acc
+  //             }, [] as SidebarTreeChildRow[])
+  //         : [],
+  //     controls: [
+  //       {
+  //         icon: mdiFilePlusOutline,
+  //         onClick: undefined,
+  //         placeholder: 'Doc title..',
+  //         create: async (title: string) => {
+  //           if (personalWorkspace == null) {
+  //             return createWorkspace(
+  //               team,
+  //               {
+  //                 personal: true,
+  //                 name: 'Private',
+  //                 permissions: [],
+  //                 public: false,
+  //               },
+  //               {
+  //                 skipRedirect: true,
+  //                 afterSuccess: (wp) =>
+  //                   createDoc(team, {
+  //                     workspaceId: wp.id,
+  //                     title,
+  //                   }),
+  //               }
+  //             )
+  //           }
+  //
+  //           return createDoc(team, {
+  //             workspaceId: personalWorkspace!.id,
+  //             title,
+  //           })
+  //         },
+  //       },
+  //       {
+  //         icon: mdiFolderPlusOutline,
+  //         onClick: undefined,
+  //         placeholder: 'Folder name..',
+  //         create: async (folderName: string) => {
+  //           if (personalWorkspace == null) {
+  //             return createWorkspace(
+  //               team,
+  //               {
+  //                 personal: true,
+  //                 name: 'Private',
+  //                 permissions: [],
+  //                 public: false,
+  //               },
+  //               {
+  //                 skipRedirect: true,
+  //                 afterSuccess: (wp) =>
+  //                   createFolder(team, {
+  //                     workspaceId: wp.id,
+  //                     description: '',
+  //                     folderName,
+  //                   }),
+  //               }
+  //             )
+  //           }
+  //
+  //           return createFolder(team, {
+  //             workspaceId: personalWorkspace!.id,
+  //             description: '',
+  //             folderName,
+  //           })
+  //         },
+  //       },
+  //     ],
+  //   })
+  // }
 
   if (labels.length > 0) {
     tree.push({
@@ -551,6 +542,7 @@ export function mapTree(
     })
   }
 
+  const attachmentsHref = getAttachmentsHref(storage)
   tree.push({
     label: 'More',
     rows: [
@@ -558,29 +550,29 @@ export function mapTree(
         id: 'sidenav-attachment',
         label: 'Attachments',
         defaultIcon: mdiPaperclip,
-        href: getTeamLinkHref(team, 'uploads'),
-        active: getTeamLinkHref(team, 'uploads') === currentPath,
-        navigateTo: () => push(getTeamLinkHref(team, 'uploads')),
+        href: attachmentsHref,
+        active: attachmentsHref === currentPathWithStorage,
+        navigateTo: () => push(attachmentsHref),
         depth: 0,
       },
-      {
-        id: 'sidenav-shared',
-        label: 'Shared',
-        defaultIcon: mdiWeb,
-        href: getTeamLinkHref(team, 'shared'),
-        active: getTeamLinkHref(team, 'shared') === currentPath,
-        navigateTo: () => push(getTeamLinkHref(team, 'shared')),
-        depth: 0,
-      },
-      {
-        id: 'sidenav-archived',
-        label: 'Archived',
-        defaultIcon: mdiArchiveOutline,
-        href: getTeamLinkHref(team, 'archived'),
-        active: getTeamLinkHref(team, 'archived') === currentPath,
-        navigateTo: () => push(getTeamLinkHref(team, 'archived')),
-        depth: 0,
-      },
+      // {
+      //   id: 'sidenav-shared',
+      //   label: 'Shared',
+      //   defaultIcon: mdiWeb,
+      //   href: getTeamLinkHref(team, 'shared'),
+      //   active: getTeamLinkHref(team, 'shared') === currentPath,
+      //   navigateTo: () => push(getTeamLinkHref(team, 'shared')),
+      //   depth: 0,
+      // },
+      // {
+      //   id: 'sidenav-archived',
+      //   label: 'Archived',
+      //   defaultIcon: mdiArchiveOutline,
+      //   href: getTeamLinkHref(team, 'archived'),
+      //   active: getTeamLinkHref(team, 'archived') === currentPath,
+      //   navigateTo: () => push(getTeamLinkHref(team, 'archived')),
+      //   depth: 0,
+      // },
     ],
   })
 
@@ -589,9 +581,9 @@ export function mapTree(
     const foldKey = `fold-${key}`
     const hideKey = `hide-${key}`
     category.folded = sideBarOpenedLinksIdsSet.has(foldKey)
-    category.folding = getFoldEvents('links', foldKey)
+    // category.folding = getFoldEvents('links', foldKey)
     category.hidden = sideBarOpenedLinksIdsSet.has(hideKey)
-    category.toggleHidden = () => toggleItem('links', hideKey)
+    // category.toggleHidden = () => toggleItem('links', hideKey)
   })
 
   return tree as SidebarNavCategory[]
