@@ -3,7 +3,6 @@ import { useRouter } from '../../lib/router'
 import { useDb } from '../../lib/db'
 import { useDialog, DialogIconTypes } from '../../lib/dialog'
 import { usePreferences } from '../../lib/preferences'
-import StorageNavigatorFragment from '../molecules/StorageNavigatorFragment'
 import BookmarkNavigatorFragment from '../molecules/BookmarkNavigatorFragment'
 import { NoteStorage } from '../../lib/db/types'
 import {
@@ -51,7 +50,6 @@ import {
 } from '../../lib/v2/mappers/local/searchResults'
 import { useLocalUI } from '../../lib/v2/hooks/local/useLocalUI'
 import { mapTree } from '../../lib/v2/mappers/local/sidebarTree'
-import { useSidebarCollapse } from '../../cloud/lib/stores/sidebarCollapse'
 import { useLocalDB } from '../../lib/v2/hooks/local/useLocalDB'
 import { useLocalDnd } from '../../lib/v2/hooks/local/useLocalDnd'
 import { buildSpacesBottomRows } from '../../cloud/components/Application'
@@ -371,14 +369,14 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
   const [searchResults, setSearchResults] = useState<SidebarSearchResult[]>([])
   const usersMap = new Map<string, AppUser>()
   const [initialLoadDone] = useState(true)
-  const {
-    sideBarOpenedLinksIdsSet,
-    sideBarOpenedFolderIdsSet,
-    sideBarOpenedWorkspaceIdsSet,
-    // toggleItem,
-    // unfoldItem,
-    // foldItem,
-  } = useSidebarCollapse()
+  // const {
+  //   sideBarOpenedLinksIdsSet,
+  //   sideBarOpenedFolderIdsSet,
+  //   sideBarOpenedWorkspaceIdsSet,
+  // toggleItem,
+  // unfoldItem,
+  // foldItem,
+  // } = useSidebarCollapse()
 
   // const getFoldEvents = useCallback(
   //   (type: CollapsableType, key: string) => {
@@ -428,9 +426,9 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
       storage.folderMap,
       storage.tagMap,
       pathname,
-      sideBarOpenedLinksIdsSet,
-      sideBarOpenedFolderIdsSet,
-      sideBarOpenedWorkspaceIdsSet,
+      // sideBarOpenedLinksIdsSet,
+      // sideBarOpenedFolderIdsSet,
+      // sideBarOpenedWorkspaceIdsSet,
       // toggleItem,
       // getFoldEvents,
       push,
@@ -464,9 +462,6 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
     openStorageEditForm,
     pathname,
     push,
-    sideBarOpenedFolderIdsSet,
-    sideBarOpenedLinksIdsSet,
-    sideBarOpenedWorkspaceIdsSet,
     storage,
     toggleNoteBookmark,
     toggleNoteTrashed,
@@ -612,7 +607,7 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
             isNotDebouncing: isNotDebouncing() === true,
           }}
         />
-        <StorageNavigatorFragment storage={storage} />
+        {/*<StorageNavigatorFragment storage={storage} />*/}
       </ScrollableContainer>
     </NavigatorContainer>
   )

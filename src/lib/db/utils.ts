@@ -46,19 +46,26 @@ export function prependNoteIdPrefix(noteId: string): string {
 }
 
 export function getStorageHref(storage: NoteStorage, query?: any): string {
-  return `/app/storage/${storage.id}?${query}`
+  return `/app/storages/${storage.id}?${query}`
 }
 
 export function getTimelineHref(storage: NoteStorage, query?: any): string {
-  return `/app/storage/${storage.id}/timeline?${query}`
+  return `/app/storages/${storage.id}/timeline?${query}`
 }
 
-export function getTagHref(storage: NoteStorage, tagName: string): string {
-  return `/app/storage/${storage.id}/${tagName}`
+export function getTagHref(
+  storage: NoteStorage,
+  tagName: string,
+  noteId?: string
+): string {
+  if (noteId != null) {
+    return `/app/storages/${storage.id}/tags/${tagName}/${noteId}`
+  }
+  return `/app/storages/${storage.id}/tags/${tagName}`
 }
 
 export function getAttachmentsHref(storage: NoteStorage): string {
-  return `/app/storage/${storage.id}/attachments`
+  return `/app/storages/${storage.id}/attachments`
 }
 
 export function getNoteTitle(note: NoteDoc, fallback: string) {

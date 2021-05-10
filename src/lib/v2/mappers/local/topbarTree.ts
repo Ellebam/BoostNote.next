@@ -6,6 +6,7 @@ import {
   getParentFolderPathname,
   values,
   getFolderPathname,
+  getNoteHref,
 } from '../../../db/utils'
 import { topParentId } from '../../../../cloud/lib/mappers/topbarTree'
 import { BreadCrumbTreeItem } from '../../../../shared/lib/mappers/types'
@@ -70,9 +71,10 @@ export function mapTopBarTree(
     .filter((note) => !note.trashed)
     .forEach((note) => {
       const noteId = note._id
-      const href = `/app/storages/${storage.id}/notes${
-        note.folderPathname == '/' ? '' : note.folderPathname
-      }/${note._id}`
+      const href = getNoteHref(note, storage.id)
+      // const href = `/app/storages/${storage.id}/notes${
+      //   note.folderPathname == '/' ? '' : note.folderPathname
+      // }/${note._id}`
       const parentFolderDoc = storage.folderMap[note.folderPathname]
       const parentId =
         parentFolderDoc != null

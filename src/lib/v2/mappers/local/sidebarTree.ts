@@ -37,7 +37,6 @@ import { FoldingProps } from '../../../../shared/components/atoms/FoldingWrapper
 import {
   getAttachmentsHref,
   getFolderHref,
-  getFolderId,
   getFolderName,
   getFolderPathname,
   getNoteHref,
@@ -45,6 +44,7 @@ import {
   getParentFolderPathname,
   getStorageHref,
   getTagHref,
+  getTagName,
   values,
 } from '../../../db/utils'
 import { SidebarTreeSortingOrder } from '../../../../shared/lib/sidebar'
@@ -77,6 +77,19 @@ type LocalTreeItem = {
   onDrop?: (position?: SidebarDragState) => void
 }
 
+function getFolderChildrenOrderedIds(
+  folder: FolderDoc,
+  notes: NoteDoc[]
+): string[] {
+  const children: string[] = []
+  notes.forEach((note) => {
+    if (note.folderPathname == getFolderPathname(folder._id)) {
+      children.push(note._id)
+    }
+  })
+  return children
+}
+
 export function mapTree(
   initialLoadDone: boolean,
   sortingOrder: SidebarTreeSortingOrder,
@@ -85,9 +98,9 @@ export function mapTree(
   folderMap: ObjectMap<FolderDoc>,
   tagsMap: ObjectMap<TagDoc>,
   currentPath: string,
-  sideBarOpenedLinksIdsSet: Set<string>,
-  sideBarOpenedFolderIdsSet: Set<string>,
-  sideBarOpenedWorkspaceIdsSet: Set<string>,
+  // sideBarOpenedLinksIdsSet: Set<string>,
+  // sideBarOpenedFolderIdsSet: Set<string>,
+  // sideBarOpenedWorkspaceIdsSet: Set<string>,
   // toggleItem: (type: CollapsableType, id: string) => void,
   // getFoldEvents: (type: CollapsableType, key: string) => FoldingProps,
   push: (url: string) => void,
@@ -141,7 +154,7 @@ export function mapTree(
     label: storage.name,
     defaultIcon: mdiLock,
     children: [], // storage.positions?.orderedIds || [],
-    folded: !sideBarOpenedWorkspaceIdsSet.has(storage.id),
+    // folded: !sideBarOpenedWorkspaceIdsSet.has(storage.id),
     // folding: getFoldEvents('storages', storage.id),
     href,
     active: true, //  href === currentPathWithStorage,
@@ -192,12 +205,10 @@ export function mapTree(
     const folderPathname = getFolderPathname(folderId)
     const parentFolderPathname = getParentFolderPathname(folderPathname)
     const href = getFolderHref(folder, storage.id)
-    const parentFolderDoc = folderMap[getFolderId(parentFolderPathname)]
+    const parentFolderDoc = folderMap[parentFolderPathname]
     const parentFolderId =
-      parentFolderDoc != null
-        ? parentFolderPathname == '/'
-          ? storage.id
-          : parentFolderDoc._id
+      parentFolderDoc != null && parentFolderPathname != '/'
+        ? parentFolderDoc._id
         : storage.id
     items.set(folderId, {
       id: folderId,
@@ -205,7 +216,7 @@ export function mapTree(
       label: folderName,
       // bookmarked: folder.bookmarked,
       // emoji: folder.emoji,
-      folded: !sideBarOpenedFolderIdsSet.has(folderId),
+      // folded: !sideBarOpenedFolderIdsSet.has(folderId),
       // folding: getFoldEvents('folders', folderId),
       href,
       active: href === currentPathWithStorage,
@@ -221,7 +232,7 @@ export function mapTree(
         {
           icon: mdiFilePlusOutline,
           onClick: undefined,
-          placeholder: 'Doc title..',
+          placeholder: 'Note title..',
           create: (title: string) =>
             createNote({
               storageId: storage.id,
@@ -278,7 +289,7 @@ export function mapTree(
         },
       ],
       parentId: parentFolderId,
-      children: [],
+      children: getFolderChildrenOrderedIds(folder, notes),
       // typeof folder.positions != null && typeof folder.positions !== 'string'
       //   ? folder.positions.orderedIds
       //   : [],
@@ -289,8 +300,13 @@ export function mapTree(
     const noteId = note._id
     const href = getNoteHref(note, storage.id)
     const bookmarked = !!note.data.bookmarked
-    const parentNoterId =
-      note.folderPathname === '/' ? storage.id : note.folderPathname
+    const parentFolderDoc = storage.folderMap[note.folderPathname]
+    const parentNoteId =
+      parentFolderDoc != null
+        ? parentFolderDoc.pathname == '/'
+          ? storage.id
+          : parentFolderDoc._id
+        : storage.id
     items.set(noteId, {
       id: noteId,
       lastUpdated: note.updatedAt, // doc.head != null ? doc.head.created : doc.updatedAt,
@@ -329,18 +345,18 @@ export function mapTree(
           onClick: () => toggleNoteTrashed(storage.id, noteId, note.trashed),
         },
       ],
-      parentId: parentNoterId,
+      parentId: parentNoteId,
     })
   })
 
   const arrayItems = getMapValues(items)
   const tree: Partial<SidebarNavCategory>[] = []
 
+  console.log('Array items', arrayItems)
   const bookmarked = arrayItems.reduce((acc, val) => {
     if (!val.bookmarked) {
       return acc
     }
-
     acc.push({
       id: val.id,
       depth: 0,
@@ -354,8 +370,9 @@ export function mapTree(
     return acc
   }, [] as SidebarTreeChildRow[])
 
+  // todo: fix parent IDs
   const navTree = arrayItems
-    .filter((item) => item.parentId == null)
+    .filter((item) => item.parentId == null || item.parentId == storage.id)
     .reduce((acc, val) => {
       acc.push({
         ...val,
@@ -393,8 +410,13 @@ export function mapTree(
       }
     })
     .reduce((acc, val) => {
-      const tagName = val._id
-      const href = getTagHref(storage, tagName)
+      const tagName = getTagName(val._id)
+      // const noteIds: string[] | undefined = notesPerTagIdMap.get(tagName)
+      const href = getTagHref(
+        storage,
+        tagName
+        // noteIds != null && noteIds.length > 0 ? noteIds[0] : undefined
+      )
       acc.push({
         id: val._id,
         depth: 0,
@@ -439,7 +461,7 @@ export function mapTree(
         //   }
         //   await createStorage(storageName, {type: 'fs', location: '/'})
         // }}
-        // />
+        // ></BasicInputFormLocal>
       },
     ],
   })
@@ -470,7 +492,7 @@ export function mapTree(
   //       {
   //         icon: mdiFilePlusOutline,
   //         onClick: undefined,
-  //         placeholder: 'Doc title..',
+  //         placeholder: 'Note title..',
   //         create: async (title: string) => {
   //           if (personalWorkspace == null) {
   //             return createWorkspace(
@@ -576,16 +598,16 @@ export function mapTree(
     ],
   })
 
-  tree.forEach((category) => {
-    const key = (category.label || '').toLocaleLowerCase()
-    const foldKey = `fold-${key}`
-    const hideKey = `hide-${key}`
-    category.folded = sideBarOpenedLinksIdsSet.has(foldKey)
-    // category.folding = getFoldEvents('links', foldKey)
-    category.hidden = sideBarOpenedLinksIdsSet.has(hideKey)
-    // category.toggleHidden = () => toggleItem('links', hideKey)
-  })
-
+  // tree.forEach((category) => {
+  // const key = (category.label || '').toLocaleLowerCase()
+  // const foldKey = `fold-${key}`
+  // const hideKey = `hide-${key}`
+  // category.folded = sideBarOpenedLinksIdsSet.has(foldKey)
+  // category.folding = getFoldEvents('links', foldKey)
+  // category.hidden = sideBarOpenedLinksIdsSet.has(hideKey)
+  // category.toggleHidden = () => toggleItem('links', hideKey)
+  // })
+  // console.log('Got Sidebar tree', tree)
   return tree as SidebarNavCategory[]
 }
 
