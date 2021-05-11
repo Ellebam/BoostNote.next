@@ -3,7 +3,6 @@ import { useRouter } from '../../lib/router'
 import { useDb } from '../../lib/db'
 import { useDialog, DialogIconTypes } from '../../lib/dialog'
 import { usePreferences } from '../../lib/preferences'
-import BookmarkNavigatorFragment from '../molecules/BookmarkNavigatorFragment'
 import { NoteStorage } from '../../lib/db/types'
 import {
   openContextMenu,
@@ -17,7 +16,6 @@ import { useRouteParams } from '../../lib/routeParams'
 import { mdiTextBoxPlusOutline } from '@mdi/js'
 import { textOverflow } from '../../lib/styled/styleFunctions'
 import { noteDetailFocusTitleInputEventEmitter } from '../../lib/events'
-import NavigatorSeparator from '../atoms/NavigatorSeparator'
 import { useTranslation } from 'react-i18next'
 import { useSearchModal } from '../../lib/searchModal'
 import styled from '../../shared/lib/styled'
@@ -29,7 +27,6 @@ import {
   SidebarTreeSortingOrders,
 } from '../../shared/lib/sidebar'
 import { MenuTypes, useContextMenu } from '../../shared/lib/stores/contextMenu'
-import ButtonGroup from '../../shared/components/atoms/ButtonGroup'
 import { appIsElectron } from '../../lib/platform'
 import { SidebarToolbarRow } from '../../shared/components/organisms/Sidebar/molecules/SidebarToolbar'
 import { mapToolbarRows } from '../../lib/v2/mappers/local/sidebarRows'
@@ -53,6 +50,9 @@ import { mapTree } from '../../lib/v2/mappers/local/sidebarTree'
 import { useLocalDB } from '../../lib/v2/hooks/local/useLocalDB'
 import { useLocalDnd } from '../../lib/v2/hooks/local/useLocalDnd'
 import { buildSpacesBottomRows } from '../../cloud/components/Application'
+import { useModal } from '../../shared/lib/stores/modal'
+import { CollapsableType } from '../../lib/v2/stores/sidebarCollapse/types'
+import { useSidebarCollapse } from '../../lib/v2/stores/sidebarCollapse'
 
 interface NoteStorageNavigatorProps {
   storage: NoteStorage
@@ -369,25 +369,25 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
   const [searchResults, setSearchResults] = useState<SidebarSearchResult[]>([])
   const usersMap = new Map<string, AppUser>()
   const [initialLoadDone] = useState(true)
-  // const {
-  //   sideBarOpenedLinksIdsSet,
-  //   sideBarOpenedFolderIdsSet,
-  //   sideBarOpenedWorkspaceIdsSet,
-  // toggleItem,
-  // unfoldItem,
-  // foldItem,
-  // } = useSidebarCollapse()
+  const {
+    sideBarOpenedLinksIdsSet,
+    sideBarOpenedFolderIdsSet,
+    sideBarOpenedStorageIdsSet,
+    toggleItem,
+    unfoldItem,
+    foldItem,
+  } = useSidebarCollapse()
 
-  // const getFoldEvents = useCallback(
-  //   (type: CollapsableType, key: string) => {
-  //     return {
-  //       fold: () => foldItem(type, key),
-  //       unfold: () => unfoldItem(type, key),
-  //       toggle: () => toggleItem(type, key),
-  //     }
-  //   },
-  //   [unfoldItem, foldItem]
-  // )
+  const getFoldEvents = useCallback(
+    (type: CollapsableType, key: string) => {
+      return {
+        fold: () => foldItem(type, key),
+        unfold: () => unfoldItem(type, key),
+        toggle: () => toggleItem(type, key),
+      }
+    },
+    [foldItem, unfoldItem, toggleItem]
+  )
   const {
     updateFolder,
     updateNote,
@@ -396,7 +396,7 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
     deleteFolderApi,
     toggleNoteTrashed,
     toggleNoteBookmark,
-    // createStorageApi,
+    createStorageApi,
     deleteStorageApi,
   } = useLocalDB()
   const {
@@ -407,17 +407,8 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
     // deleteWorkspace,
   } = useLocalUI()
   const { draggedResource, dropInDocOrFolder, dropInStorage } = useLocalDnd()
-  // const { openModal } = useModal()
+  const { openModal } = useModal()
   const tree = useMemo(() => {
-    // draggedResource: React.MutableRefObject<NavResource | undefined>,
-    // dropInFolderOrDoc: (
-    // targetedResource: NavResource,
-    // targetedPosition: SidebarDragState
-    // ) => void,
-    //   dropInStorage: (id: string) => void,
-    //   openRenameFolderForm: (storageId: string, folder: FolderDoc) => void,
-    //   openRenameNoteForm: (storageId: string, note: NoteDoc) => void,
-    //   openStorageEditForm: (storage: NoteStorage) => void
     return mapTree(
       initialLoadDone,
       generalStatus.sidebarTreeSortingOrder,
@@ -426,15 +417,15 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
       storage.folderMap,
       storage.tagMap,
       pathname,
-      // sideBarOpenedLinksIdsSet,
-      // sideBarOpenedFolderIdsSet,
-      // sideBarOpenedWorkspaceIdsSet,
-      // toggleItem,
-      // getFoldEvents,
+      sideBarOpenedLinksIdsSet,
+      sideBarOpenedFolderIdsSet,
+      sideBarOpenedStorageIdsSet,
+      toggleItem,
+      getFoldEvents,
       push,
-      // (content: JSX.Element) => openModal(content),
+      (content: JSX.Element) => openModal(content),
       toggleNoteBookmark,
-      // createStorageApi,
+      createStorageApi,
       deleteStorageApi,
       toggleNoteTrashed,
       deleteFolderApi,
@@ -450,19 +441,26 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
   }, [
     createFolder,
     createNoteApi,
+    createStorageApi,
     deleteFolderApi,
     deleteStorageApi,
     draggedResource,
     dropInDocOrFolder,
     dropInStorage,
     generalStatus.sidebarTreeSortingOrder,
+    getFoldEvents,
     initialLoadDone,
+    openModal,
     openRenameFolderForm,
     openRenameNoteForm,
     openStorageEditForm,
     pathname,
     push,
+    sideBarOpenedFolderIdsSet,
+    sideBarOpenedLinksIdsSet,
+    sideBarOpenedStorageIdsSet,
     storage,
+    toggleItem,
     toggleNoteBookmark,
     toggleNoteTrashed,
     updateFolder,
@@ -475,15 +473,15 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
         <div className='topButtonLabel'>{storage.name}</div>
       </TopButton>
 
-      <Button
-        variant='primary'
-        iconPath={mdiTextBoxPlusOutline}
-        id='sidebar-newdoc-btn'
-        iconSize={16}
-        onClick={createNoteByRoute}
-      >
-        Create new note
-      </Button>
+      {/*<Button*/}
+      {/*  variant='primary'*/}
+      {/*  iconPath={mdiTextBoxPlusOutline}*/}
+      {/*  id='sidebar-newdoc-btn'*/}
+      {/*  iconSize={16}*/}
+      {/*  onClick={createNoteByRoute}*/}
+      {/*>*/}
+      {/*  Create new note*/}
+      {/*</Button>*/}
 
       {/*<NewNoteButton onClick={createNoteByRoute}>*/}
       {/*  <div className='icon'>*/}
@@ -496,8 +494,8 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
       {/*</NewNoteButton>*/}
 
       <ScrollableContainer>
-        <BookmarkNavigatorFragment storage={storage} />
-        <NavigatorSeparator />
+        {/*<BookmarkNavigatorFragment storage={storage} />*/}
+        {/*<NavigatorSeparator />*/}
         {/* Here is side bar */}
         <Sidebar
           className={cc(['application__sidebar'])}
@@ -547,49 +545,28 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
               },
             },
           ]}
+          /* See why its not full width */
           treeTopRows={
             storage == null ? null : (
-              <>
-                <ButtonGroup>
-                  <Button
-                    variant='primary'
-                    size='sm'
-                    iconPath={mdiTextBoxPlusOutline}
-                    id='sidebar-newdoc-btn'
-                    iconSize={16}
-                    onClick={() =>
-                      openNewDocForm({
-                        parentFolderPathname: '/',
-                        storageId: storage.id,
-                      })
-                    }
-                  >
-                    Create new doc
-                  </Button>
-                  {/*<Button*/}
-                  {/*  variant='primary'*/}
-                  {/*  size='sm'*/}
-                  {/*  iconPath={mdiDotsHorizontal}*/}
-                  {/*  onClick={(event) => {*/}
-                  {/*    event.preventDefault()*/}
-                  {/*    popup(event, [*/}
-                  {/*      {*/}
-                  {/*        icon: mdiPencilBoxMultipleOutline,*/}
-                  {/*        type: MenuTypes.Normal,*/}
-                  {/*        label: 'Use a template',*/}
-                  {/*        onClick: () =>*/}
-                  {/*          // openModal(<TemplatesModal />, { size: 'large' }),*/}
-                  {/*      },*/}
-                  {/*    ])*/}
-                  {/*  }}*/}
-                  {/*/>*/}
-                </ButtonGroup>
-              </>
+              <Button
+                variant='primary'
+                size={'sm'}
+                iconPath={mdiTextBoxPlusOutline}
+                id='sidebar-newdoc-btn'
+                iconSize={16}
+                onClick={() =>
+                  openNewDocForm({
+                    parentFolderPathname: '/',
+                    storageId: storage.id,
+                  })
+                }
+              >
+                Create new doc
+              </Button>
             )
           }
           searchResults={searchResults}
-          // no users?
-
+          // todo: no users?
           users={usersMap}
           // todo: timeline rows implementation!
           timelineRows={[]}

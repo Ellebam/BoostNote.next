@@ -17,6 +17,7 @@ import {
   mdiStarOutline,
   mdiTag,
   mdiTrashCanOutline,
+  mdiFolderOutline,
 } from '@mdi/js'
 import { MenuItem, MenuTypes } from '../../../../shared/lib/stores/contextMenu'
 import { SidebarDragState } from '../../../../shared/lib/dnd'
@@ -45,14 +46,18 @@ import {
   getStorageHref,
   getTagHref,
   getTagName,
+  getTrashCanHref,
   values,
 } from '../../../db/utils'
 import { SidebarTreeSortingOrder } from '../../../../shared/lib/sidebar'
 import {
   CreateFolderRequestBody,
   CreateNoteRequestBody,
+  CreateStorageRequestBody,
 } from '../../hooks/local/useLocalDB'
 import { NavResource } from '../../interfaces/resources'
+import { CollapsableType } from '../../stores/sidebarCollapse'
+import BasicInputFormLocal from '../../../../components/v2/organisms/BasicInputFormLocal'
 
 type LocalTreeItem = {
   id: string
@@ -78,15 +83,23 @@ type LocalTreeItem = {
 }
 
 function getFolderChildrenOrderedIds(
-  folder: FolderDoc,
-  notes: NoteDoc[]
+  parentFolder: FolderDoc,
+  notes: NoteDoc[],
+  folders: FolderDoc[]
 ): string[] {
   const children: string[] = []
   notes.forEach((note) => {
-    if (note.folderPathname == getFolderPathname(folder._id)) {
+    if (note.folderPathname == getFolderPathname(parentFolder._id)) {
       children.push(note._id)
     }
   })
+
+  folders.forEach((folder) => {
+    if (folder._id == parentFolder._id) {
+      children.push(parentFolder._id)
+    }
+  })
+
   return children
 }
 
@@ -98,25 +111,25 @@ export function mapTree(
   folderMap: ObjectMap<FolderDoc>,
   tagsMap: ObjectMap<TagDoc>,
   currentPath: string,
-  // sideBarOpenedLinksIdsSet: Set<string>,
-  // sideBarOpenedFolderIdsSet: Set<string>,
-  // sideBarOpenedWorkspaceIdsSet: Set<string>,
-  // toggleItem: (type: CollapsableType, id: string) => void,
-  // getFoldEvents: (type: CollapsableType, key: string) => FoldingProps,
+  sideBarOpenedLinksIdsSet: Set<string>,
+  sideBarOpenedFolderIdsSet: Set<string>,
+  sideBarOpenedStoragesIdsSet: Set<string>,
+  toggleItem: (type: CollapsableType, id: string) => void,
+  getFoldEvents: (type: CollapsableType, key: string) => FoldingProps,
   push: (url: string) => void,
-  // openModal: (content: JSX.Element) => void,
+  openModal: (content: JSX.Element) => void,
   toggleNoteBookmark: (
     storageId: string,
     noteId: string,
     bookmarked: boolean
   ) => void,
-  // createStorage: (
-  //   body: CreateStorageRequestBody,
-  //   options: {
-  //     skipRedirect?: boolean
-  //     afterSuccess?: (storage: NoteStorage) => void
-  //   }
-  // ) => Promise<void>,
+  createStorage: (
+    body: CreateStorageRequestBody,
+    options: {
+      skipRedirect?: boolean
+      afterSuccess?: (storage: NoteStorage) => void
+    }
+  ) => Promise<void>,
   deleteStorage: (storage: NoteStorage) => void,
   toggleNoteTrashed: (
     storageId: string,
@@ -154,8 +167,8 @@ export function mapTree(
     label: storage.name,
     defaultIcon: mdiLock,
     children: [], // storage.positions?.orderedIds || [],
-    // folded: !sideBarOpenedWorkspaceIdsSet.has(storage.id),
-    // folding: getFoldEvents('storages', storage.id),
+    folded: !sideBarOpenedStoragesIdsSet.has(storage.id),
+    folding: getFoldEvents('storages', storage.id),
     href,
     active: true, //  href === currentPathWithStorage,
     navigateTo: () => push(href),
@@ -214,10 +227,8 @@ export function mapTree(
       id: folderId,
       lastUpdated: folder.updatedAt,
       label: folderName,
-      // bookmarked: folder.bookmarked,
-      // emoji: folder.emoji,
-      // folded: !sideBarOpenedFolderIdsSet.has(folderId),
-      // folding: getFoldEvents('folders', folderId),
+      folded: !sideBarOpenedFolderIdsSet.has(folderId),
+      folding: getFoldEvents('folders', folderId),
       href,
       active: href === currentPathWithStorage,
       navigateTo: () => push(href),
@@ -289,7 +300,7 @@ export function mapTree(
         },
       ],
       parentId: parentFolderId,
-      children: getFolderChildrenOrderedIds(folder, notes),
+      children: getFolderChildrenOrderedIds(folder, notes, folders),
       // typeof folder.positions != null && typeof folder.positions !== 'string'
       //   ? folder.positions.orderedIds
       //   : [],
@@ -442,26 +453,31 @@ export function mapTree(
     controls: [
       {
         icon: mdiPlus,
-        onClick: () => console.log('not implemented'),
-        //       onClick: () =>openModal(
-        //         <BasicInputFormLocal
-        //           defaultIcon={mdiFolderOutline}
-        //       defaultInputValue={storage != null ? storage.name : 'Untitled'}
-        //     defaultEmoji={undefined}
-        //     placeholder='Storage name'
-        //     submitButtonProps={{
-        //       label: 'Update',
-        //     }}
-        // onSubmit={async (storageName: string) => {
-        //   if (storageName == '') {
-        //     pushMessage({
-        //       title: 'Cannot rename storage',
-        //       description: 'Storage name should not be empty.',
-        //     })
-        //   }
-        //   await createStorage(storageName, {type: 'fs', location: '/'})
-        // }}
-        // ></BasicInputFormLocal>
+        onClick: () =>
+          openModal(
+            <BasicInputFormLocal
+              defaultIcon={mdiFolderOutline}
+              defaultInputValue={storage != null ? storage.name : 'Untitled'}
+              defaultEmoji={undefined}
+              placeholder='Storage name'
+              submitButtonProps={{
+                label: 'Update',
+              }}
+              onSubmit={async (storageName: string) => {
+                if (storageName == '') {
+                  // pushMessage({
+                  //   title: 'Cannot rename storage',
+                  //   description: 'Storage name should not be empty.',
+                  // })
+                  return
+                }
+                await createStorage(
+                  { name: storageName, props: { type: 'fs', location: '/' } },
+                  {}
+                )
+              }}
+            />
+          ),
       },
     ],
   })
@@ -565,6 +581,7 @@ export function mapTree(
   }
 
   const attachmentsHref = getAttachmentsHref(storage)
+  const trashCanHref = getTrashCanHref(storage)
   tree.push({
     label: 'More',
     rows: [
@@ -586,28 +603,28 @@ export function mapTree(
       //   navigateTo: () => push(getTeamLinkHref(team, 'shared')),
       //   depth: 0,
       // },
-      // {
-      //   id: 'sidenav-archived',
-      //   label: 'Archived',
-      //   defaultIcon: mdiArchiveOutline,
-      //   href: getTeamLinkHref(team, 'archived'),
-      //   active: getTeamLinkHref(team, 'archived') === currentPath,
-      //   navigateTo: () => push(getTeamLinkHref(team, 'archived')),
-      //   depth: 0,
-      // },
+      {
+        id: 'sidenav-archived', // todo: custom ID? style it?
+        label: 'Trash',
+        defaultIcon: mdiArchiveOutline,
+        href: trashCanHref,
+        active: trashCanHref === currentPathWithStorage,
+        navigateTo: () => push(trashCanHref),
+        depth: 0,
+      },
     ],
   })
 
-  // tree.forEach((category) => {
-  // const key = (category.label || '').toLocaleLowerCase()
-  // const foldKey = `fold-${key}`
-  // const hideKey = `hide-${key}`
-  // category.folded = sideBarOpenedLinksIdsSet.has(foldKey)
-  // category.folding = getFoldEvents('links', foldKey)
-  // category.hidden = sideBarOpenedLinksIdsSet.has(hideKey)
-  // category.toggleHidden = () => toggleItem('links', hideKey)
-  // })
-  // console.log('Got Sidebar tree', tree)
+  tree.forEach((category) => {
+    const key = (category.label || '').toLocaleLowerCase()
+    const foldKey = `fold-${key}`
+    const hideKey = `hide-${key}`
+    category.folded = sideBarOpenedLinksIdsSet.has(foldKey)
+    category.folding = getFoldEvents('links', foldKey)
+    category.hidden = sideBarOpenedLinksIdsSet.has(hideKey)
+    category.toggleHidden = () => toggleItem('links', hideKey)
+  })
+  console.log('Got Sidebar tree', tree)
   return tree as SidebarNavCategory[]
 }
 

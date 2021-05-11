@@ -53,6 +53,10 @@ export function getTimelineHref(storage: NoteStorage, query?: any): string {
   return `/app/storages/${storage.id}/timeline?${query}`
 }
 
+export function getTrashCanHref(storage: NoteStorage): string {
+  return `/app/storages/${storage.id}/trashcan`
+}
+
 export function getTagHref(
   storage: NoteStorage,
   tagName: string,

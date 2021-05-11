@@ -39,6 +39,7 @@ export function useLocalDB() {
     unbookmarkNote,
     updateNote,
     renameFolder,
+    storageMap,
   } = useDb()
   const { push } = useRouter()
 
@@ -232,6 +233,7 @@ export function useLocalDB() {
     deleteNoteApi,
     updateNote: updateNoteApi,
     updateFolder: updateFolderApi,
+    storageMap,
   }
 }
 
