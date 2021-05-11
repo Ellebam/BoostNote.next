@@ -34,6 +34,7 @@ const V2CombinedProvider = combineProviders(
 )
 
 const CombinedProvider = combineProviders(
+  V2CombinedProvider,
   BoostHubStoreProvider,
   SearchModalProvider,
   PreviewStyleProvider,
@@ -48,8 +49,7 @@ const CombinedProvider = combineProviders(
   ToastProvider,
   CheckedFeaturesProvider,
   CreateWorkspaceModalProvider,
-  CloudIntroModalProvider,
-  V2CombinedProvider
+  CloudIntroModalProvider
 )
 
 function render(Component: typeof App) {

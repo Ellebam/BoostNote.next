@@ -47,6 +47,7 @@ import {
   getTagHref,
   getTagName,
   getTrashCanHref,
+  isSubPathname,
   values,
 } from '../../../db/utils'
 import { SidebarTreeSortingOrder } from '../../../../shared/lib/sidebar'
@@ -66,7 +67,7 @@ type LocalTreeItem = {
   defaultIcon?: string
   emoji?: string
   bookmarked?: boolean
-  archived?: boolean
+  trashed?: boolean
   children: string[]
   folding?: FoldingProps
   folded?: boolean
@@ -95,8 +96,8 @@ function getFolderChildrenOrderedIds(
   })
 
   folders.forEach((folder) => {
-    if (folder._id == parentFolder._id) {
-      children.push(parentFolder._id)
+    if (isSubPathname(parentFolder._id, folder._id)) {
+      children.push(folder._id)
     }
   })
 
@@ -214,8 +215,11 @@ export function mapTree(
 
   folders.forEach((folder) => {
     const folderId = folder._id
-    const folderName = getFolderName(folder, 'Unknown')
+    const folderName = getFolderName(folder, storage.name)
     const folderPathname = getFolderPathname(folderId)
+    // if (folderPathname == '/') {
+    //   return
+    // }
     const parentFolderPathname = getParentFolderPathname(folderPathname)
     const href = getFolderHref(folder, storage.id)
     const parentFolderDoc = folderMap[parentFolderPathname]
@@ -323,9 +327,8 @@ export function mapTree(
       lastUpdated: note.updatedAt, // doc.head != null ? doc.head.created : doc.updatedAt,
       label: getNoteTitle(note, 'Untitled'),
       bookmarked: bookmarked,
-      // emoji: note.emoji,
       defaultIcon: mdiFileDocumentOutline,
-      archived: note.trashed,
+      trashed: note.trashed,
       children: [],
       href,
       active: href === currentPathWithStorage,
@@ -363,7 +366,7 @@ export function mapTree(
   const arrayItems = getMapValues(items)
   const tree: Partial<SidebarNavCategory>[] = []
 
-  console.log('Array items', arrayItems)
+  // console.log('Array items', arrayItems)
   const bookmarked = arrayItems.reduce((acc, val) => {
     if (!val.bookmarked) {
       return acc
@@ -381,7 +384,6 @@ export function mapTree(
     return acc
   }, [] as SidebarTreeChildRow[])
 
-  // todo: fix parent IDs
   const navTree = arrayItems
     .filter((item) => item.parentId == null || item.parentId == storage.id)
     .reduce((acc, val) => {
@@ -640,7 +642,7 @@ function buildChildrenNavRows(
       return acc
     }
 
-    if (childRow.archived) {
+    if (childRow.trashed) {
       return acc
     }
 
