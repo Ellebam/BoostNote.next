@@ -7,10 +7,8 @@ import {
   CollapsableType,
 } from './types'
 import { sidebarCollapseKey } from '../../../localStorageKeys'
-import { useLocalDB } from '../../hooks/local/useLocalDB'
+import { createStoreContext } from '../../../context'
 import { useActiveStorageId } from '../../../routeParams'
-import { NoteStorage } from '../../../db/types'
-import { createStoreContext } from '../../../../shared/lib/utils/context'
 
 const initialContent: CollapsableContent = {
   folders: [],
@@ -19,10 +17,7 @@ const initialContent: CollapsableContent = {
 }
 
 function useSidebarCollapseStore(): SidebarCollapseContext {
-  const { storageMap } = useLocalDB()
   const storageId = useActiveStorageId()
-  const storage: NoteStorage | undefined =
-    storageId != null ? storageMap[storageId] : undefined
 
   const [currentStorageCollapsable, setCurrentStorageCollapsable] = useState<
     CollapsableContent
@@ -90,7 +85,7 @@ function useSidebarCollapseStore(): SidebarCollapseContext {
 
   // LOAD FROM LOCAL STORAGE
   useEffect(() => {
-    if (storage == null) {
+    if (storageId == null) {
       return
     }
 
@@ -103,17 +98,17 @@ function useSidebarCollapseStore(): SidebarCollapseContext {
         stringifiedData
       ) as LocallyStoredSidebarCollapse
       setCurrentStorageCollapsable(
-        locallyStoredDatas[storage.id] || initialContent
+        locallyStoredDatas[storageId] || initialContent
       )
     } catch (error) {
       // eslint-disable-next-line no-console
       console.warn(error.message)
     }
-  }, [storage])
+  }, [storageId])
 
   // SAVE CHANGES TO LOCALSTORAGE
   useEffect(() => {
-    if (storage == null) {
+    if (storageId == null) {
       return
     }
     let baseData = localLiteStorage.getItem(sidebarCollapseKey)
@@ -121,9 +116,9 @@ function useSidebarCollapseStore(): SidebarCollapseContext {
       baseData = '{}'
     }
     const data = JSON.parse(baseData)
-    data[storage!.id] = currentStorageCollapsable
+    data[storageId] = currentStorageCollapsable
     localLiteStorage.setItem(sidebarCollapseKey, JSON.stringify(data))
-  }, [currentStorageCollapsable, storage])
+  }, [currentStorageCollapsable, storageId])
 
   return {
     sideBarOpenedFolderIdsSet,
@@ -137,6 +132,6 @@ function useSidebarCollapseStore(): SidebarCollapseContext {
 }
 
 export const {
-  StoreProvider: SidebarCollapseProvider,
+  StoreProvider: V2SidebarCollapseProvider,
   useStore: useSidebarCollapse,
 } = createStoreContext(useSidebarCollapseStore, 'sidebarCollapse')

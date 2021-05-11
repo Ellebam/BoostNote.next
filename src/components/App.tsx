@@ -394,6 +394,7 @@ const App = () => {
         <ContextMenu />
         <GlobalStyle />
         <Dialog />
+
         <PreferencesModal />
         <ToastList />
         <CodeMirrorStyle />

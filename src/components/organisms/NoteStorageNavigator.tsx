@@ -51,7 +51,7 @@ import { useLocalDB } from '../../lib/v2/hooks/local/useLocalDB'
 import { useLocalDnd } from '../../lib/v2/hooks/local/useLocalDnd'
 import { buildSpacesBottomRows } from '../../cloud/components/Application'
 import { useModal } from '../../shared/lib/stores/modal'
-import { CollapsableType } from '../../lib/v2/stores/sidebarCollapse/types'
+import { CollapsableType } from '../../lib/v2/stores/sidebarCollapse'
 import { useSidebarCollapse } from '../../lib/v2/stores/sidebarCollapse'
 
 interface NoteStorageNavigatorProps {
