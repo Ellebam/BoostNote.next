@@ -49,15 +49,15 @@ export interface DbStore {
   removeStorage: (id: string) => Promise<void>
   renameStorage: (id: string, name: string) => void
   createFolder: (
-    storageName: string,
+    storageId: string,
     pathname: string
   ) => Promise<FolderDoc | undefined>
   renameFolder: (
-    storageName: string,
+    storageId: string,
     pathname: string,
     newName: string
   ) => Promise<void>
-  removeFolder: (storageName: string, pathname: string) => Promise<void>
+  removeFolder: (storageId: string, pathname: string) => Promise<void>
   createNote(
     storageId: string,
     noteProps: Partial<NoteDocEditibleProps>

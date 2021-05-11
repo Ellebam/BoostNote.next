@@ -14,7 +14,6 @@ import { MenuItemConstructorOptions } from 'electron'
 import { useStorageRouter } from '../../lib/storageRouter'
 import { useRouteParams } from '../../lib/routeParams'
 import { mdiTextBoxPlusOutline } from '@mdi/js'
-import { textOverflow } from '../../lib/styled/styleFunctions'
 import { noteDetailFocusTitleInputEventEmitter } from '../../lib/events'
 import { useTranslation } from 'react-i18next'
 import { useSearchModal } from '../../lib/searchModal'
@@ -50,7 +49,6 @@ import { mapTree } from '../../lib/v2/mappers/local/sidebarTree'
 import { useLocalDB } from '../../lib/v2/hooks/local/useLocalDB'
 import { useLocalDnd } from '../../lib/v2/hooks/local/useLocalDnd'
 import { buildSpacesBottomRows } from '../../cloud/components/Application'
-import { useModal } from '../../shared/lib/stores/modal'
 import { CollapsableType } from '../../lib/v2/stores/sidebarCollapse'
 import { useSidebarCollapse } from '../../lib/v2/stores/sidebarCollapse'
 
@@ -396,7 +394,6 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
     deleteFolderApi,
     toggleNoteTrashed,
     toggleNoteBookmark,
-    createStorageApi,
     deleteStorageApi,
   } = useLocalDB()
   const {
@@ -407,7 +404,6 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
     // deleteWorkspace,
   } = useLocalUI()
   const { draggedResource, dropInDocOrFolder, dropInStorage } = useLocalDnd()
-  const { openModal } = useModal()
   const tree = useMemo(() => {
     return mapTree(
       initialLoadDone,
@@ -423,9 +419,7 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
       toggleItem,
       getFoldEvents,
       push,
-      (content: JSX.Element) => openModal(content),
       toggleNoteBookmark,
-      createStorageApi,
       deleteStorageApi,
       toggleNoteTrashed,
       deleteFolderApi,
@@ -441,7 +435,6 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
   }, [
     createFolder,
     createNoteApi,
-    createStorageApi,
     deleteFolderApi,
     deleteStorageApi,
     draggedResource,
@@ -450,7 +443,6 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
     generalStatus.sidebarTreeSortingOrder,
     getFoldEvents,
     initialLoadDone,
-    openModal,
     openRenameFolderForm,
     openRenameNoteForm,
     openStorageEditForm,
@@ -469,9 +461,9 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
 
   return (
     <NavigatorContainer onContextMenu={openStorageContextMenu}>
-      <TopButton onClick={openStorageContextMenu}>
-        <div className='topButtonLabel'>{storage.name}</div>
-      </TopButton>
+      {/*<TopButton onClick={openStorageContextMenu}>*/}
+      {/*  <div className='topButtonLabel'>{storage.name}</div>*/}
+      {/*</TopButton>*/}
 
       {/*<Button*/}
       {/*  variant='primary'*/}
@@ -605,24 +597,24 @@ const ScrollableContainer = styled.div`
   overflow: auto;
 `
 
-const TopButton = styled.button`
-  height: 50px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  cursor: pointer;
-  text-align: left;
-  padding: 0 16px;
-  border: none;
-  color: ${({ theme }) => theme.colors.text.secondary};
-  background-color: transparent;
-  margin: 4px 0;
-  & > .topButtonLabel {
-    font-size: 14px;
-    padding-right: 4px;
-    ${textOverflow}
-  }
-`
+// const TopButton = styled.button`
+//   height: 50px;
+//   display: flex;
+//   flex-direction: row;
+//   align-items: center;
+//   cursor: pointer;
+//   text-align: left;
+//   padding: 0 16px;
+//   border: none;
+//   color: ${({ theme }) => theme.colors.text.secondary};
+//   background-color: transparent;
+//   margin: 4px 0;
+//   & > .topButtonLabel {
+//     font-size: 14px;
+//     padding-right: 4px;
+//     ${textOverflow}
+//   }
+// `
 
 // const NewNoteButton = styled.button`
 //   margin: 4px 8px;

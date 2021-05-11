@@ -56,12 +56,13 @@ export function useLocalDB() {
       await send(shortid.generate(), 'create', {
         api: () => createStorage(body.name, body.props),
         cb: (storage: NoteStorage) => {
-          // updateWorkspacesMap([res.workspace.id, res.workspace])
-          if (!options.skipRedirect) {
-            push(getStorageHref(storage))
-          }
-          if (options.afterSuccess != null) {
-            options.afterSuccess(storage)
+          if (storage != null) {
+            if (!options.skipRedirect) {
+              push(getStorageHref(storage))
+            }
+            if (options.afterSuccess != null) {
+              options.afterSuccess(storage)
+            }
           }
         },
       })
@@ -74,13 +75,11 @@ export function useLocalDB() {
       await send(shortid.generate(), 'create', {
         api: () => createNote(body.storageId, body.noteProps),
         cb: (note: NoteDoc) => {
-          // updateDocsMap([res.doc.id, res.doc])
-          // if (res.doc.parentFolder != null) {
-          //   updateParentFolderOfDoc(res.doc)
-          // }
-          push(getNoteHref(note, body.storageId))
-          if (afterSuccess != null) {
-            afterSuccess()
+          if (note != null) {
+            push(getNoteHref(note, body.storageId))
+            if (afterSuccess != null) {
+              afterSuccess()
+            }
           }
         },
       })
@@ -91,15 +90,22 @@ export function useLocalDB() {
   const createFolderApi = useCallback(
     async (body: CreateFolderRequestBody, afterSuccess?: () => void) => {
       await send(shortid.generate(), 'create', {
-        api: () =>
-          createFolder(
-            body.storageName,
-            join(body.destinationPathname, body.folderName)
-          ),
+        api: () => {
+          let folderName = body.folderName
+          if (folderName.endsWith('/')) {
+            folderName = folderName.slice(0, folderName.length - 1)
+          }
+          const folderPathname = join(body.destinationPathname, folderName)
+          console.log('got ', body, folderPathname)
+          return createFolder(body.storageId, folderPathname)
+        },
         cb: (folder: FolderDoc) => {
-          push(getFolderHref(folder, body.storageId))
-          if (afterSuccess != null) {
-            afterSuccess()
+          console.log('Created folder', folder)
+          if (folder != null) {
+            push(getFolderHref(folder, body.storageId))
+            if (afterSuccess != null) {
+              afterSuccess()
+            }
           }
         },
       })
@@ -164,15 +170,11 @@ export function useLocalDB() {
   )
 
   const deleteFolderApi = useCallback(
-    async (target: {
-      storageId: string
-      storageName: string
-      pathname: string
-    }) => {
+    async (target: { storageId: string; pathname: string }) => {
       await send(target.storageId, 'delete', {
-        api: () => removeFolder(target.storageName, target.pathname),
-        cb: (res) => {
-          console.log('Removed folder...', res)
+        api: () => removeFolder(target.storageId, target.pathname),
+        cb: () => {
+          console.log('Removed folder...', target.pathname)
         },
       })
     },
@@ -239,7 +241,6 @@ export function useLocalDB() {
 
 export type CreateFolderRequestBody = {
   storageId: string
-  storageName: string
   destinationPathname: string
   folderName: string
 }

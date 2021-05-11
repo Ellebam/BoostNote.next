@@ -12,12 +12,10 @@ import {
   mdiLock,
   mdiPaperclip,
   mdiPencil,
-  mdiPlus,
   mdiStar,
   mdiStarOutline,
   mdiTag,
   mdiTrashCanOutline,
-  mdiFolderOutline,
 } from '@mdi/js'
 import { MenuItem, MenuTypes } from '../../../../shared/lib/stores/contextMenu'
 import { SidebarDragState } from '../../../../shared/lib/dnd'
@@ -54,11 +52,9 @@ import { SidebarTreeSortingOrder } from '../../../../shared/lib/sidebar'
 import {
   CreateFolderRequestBody,
   CreateNoteRequestBody,
-  CreateStorageRequestBody,
 } from '../../hooks/local/useLocalDB'
 import { NavResource } from '../../interfaces/resources'
 import { CollapsableType } from '../../stores/sidebarCollapse'
-import BasicInputFormLocal from '../../../../components/v2/organisms/BasicInputFormLocal'
 
 type LocalTreeItem = {
   id: string
@@ -83,6 +79,31 @@ type LocalTreeItem = {
   onDrop?: (position?: SidebarDragState) => void
 }
 
+function getStorageChildrenOrderedIds(
+  notes: NoteDoc[],
+  folders: FolderDoc[],
+  rootPathname = '/'
+): string[] {
+  const children: string[] = []
+  notes.forEach((note) => {
+    if (note.folderPathname == rootPathname) {
+      children.push(note._id)
+    }
+  })
+
+  folders.forEach((folder) => {
+    const folderPathname = getFolderPathname(folder._id)
+    if (folderPathname === '/') {
+      return
+    }
+    const parentFolderPathname = getParentFolderPathname(folderPathname)
+    if (parentFolderPathname === rootPathname) {
+      children.push(folder._id)
+    }
+  })
+  return children
+}
+
 function getFolderChildrenOrderedIds(
   parentFolder: FolderDoc,
   notes: NoteDoc[],
@@ -96,6 +117,7 @@ function getFolderChildrenOrderedIds(
   })
 
   folders.forEach((folder) => {
+    // wrong children for nested folder...
     if (isSubPathname(parentFolder._id, folder._id)) {
       children.push(folder._id)
     }
@@ -118,19 +140,11 @@ export function mapTree(
   toggleItem: (type: CollapsableType, id: string) => void,
   getFoldEvents: (type: CollapsableType, key: string) => FoldingProps,
   push: (url: string) => void,
-  openModal: (content: JSX.Element) => void,
   toggleNoteBookmark: (
     storageId: string,
     noteId: string,
     bookmarked: boolean
   ) => void,
-  createStorage: (
-    body: CreateStorageRequestBody,
-    options: {
-      skipRedirect?: boolean
-      afterSuccess?: (storage: NoteStorage) => void
-    }
-  ) => Promise<void>,
   deleteStorage: (storage: NoteStorage) => void,
   toggleNoteTrashed: (
     storageId: string,
@@ -139,7 +153,6 @@ export function mapTree(
   ) => void,
   deleteFolder: (target: {
     storageId: string
-    storageName: string
     pathname: string
   }) => Promise<void>,
   createFolder: (body: CreateFolderRequestBody) => Promise<void>,
@@ -167,7 +180,7 @@ export function mapTree(
     id: storage.id,
     label: storage.name,
     defaultIcon: mdiLock,
-    children: [], // storage.positions?.orderedIds || [],
+    children: getStorageChildrenOrderedIds(notes, folders), // storage.positions?.orderedIds || [],
     folded: !sideBarOpenedStoragesIdsSet.has(storage.id),
     folding: getFoldEvents('storages', storage.id),
     href,
@@ -190,7 +203,6 @@ export function mapTree(
         create: (folderName: string) =>
           createFolder({
             storageId: storage.id,
-            storageName: storage.name,
             folderName: folderName,
             destinationPathname: '/',
           }),
@@ -215,11 +227,11 @@ export function mapTree(
 
   folders.forEach((folder) => {
     const folderId = folder._id
-    const folderName = getFolderName(folder, storage.name)
     const folderPathname = getFolderPathname(folderId)
-    // if (folderPathname == '/') {
-    //   return
-    // }
+    if (folderPathname == '/') {
+      return
+    }
+    const folderName = getFolderName(folder, storage.name)
     const parentFolderPathname = getParentFolderPathname(folderPathname)
     const href = getFolderHref(folder, storage.id)
     const parentFolderDoc = folderMap[parentFolderPathname]
@@ -253,7 +265,7 @@ export function mapTree(
               storageId: storage.id,
               noteProps: {
                 title: title,
-                folderPathname: parentFolderPathname,
+                folderPathname: folderPathname,
               },
             }),
         },
@@ -264,8 +276,7 @@ export function mapTree(
           create: (folderName: string) =>
             createFolder({
               storageId: storage.id,
-              storageName: storage.name,
-              destinationPathname: parentFolderPathname,
+              destinationPathname: folderPathname,
               folderName: folderName,
             }),
         },
@@ -298,7 +309,6 @@ export function mapTree(
           onClick: () =>
             deleteFolder({
               storageId: storage.id,
-              storageName: storage.name,
               pathname: folderPathname,
             }),
         },
@@ -385,7 +395,7 @@ export function mapTree(
   }, [] as SidebarTreeChildRow[])
 
   const navTree = arrayItems
-    .filter((item) => item.parentId == null || item.parentId == storage.id)
+    .filter((item) => item.parentId == null)
     .reduce((acc, val) => {
       acc.push({
         ...val,
@@ -412,7 +422,7 @@ export function mapTree(
     return acc
   }, new Map<string, string[]>())
 
-  const labels = values(tagsMap)
+  const tags = values(tagsMap)
     .filter((tag) => (notesPerTagIdMap.get(tag._id) || []).length > 0)
     .sort((a, b) => {
       if (a._id < b._id) {
@@ -452,36 +462,6 @@ export function mapTree(
     label: 'Storages',
     shrink: 2,
     rows: navTree,
-    controls: [
-      {
-        icon: mdiPlus,
-        onClick: () =>
-          openModal(
-            <BasicInputFormLocal
-              defaultIcon={mdiFolderOutline}
-              defaultInputValue={storage != null ? storage.name : 'Untitled'}
-              defaultEmoji={undefined}
-              placeholder='Storage name'
-              submitButtonProps={{
-                label: 'Update',
-              }}
-              onSubmit={async (storageName: string) => {
-                if (storageName == '') {
-                  // pushMessage({
-                  //   title: 'Cannot rename storage',
-                  //   description: 'Storage name should not be empty.',
-                  // })
-                  return
-                }
-                await createStorage(
-                  { name: storageName, props: { type: 'fs', location: '/' } },
-                  {}
-                )
-              }}
-            />
-          ),
-      },
-    ],
   })
 
   // if (!team.personal) {
@@ -575,10 +555,10 @@ export function mapTree(
   //   })
   // }
 
-  if (labels.length > 0) {
+  if (tags.length > 0) {
     tree.push({
-      label: 'Labels',
-      rows: labels,
+      label: 'Tags',
+      rows: tags,
     })
   }
 
