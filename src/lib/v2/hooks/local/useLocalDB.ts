@@ -9,7 +9,7 @@ import {
   NoteStorage,
 } from '../../../db/types'
 import useBulkApi from '../../../../shared/lib/hooks/useBulkApi'
-import { getFolderHref, getNoteHref, getStorageHref } from '../../../db/utils'
+import { getFolderHref, getDocHref, getWorkspaceHref } from '../../../db/utils'
 import { join } from 'path'
 
 export function useLocalDB() {
@@ -39,29 +39,29 @@ export function useLocalDB() {
     unbookmarkNote,
     updateNote,
     renameFolder,
-    storageMap,
+    storageMap: workspaceMap,
   } = useDb()
   const { push } = useRouter()
 
   const { sendingMap, send } = useBulkApi()
 
-  const createStorageApi = useCallback(
+  const createWorkspaceApi = useCallback(
     async (
       body: CreateStorageRequestBody,
       options: {
         skipRedirect?: boolean
-        afterSuccess?: (storage: NoteStorage) => void
+        afterSuccess?: (workspace: NoteStorage) => void
       }
     ) => {
       await send(shortid.generate(), 'create', {
         api: () => createStorage(body.name, body.props),
-        cb: (storage: NoteStorage) => {
-          if (storage != null) {
+        cb: (workspace: NoteStorage) => {
+          if (workspace != null) {
             if (!options.skipRedirect) {
-              push(getStorageHref(storage))
+              push(getWorkspaceHref(workspace))
             }
             if (options.afterSuccess != null) {
-              options.afterSuccess(storage)
+              options.afterSuccess(workspace)
             }
           }
         },
@@ -70,13 +70,13 @@ export function useLocalDB() {
     [createStorage, push, send]
   )
 
-  const createNoteApi = useCallback(
+  const createDocApi = useCallback(
     async (body: CreateNoteRequestBody, afterSuccess?: () => void) => {
       await send(shortid.generate(), 'create', {
-        api: () => createNote(body.storageId, body.noteProps),
-        cb: (note: NoteDoc) => {
-          if (note != null) {
-            push(getNoteHref(note, body.storageId))
+        api: () => createNote(body.workspaceId, body.docProps),
+        cb: (doc: NoteDoc) => {
+          if (doc != null) {
+            push(getDocHref(doc, body.workspaceId))
             if (afterSuccess != null) {
               afterSuccess()
             }
@@ -97,12 +97,12 @@ export function useLocalDB() {
           }
           const folderPathname = join(body.destinationPathname, folderName)
           console.log('got ', body, folderPathname)
-          return createFolder(body.storageId, folderPathname)
+          return createFolder(body.workspaceId, folderPathname)
         },
         cb: (folder: FolderDoc) => {
           console.log('Created folder', folder)
           if (folder != null) {
-            push(getFolderHref(folder, body.storageId))
+            push(getFolderHref(folder, body.workspaceId))
             if (afterSuccess != null) {
               afterSuccess()
             }
@@ -113,18 +113,18 @@ export function useLocalDB() {
     [createFolder, push, send]
   )
 
-  const toggleNoteTrashed = useCallback(
-    async (storageId: string, noteId: string, trashed: boolean) => {
-      await send(noteId, 'trash', {
+  const toggleDocArchived = useCallback(
+    async (workspaceId: string, docId: string, trashed: boolean) => {
+      await send(docId, 'archive', {
         api: () => {
           if (trashed) {
-            return untrashNote(storageId, noteId)
+            return untrashNote(workspaceId, docId)
           } else {
-            return trashNote(storageId, noteId)
+            return trashNote(workspaceId, docId)
           }
         },
         cb: (res) => {
-          console.log('Trashed note...', res)
+          console.log('Archived doc...', res)
           // updateDocsMap([res.doc.id, res.doc])
           // if (pageDoc != null && res.doc.id === pageDoc.id) {
           //   setPartialPageData({ pageDoc: res.doc })
@@ -135,18 +135,18 @@ export function useLocalDB() {
     [send, trashNote, untrashNote]
   )
 
-  const toggleNoteBookmark = useCallback(
-    async (storageId: string, noteId: string, bookmarked: boolean) => {
-      await send(noteId, 'bookmark', {
+  const toggleDocBookmark = useCallback(
+    async (workspaceId: string, docId: string, bookmarked: boolean) => {
+      await send(docId, 'bookmark', {
         api: () => {
           if (bookmarked) {
-            return unbookmarkNote(storageId, noteId)
+            return unbookmarkNote(workspaceId, docId)
           } else {
-            return bookmarkNote(storageId, noteId)
+            return bookmarkNote(workspaceId, docId)
           }
         },
         cb: (res) => {
-          console.log('Bookmarked note...', res)
+          console.log('Bookmarked doc...', res)
           // updateDocsMap([res.doc.id, res.doc])
           // if (pageDoc != null && res.doc.id === pageDoc.id) {
           //   setPartialPageData({ pageDoc: res.doc })
@@ -158,11 +158,11 @@ export function useLocalDB() {
   )
 
   const deleteStorageApi = useCallback(
-    async (storage: NoteStorage) => {
-      await send(storage.id, 'delete', {
-        api: () => removeStorage(storage.id),
+    async (workspace: NoteStorage) => {
+      await send(workspace.id, 'delete', {
+        api: () => removeStorage(workspace.id),
         cb: (res) => {
-          console.log('Removed storage...', res)
+          console.log('Removed workspace...', res)
         },
       })
     },
@@ -170,9 +170,9 @@ export function useLocalDB() {
   )
 
   const deleteFolderApi = useCallback(
-    async (target: { storageId: string; pathname: string }) => {
-      await send(target.storageId, 'delete', {
-        api: () => removeFolder(target.storageId, target.pathname),
+    async (target: { workspaceId: string; pathname: string }) => {
+      await send(target.workspaceId, 'delete', {
+        api: () => removeFolder(target.workspaceId, target.pathname),
         cb: () => {
           console.log('Removed folder...', target.pathname)
         },
@@ -181,12 +181,12 @@ export function useLocalDB() {
     [send, removeFolder]
   )
 
-  const deleteNoteApi = useCallback(
-    async (target: { storageId: string; noteId: string }) => {
-      return send(target.storageId, 'delete', {
-        api: () => deleteNote(target.storageId, target.noteId),
+  const deleteDocApi = useCallback(
+    async (target: { workspaceId: string; docId: string }) => {
+      return send(target.workspaceId, 'delete', {
+        api: () => deleteNote(target.workspaceId, target.docId),
         cb: () => {
-          console.log('Removed note...', target.noteId)
+          console.log('Removed doc...', target.docId)
         },
       })
     },
@@ -198,7 +198,7 @@ export function useLocalDB() {
       await send(target._id, 'update', {
         api: () =>
           // not available, should add upsert folder props or find it?
-          renameFolder(body.storageName, body.oldPathname, body.newPathname),
+          renameFolder(body.workspaceId, body.oldPathname, body.newPathname),
         cb: () => {
           console.log('Updated folder...', target._id, body)
         },
@@ -207,12 +207,12 @@ export function useLocalDB() {
     [send, renameFolder]
   )
 
-  const updateNoteApi = useCallback(
+  const updateDocApi = useCallback(
     async (target: NoteDoc, body: UpdateNoteRequestBody) => {
       await send(target._id, 'update', {
-        api: () => updateNote(body.storageId, target._id, body.noteProps),
-        cb: (note: NoteDoc) => {
-          console.log('Updated note...', note)
+        api: () => updateNote(body.workspaceId, target._id, body.docProps),
+        cb: (doc: NoteDoc) => {
+          console.log('Updated note...', doc)
           // if (pageDoc != null && doc.id === pageDoc.id) {
           //   setPartialPageData({ pageDoc: doc })
           //   setCurrentPath(doc.folderPathname)
@@ -225,29 +225,29 @@ export function useLocalDB() {
 
   return {
     sendingMap,
-    createStorageApi,
-    createNote: createNoteApi,
+    createWorkspaceApi,
+    createDocApi,
     createFolder: createFolderApi,
-    toggleNoteTrashed,
-    toggleNoteBookmark,
+    toggleDocArchived,
+    toggleDocBookmark,
     deleteStorageApi,
     deleteFolderApi,
-    deleteNoteApi,
-    updateNote: updateNoteApi,
+    deleteDocApi,
+    updateNote: updateDocApi,
     updateFolder: updateFolderApi,
-    storageMap,
+    workspaceMap,
   }
 }
 
 export type CreateFolderRequestBody = {
-  storageId: string
+  workspaceId: string
   destinationPathname: string
   folderName: string
 }
 
 export type CreateNoteRequestBody = {
-  storageId: string
-  noteProps: Partial<NoteDocEditibleProps>
+  workspaceId: string
+  docProps: Partial<NoteDocEditibleProps>
 }
 
 export type CreateStorageRequestBody = {
@@ -256,12 +256,12 @@ export type CreateStorageRequestBody = {
 }
 
 export interface UpdateFolderRequestBody {
-  storageName: string
+  workspaceId: string
   oldPathname: string
   newPathname: string
 }
 
 export interface UpdateNoteRequestBody {
-  storageId: string
-  noteProps: Partial<NoteDoc>
+  workspaceId: string
+  docProps: Partial<NoteDoc>
 }

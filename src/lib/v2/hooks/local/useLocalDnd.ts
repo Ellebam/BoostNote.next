@@ -39,15 +39,15 @@ export function useLocalDnd() {
       if (draggedResource.current.type === 'folder') {
         const folder = draggedResource.current.result
         updateFolder(folder, {
-          storageName: storageName,
+          workspaceId: storageName,
           oldPathname: getFolderPathname(folder._id),
           newPathname: getFolderPathname(folder._id), // how to update this correctly (use actual local space DND implementation
         })
       } else if (draggedResource.current.type === 'note') {
         const note = draggedResource.current.result
         updateDoc(note, {
-          storageId: storageId,
-          noteProps: note,
+          workspaceId: storageId,
+          docProps: note,
         })
       }
     },

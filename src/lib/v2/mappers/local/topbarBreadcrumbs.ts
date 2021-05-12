@@ -20,10 +20,10 @@ import {
   getFolderId,
   getFolderNameFromPathname,
   getFolderPathname,
-  getNoteHref,
+  getDocHref,
   getNoteTitle,
   getParentFolderPathname,
-  getStorageHref,
+  getWorkspaceHref,
 } from '../../../db/utils'
 import { LocalNewResourceRequestBody } from '../../hooks/local/useLocalUI'
 import { FormRowProps } from '../../../../shared/components/molecules/Form'
@@ -137,7 +137,7 @@ export function mapTopbarBreadcrumbs(
             item: parent.item,
           }
         : {
-            href: getStorageHref(parent.item),
+            href: getWorkspaceHref(parent.item),
             type: 'storage',
             item: parent.item,
           }
@@ -225,8 +225,8 @@ function getDocBreadcrumb(
     type: 'note',
     item: note,
     link: {
-      href: getNoteHref(note, storageId),
-      navigateTo: () => push(getNoteHref(note, storageId)),
+      href: getDocHref(note, storageId),
+      navigateTo: () => push(getDocHref(note, storageId)),
     },
     controls: [
       ...(renameNote != null
@@ -372,8 +372,8 @@ export function mapStorageBreadcrumb(
     icon: mdiLock, // Default workspace Icon/Emoji
     parentId: topParentId,
     link: {
-      href: getStorageHref(storage),
-      navigateTo: () => push(getStorageHref(storage)),
+      href: getWorkspaceHref(storage),
+      navigateTo: () => push(getWorkspaceHref(storage)),
     },
     controls: [
       ...(openNewDocForm != null

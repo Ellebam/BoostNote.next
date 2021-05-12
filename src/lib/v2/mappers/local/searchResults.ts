@@ -11,7 +11,7 @@ import {
   getFolderName,
   getNoteTitle,
   getFolderHref,
-  getNoteHref,
+  getDocHref,
 } from '../../../db/utils'
 import { escapeRegExp } from '../../../string'
 
@@ -117,7 +117,7 @@ export function mapSearchResults(
     }
 
     const noteDoc = searchData.item.result
-    const href = getNoteHref(noteDoc, storage.id)
+    const href = getDocHref(noteDoc, storage.id)
     acc.push({
       label: getNoteTitle(noteDoc, 'Untitled'),
       href,

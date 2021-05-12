@@ -388,19 +388,19 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
   )
   const {
     updateFolder,
-    updateNote,
+    updateDoc,
     createFolder,
-    createNote: createNoteApi,
+    createDocApi,
     deleteFolderApi,
-    toggleNoteTrashed,
-    toggleNoteBookmark,
+    toggleDocArchived,
+    toggleDocBookmark,
     deleteStorageApi,
   } = useLocalDB()
   const {
-    openStorageEditForm,
+    openWorkspaceEditForm,
     openNewDocForm,
     openRenameFolderForm,
-    openRenameNoteForm,
+    openRenameDocForm,
     // deleteWorkspace,
   } = useLocalUI()
   const { draggedResource, dropInDocOrFolder, dropInStorage } = useLocalDnd()
@@ -419,44 +419,44 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
       toggleItem,
       getFoldEvents,
       push,
-      toggleNoteBookmark,
+      toggleDocBookmark,
       deleteStorageApi,
-      toggleNoteTrashed,
+      toggleDocArchived,
       deleteFolderApi,
       createFolder,
-      createNoteApi,
+      createDocApi,
       draggedResource,
       dropInDocOrFolder,
-      (id: string) => dropInStorage(id, storage.name, updateFolder, updateNote),
+      (id: string) => dropInStorage(id, storage.name, updateFolder, updateDoc),
       openRenameFolderForm,
-      openRenameNoteForm,
-      openStorageEditForm
+      openRenameDocForm,
+      openWorkspaceEditForm
     )
   }, [
-    createFolder,
-    createNoteApi,
-    deleteFolderApi,
+    initialLoadDone,
+    generalStatus.sidebarTreeSortingOrder,
+    storage,
+    pathname,
+    sideBarOpenedLinksIdsSet,
+    sideBarOpenedFolderIdsSet,
+    sideBarOpenedStorageIdsSet,
+    toggleItem,
+    getFoldEvents,
+    push,
+    toggleDocBookmark,
     deleteStorageApi,
+    toggleDocArchived,
+    deleteFolderApi,
+    createFolder,
+    createDocApi,
     draggedResource,
     dropInDocOrFolder,
-    dropInStorage,
-    generalStatus.sidebarTreeSortingOrder,
-    getFoldEvents,
-    initialLoadDone,
     openRenameFolderForm,
-    openRenameNoteForm,
-    openStorageEditForm,
-    pathname,
-    push,
-    sideBarOpenedFolderIdsSet,
-    sideBarOpenedLinksIdsSet,
-    sideBarOpenedStorageIdsSet,
-    storage,
-    toggleItem,
-    toggleNoteBookmark,
-    toggleNoteTrashed,
+    openRenameDocForm,
+    openWorkspaceEditForm,
+    dropInStorage,
     updateFolder,
-    updateNote,
+    updateDoc,
   ])
 
   return (
@@ -549,7 +549,7 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
                 onClick={() =>
                   openNewDocForm({
                     parentFolderPathname: '/',
-                    storageId: storage.id,
+                    workspaceId: storage.id,
                   })
                 }
               >

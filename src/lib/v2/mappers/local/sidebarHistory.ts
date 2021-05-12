@@ -4,7 +4,7 @@ import { FolderDoc, NoteDoc, NoteStorage, ObjectMap } from '../../../db/types'
 import {
   getFolderHref,
   getFolderName,
-  getNoteHref,
+  getDocHref,
   getNoteTitle,
 } from '../../../db/utils'
 
@@ -34,7 +34,7 @@ export function mapHistory(
     } else {
       const noteDoc = noteMap[historyItem.item]
       if (noteDoc != null) {
-        const href = getNoteHref(noteDoc, storage.id)
+        const href = getDocHref(noteDoc, storage.id)
         items.push({
           // emoji: noteDoc.emoji,
           defaultIcon: mdiFileDocumentOutline,

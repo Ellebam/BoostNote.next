@@ -45,7 +45,7 @@ export function prependNoteIdPrefix(noteId: string): string {
   return noteId
 }
 
-export function getStorageHref(storage: NoteStorage, query?: any): string {
+export function getWorkspaceHref(storage: NoteStorage, query?: any): string {
   return `/app/storages/${storage.id}?${query}`
 }
 
@@ -53,11 +53,11 @@ export function getTimelineHref(storage: NoteStorage, query?: any): string {
   return `/app/storages/${storage.id}/timeline?${query}`
 }
 
-export function getTrashCanHref(storage: NoteStorage): string {
+export function getArchiveHref(storage: NoteStorage): string {
   return `/app/storages/${storage.id}/trashcan`
 }
 
-export function getTagHref(
+export function getLabelHref(
   storage: NoteStorage,
   tagName: string,
   noteId?: string
@@ -76,7 +76,7 @@ export function getNoteTitle(note: NoteDoc, fallback: string) {
   return note.title != '' ? note.title : fallback
 }
 
-export function getNoteHref(note: NoteDoc, storageId: string) {
+export function getDocHref(note: NoteDoc, storageId: string) {
   return `/app/storages/${storageId}/notes/${note._id}`
 }
 

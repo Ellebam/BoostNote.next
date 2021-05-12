@@ -82,7 +82,7 @@ const NotePageToolbar = ({ storage, note }: NotePageToolbarProps) => {
     return mapTopBarTree(storage.noteMap, storage.folderMap, storage, push)
   }, [push, storage])
   const {
-    openStorageEditForm,
+    openWorkspaceEditForm,
     openNewDocForm,
     openNewFolderForm,
     openRenameFolderForm,
@@ -373,9 +373,10 @@ const NotePageToolbar = ({ storage, note }: NotePageToolbarProps) => {
           openRenameNoteForm,
           openNewDocForm,
           openNewFolderForm,
-          openStorageEditForm,
+          openWorkspaceEditForm,
           deleteOrTrashNote,
-          (storageName, folder) => deleteFolder({ storageName, folder }),
+          (storageName, folder) =>
+            deleteFolder({ workspaceName: storageName, folder }),
           undefined
         ),
       } as TopbarProps),
@@ -460,7 +461,7 @@ const NotePageToolbar = ({ storage, note }: NotePageToolbarProps) => {
     openNewFolderForm,
     openRenameFolderForm,
     openRenameNoteForm,
-    openStorageEditForm,
+    openWorkspaceEditForm,
     push,
     selectEditMode,
     selectPreviewMode,

@@ -1,7 +1,7 @@
 import { SidebarSpace } from '../../../../shared/components/organisms/Sidebar/molecules/SidebarSpaces'
 import React from 'react'
 import { NoteStorage } from '../../../db/types'
-import { getStorageHref } from '../../../db/utils'
+import { getWorkspaceHref } from '../../../db/utils'
 
 export function mapStorages(
   push: (url: string) => void,
@@ -10,7 +10,7 @@ export function mapStorages(
 ) {
   const rows: SidebarSpace[] = []
   storages.forEach((storage) => {
-    const href = getStorageHref(storage)
+    const href = getWorkspaceHref(storage)
     rows.push({
       label: storage.name,
       active: currentStorage?.id === storage.id,

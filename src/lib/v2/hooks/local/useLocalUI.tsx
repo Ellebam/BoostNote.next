@@ -35,32 +35,32 @@ export function useLocalUI() {
   } = useDb()
   const { pushMessage } = useToast()
 
-  const openStorageEditForm = useCallback(
-    (storage: NoteStorage) => {
+  const openWorkspaceEditForm = useCallback(
+    (workspace: NoteStorage) => {
       openModal(
         <BasicInputFormLocal
           defaultIcon={mdiFolderOutline}
-          defaultInputValue={storage != null ? storage.name : 'Untitled'}
+          defaultInputValue={workspace != null ? workspace.name : 'Untitled'}
           defaultEmoji={undefined}
-          placeholder='Storage name'
+          placeholder='Workspace name'
           submitButtonProps={{
             label: 'Update',
           }}
-          onSubmit={async (storageName: string) => {
-            if (storageName == '') {
+          onSubmit={async (workspaceName: string) => {
+            if (workspaceName == '') {
               pushMessage({
-                title: 'Cannot rename storage',
-                description: 'Storage name should not be empty.',
+                title: 'Cannot rename workspace',
+                description: 'Workspace name should not be empty.',
               })
             }
-            await renameStorage(storage.id, storageName)
+            await renameStorage(workspace.id, workspaceName)
             closeLastModal()
           }}
         />,
         {
           showCloseIcon: true,
           size: 'default',
-          title: 'Rename storage',
+          title: 'Rename workspace',
         }
       )
     },
@@ -68,7 +68,7 @@ export function useLocalUI() {
   )
 
   const openRenameFolderForm = useCallback(
-    (storageId: string, folder: FolderDoc) => {
+    (workspaceId: string, folder: FolderDoc) => {
       const folderPathname = getFolderPathname(folder._id)
       const folderName = getFolderNameFromPathname(folderPathname)
       openModal(
@@ -92,7 +92,7 @@ export function useLocalUI() {
               folderName
             )
             await renameFolder(
-              storageId,
+              workspaceId,
               folderPathname,
               newFolderPathname
             ).catch((err) => {
@@ -110,7 +110,7 @@ export function useLocalUI() {
             // Should update the UI, again works weirdly in pouch DB, works ok in FS storage but opens folder?
             // does not update the note properly?
             // push(`/app/storages/${storageId}/notes${newFolderPathname}`)
-            openSideNavFolderItemRecursively(storageId, newFolderPathname)
+            openSideNavFolderItemRecursively(workspaceId, newFolderPathname)
             closeLastModal()
           }}
         />,
@@ -130,12 +130,12 @@ export function useLocalUI() {
     ]
   )
 
-  const openRenameNoteForm = useCallback(
-    (storageId: string, note: NoteDoc) => {
+  const openRenameDocForm = useCallback(
+    (workspaceId: string, doc: NoteDoc) => {
       openModal(
         <BasicInputFormLocal
           defaultIcon={mdiFileDocumentOutline}
-          defaultInputValue={getNoteTitle(note, 'Untitled')}
+          defaultInputValue={getNoteTitle(doc, 'Untitled')}
           defaultEmoji={mdiPencil}
           placeholder='Note title'
           submitButtonProps={{
@@ -143,14 +143,14 @@ export function useLocalUI() {
           }}
           inputIsDisabled={false}
           onSubmit={async (inputValue: string) => {
-            await updateNote(storageId, note._id, { title: inputValue })
+            await updateNote(workspaceId, doc._id, { title: inputValue })
             closeLastModal()
           }}
         />,
         {
           showCloseIcon: true,
           size: 'default',
-          title: 'Rename note',
+          title: 'Rename document',
         }
       )
     },
@@ -168,7 +168,7 @@ export function useLocalUI() {
           }}
           prevRows={prevRows}
           onSubmit={async (inputValue: string) => {
-            if (body.storageId == null) {
+            if (body.workspaceId == null) {
               return
             }
 
@@ -182,7 +182,7 @@ export function useLocalUI() {
                   : '/',
                 inputValue
               )
-              await createFolder(body.storageId, folderPathname)
+              await createFolder(body.workspaceId, folderPathname)
             } finally {
               closeLastModal()
             }
@@ -203,17 +203,17 @@ export function useLocalUI() {
       openModal(
         <BasicInputFormLocal
           defaultIcon={mdiFileDocumentOutline}
-          placeholder='Note title'
+          placeholder='Document title'
           submitButtonProps={{
             label: 'Create',
           }}
           prevRows={prevRows}
           onSubmit={async (inputValue: string) => {
-            if (body.storageId == null) {
+            if (body.workspaceId == null) {
               return
             }
 
-            await createNote(body.storageId, {
+            await createNote(body.workspaceId, {
               title: inputValue,
               folderPathname:
                 body.parentFolderPathname != null
@@ -226,7 +226,7 @@ export function useLocalUI() {
         {
           showCloseIcon: true,
           size: 'default',
-          title: 'Create new note',
+          title: 'Create new document',
         }
       )
     },
@@ -260,7 +260,7 @@ export function useLocalUI() {
   // )
 
   const deleteFolder = useCallback(
-    async (target: { storageName: string; folder: FolderDoc }) => {
+    async (target: { workspaceName: string; folder: FolderDoc }) => {
       const folderPathname = getFolderPathname(target.folder._id)
       messageBox({
         title: `Delete folder '${
@@ -268,7 +268,7 @@ export function useLocalUI() {
             ? folderPathname.substr(1)
             : folderPathname
         }'`,
-        message: `Are you sure you want to remove this folder and its notes?`,
+        message: `Are you sure you want to remove this folder and its documents?`,
         iconType: DialogIconTypes.Warning,
         buttons: [
           {
@@ -281,7 +281,7 @@ export function useLocalUI() {
             variant: 'danger',
             label: 'Delete',
             onClick: async () => {
-              await removeFolder(target.storageName, folderPathname)
+              await removeFolder(target.workspaceName, folderPathname)
             },
           },
         ],
@@ -290,12 +290,12 @@ export function useLocalUI() {
     [messageBox, removeFolder]
   )
 
-  const deleteOrTrashNote = useCallback(
+  const deleteOrArchiveDoc = useCallback(
     async (
-      storageId: string,
-      noteId: string,
+      workspaceId: string,
+      docId: string,
       trashed: boolean,
-      title = 'this note'
+      title = 'this document'
     ) => {
       if (!trashed) {
         return messageBox({
@@ -313,7 +313,7 @@ export function useLocalUI() {
               variant: 'warning',
               label: 'Archive',
               onClick: async () => {
-                await trashNote(storageId, noteId)
+                await trashNote(workspaceId, docId)
               },
             },
           ],
@@ -321,7 +321,7 @@ export function useLocalUI() {
       }
       messageBox({
         title: `Delete ${title}`,
-        message: `Are you sure you want to delete this note?`,
+        message: `Are you sure you want to delete this document?`,
         iconType: DialogIconTypes.Warning,
         buttons: [
           {
@@ -334,7 +334,7 @@ export function useLocalUI() {
             variant: 'danger',
             label: 'Delete',
             onClick: async () => {
-              await purgeNote(storageId, noteId)
+              await purgeNote(workspaceId, docId)
             },
           },
         ],
@@ -344,18 +344,18 @@ export function useLocalUI() {
   )
 
   return {
-    openStorageEditForm,
+    openWorkspaceEditForm,
     openNewDocForm,
     openNewFolderForm,
     openRenameFolderForm,
-    openRenameNoteForm,
+    openRenameDocForm,
     deleteFolder,
     // deleteWorkspace,
-    deleteOrTrashNote,
+    deleteOrTrashNote: deleteOrArchiveDoc,
   }
 }
 
 export interface LocalNewResourceRequestBody {
-  storageId?: string
+  workspaceId?: string
   parentFolderPathname?: string
 }
