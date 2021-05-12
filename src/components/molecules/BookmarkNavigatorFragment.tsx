@@ -50,8 +50,8 @@ const BookmarkNavigatorFragment = ({
         <>
           {bookmarkedNoteList.map((note) => {
             const active =
-              params.name === 'storages.notes' &&
-              params.storageId === storage.id &&
+              params.name === 'workspaces.notes' &&
+              params.workspaceId === storage.id &&
               params.noteId === note._id
             const emptyTitle = note.title.trim().length === 0
             return (

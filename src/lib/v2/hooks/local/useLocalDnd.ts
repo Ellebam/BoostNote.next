@@ -1,34 +1,32 @@
 import { useCallback, useRef } from 'react'
 import { NavResource } from '../../interfaces/resources'
 import { useToast } from '../../../../shared/lib/stores/toast'
-import { FolderDoc, NoteDoc } from '../../../db/types'
-import { UpdateFolderRequestBody, UpdateNoteRequestBody } from './useLocalDB'
+import { FolderDoc } from '../../../db/types'
+import {
+  UpdateFolderRequestBody,
+  UpdateDocRequestBody,
+  useLocalDB,
+} from './useLocalDB'
 import { getFolderPathname } from '../../../db/utils'
-import { SidebarDragState } from '../../../../shared/lib/dnd'
+import { DraggedTo, SidebarDragState } from '../../../../shared/lib/dnd'
+import { getResourceId } from '../../../db/patterns'
 
 export function useLocalDnd() {
   const draggedResource = useRef<NavResource>()
-  // const {
-  //   updateFoldersMap,
-  //   updateDocsMap,
-  //   updateWorkspacesMap,
-  //   setCurrentPath,
-  // } = useNav()
-  // const { pageDoc, pageFolder } = usePage()
   const { pushApiErrorMessage, pushMessage } = useToast()
+  const { updateDocApi } = useLocalDB()
 
-  const dropInStorage = useCallback(
+  const dropInWorkspace = useCallback(
     async (
-      storageId: string,
-      storageName: string,
+      workspaceId: string,
       updateFolder: (folder: FolderDoc, body: UpdateFolderRequestBody) => void,
-      updateDoc: (doc: NoteDoc, body: UpdateNoteRequestBody) => void
+      updateDoc: (docId: string, body: UpdateDocRequestBody) => void
     ) => {
       if (draggedResource.current == null) {
         return
       }
 
-      if (draggedResource.current.result._id === storageId) {
+      if (draggedResource.current.result._id === workspaceId) {
         pushMessage({
           title: 'Oops',
           description: 'Resource is already present in this workspace',
@@ -39,23 +37,24 @@ export function useLocalDnd() {
       if (draggedResource.current.type === 'folder') {
         const folder = draggedResource.current.result
         updateFolder(folder, {
-          workspaceId: storageName,
+          workspaceId: workspaceId,
           oldPathname: getFolderPathname(folder._id),
           newPathname: getFolderPathname(folder._id), // how to update this correctly (use actual local space DND implementation
         })
-      } else if (draggedResource.current.type === 'note') {
-        const note = draggedResource.current.result
-        updateDoc(note, {
-          workspaceId: storageId,
-          docProps: note,
+      } else if (draggedResource.current.type === 'doc') {
+        const doc = draggedResource.current.result
+        updateDoc(doc._id, {
+          workspaceId: workspaceId,
+          docProps: doc,
         })
       }
     },
     [pushMessage]
   )
 
-  const dropInNoteOrFolder = useCallback(
+  const dropInDocOrFolder = useCallback(
     async (
+      workspaceId: string,
       targetedResource: NavResource,
       targetedPosition: SidebarDragState
     ) => {
@@ -71,7 +70,28 @@ export function useLocalDnd() {
       }
 
       try {
-        // const originalResourceId = getResourceId(draggedResource.current)
+        const originalResourceId = getResourceId(draggedResource.current)
+        console.log('Target res', targetedResource)
+        console.log('Target pos', targetedPosition)
+        console.log('Original Res ID', originalResourceId)
+        if (draggedResource.current.type == 'doc') {
+          if (targetedResource.type == 'folder') {
+            // move doc to target item (folder) at position (before, in, after)
+            if (targetedPosition == DraggedTo.insideFolder) {
+              await updateDocApi(originalResourceId, {
+                workspaceId: workspaceId,
+                docProps: {
+                  folderPathname: getFolderPathname(
+                    targetedResource.result._id
+                  ),
+                },
+              })
+            }
+          }
+        } else {
+          // move folder
+        }
+      } catch (error) {
         // const pos = targetedPosition
         // move resource (note/folder)
         // const { folders, docs, workspaces } = await moveResource(
@@ -85,16 +105,15 @@ export function useLocalDnd() {
         // if (pageDoc != null && changedDocs.get(pageDoc.id) != null) {
         //   setCurrentPath(changedDocs.get(pageDoc.id)!.folderPathname)
         // }
-      } catch (error) {
         pushApiErrorMessage(error)
       }
     },
-    [pushApiErrorMessage]
+    [pushApiErrorMessage, updateDocApi]
   )
 
   return {
     draggedResource,
-    dropInStorage,
-    dropInDocOrFolder: dropInNoteOrFolder,
+    dropInWorkspace,
+    dropInDocOrFolder,
   }
 }

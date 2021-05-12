@@ -114,7 +114,9 @@ const StorageNavigatorFragment = ({
   useEffect(() => {
     const handler = () => {
       const folderPathname =
-        routeParams.name === 'storages.notes' ? routeParams.folderPathname : '/'
+        routeParams.name === 'workspaces.notes'
+          ? routeParams.folderPathname
+          : '/'
       showPromptToCreateFolder(folderPathname)
     }
     addIpcListener('new-folder', handler)
@@ -148,10 +150,10 @@ const StorageNavigatorFragment = ({
   const rootFolderPathname = `/app/storages/${storage.id}/notes`
 
   const trashcanPagePathname = `/app/storages/${storage.id}/trashcan`
-  const trashcanPageIsActive = routeParams.name === 'storages.trashCan'
+  const trashcanPageIsActive = routeParams.name === 'workspaces.archive'
 
   const attachmentsPagePathname = `/app/storages/${storage.id}/attachments`
-  const attachmentsPageIsActive = routeParams.name === 'storages.attachments'
+  const attachmentsPageIsActive = routeParams.name === 'workspaces.attachments'
 
   const createNewNoteInRootFolder = useCallback(() => {
     createNoteInFolderAndRedirect('/')
@@ -194,7 +196,7 @@ const StorageNavigatorFragment = ({
 
   const rootIsActive =
     `/app/storages/${storage.id}/notes` === pathname &&
-    routeParams.name === 'storages.notes' &&
+    routeParams.name === 'workspaces.notes' &&
     routeParams.noteId == null
 
   return (

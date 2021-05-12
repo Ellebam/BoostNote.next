@@ -40,7 +40,7 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
 
   const note = useMemo(() => {
     switch (routeParams.name) {
-      case 'storages.notes': {
+      case 'workspaces.notes': {
         if (routeParams.noteId == null) {
           return undefined
         }
@@ -53,7 +53,7 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
         }
         return note
       }
-      case 'storages.tags.show': {
+      case 'workspaces.labels.show': {
         if (routeParams.noteId == null) {
           return undefined
         }
@@ -66,7 +66,7 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
         }
         return note
       }
-      case 'storages.trashCan': {
+      case 'workspaces.archive': {
         if (routeParams.noteId == null) {
           return undefined
         }
@@ -115,14 +115,14 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
           <NotePageToolbar note={note} storage={storage} />
           <div className='detail'>
             {note == null ? (
-              routeParams.name === 'storages.notes' ? (
+              routeParams.name === 'workspaces.notes' ? (
                 <FolderDetail
                   storage={storage}
                   folderPathname={routeParams.folderPathname}
                 />
-              ) : routeParams.name === 'storages.tags.show' ? (
+              ) : routeParams.name === 'workspaces.labels.show' ? (
                 <TagDetail storage={storage} tagName={routeParams.tagName} />
-              ) : routeParams.name === 'storages.trashCan' ? (
+              ) : routeParams.name === 'workspaces.archive' ? (
                 <TrashDetail storage={storage} />
               ) : (
                 <div>Idle</div>

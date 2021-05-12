@@ -4,10 +4,12 @@ import {
   sortByAttributeDesc,
 } from '../../../../shared/lib/utils/array'
 import {
+  mdiApplicationCog,
   mdiArchiveOutline,
   mdiFileDocumentOutline,
   mdiFilePlusOutline,
   mdiFolderPlusOutline,
+  mdiLock,
   mdiPaperclip,
   mdiPencil,
   mdiStar,
@@ -77,30 +79,30 @@ type LocalTreeItem = {
   onDrop?: (position?: SidebarDragState) => void
 }
 
-// function getStorageChildrenOrderedIds(
-//   notes: NoteDoc[],
-//   folders: FolderDoc[],
-//   rootPathname = '/'
-// ): string[] {
-//   const children: string[] = []
-//   notes.forEach((note) => {
-//     if (note.folderPathname == rootPathname) {
-//       children.push(note._id)
-//     }
-//   })
-//
-//   folders.forEach((folder) => {
-//     const folderPathname = getFolderPathname(folder._id)
-//     if (folderPathname === '/') {
-//       return
-//     }
-//     const parentFolderPathname = getParentFolderPathname(folderPathname)
-//     if (parentFolderPathname === rootPathname) {
-//       children.push(folder._id)
-//     }
-//   })
-//   return children
-// }
+function getWorkspaceChildrenOrderedIds(
+  notes: NoteDoc[],
+  folders: FolderDoc[],
+  rootPathname = '/'
+): string[] {
+  const children: string[] = []
+  notes.forEach((note) => {
+    if (note.folderPathname == rootPathname) {
+      children.push(note._id)
+    }
+  })
+
+  folders.forEach((folder) => {
+    const folderPathname = getFolderPathname(folder._id)
+    if (folderPathname === '/') {
+      return
+    }
+    const parentFolderPathname = getParentFolderPathname(folderPathname)
+    if (parentFolderPathname === rootPathname) {
+      children.push(folder._id)
+    }
+  })
+  return children
+}
 
 function getFolderChildrenOrderedIds(
   parentFolder: FolderDoc,
@@ -158,6 +160,7 @@ export function mapTree(
   createNote: (body: CreateNoteRequestBody) => Promise<void>,
   draggedResource: React.MutableRefObject<NavResource | undefined>,
   dropInFolderOrDoc: (
+    workspaceId: string,
     targetedResource: NavResource,
     targetedPosition: SidebarDragState
   ) => void,
@@ -176,55 +179,55 @@ export function mapTree(
   const items = new Map<string, LocalTreeItem>()
   const [notes, folders] = [values(docMap), values(folderMap)]
 
-  // const href = getStorageHref(storage)
-  // items.set(storage.id, {
-  //   id: storage.id,
-  //   label: storage.name,
-  //   defaultIcon: mdiLock,
-  //   children: getStorageChildrenOrderedIds(notes, folders), // storage.positions?.orderedIds || [],
-  //   folded: !sideBarOpenedStoragesIdsSet.has(storage.id),
-  //   folding: getFoldEvents('storages', storage.id),
-  //   href,
-  //   active: true, //  href === currentPathWithStorage,
-  //   navigateTo: () => push(href),
-  //   dropIn: true,
-  //   onDrop: () => dropInStorage(storage.id),
-  //   controls: [
-  //     {
-  //       icon: mdiFilePlusOutline,
-  //       onClick: undefined,
-  //       placeholder: 'Note title..',
-  //       create: (title: string) =>
-  //         createNote({ storageId: storage.id, noteProps: { title: title } }),
-  //     },
-  //     {
-  //       icon: mdiFolderPlusOutline,
-  //       onClick: undefined,
-  //       placeholder: 'Folder name..',
-  //       create: (folderName: string) =>
-  //         createFolder({
-  //           storageId: storage.id,
-  //           folderName: folderName,
-  //           destinationPathname: '/',
-  //         }),
-  //     },
-  //   ],
-  //   // todo: what is default for?
-  //   contextControls: [
-  //     {
-  //       type: MenuTypes.Normal,
-  //       icon: mdiApplicationCog,
-  //       label: 'Edit',
-  //       onClick: () => openStorageEditForm(storage),
-  //     },
-  //     {
-  //       type: MenuTypes.Normal,
-  //       icon: mdiTrashCanOutline,
-  //       label: 'Delete',
-  //       onClick: () => deleteStorage(storage),
-  //     },
-  //   ],
-  // })
+  const href = getWorkspaceHref(workspace)
+  items.set(workspace.id, {
+    id: workspace.id,
+    label: workspace.name,
+    defaultIcon: mdiLock,
+    children: getWorkspaceChildrenOrderedIds(notes, folders), // workspace.positions?.orderedIds || [],
+    folded: !sideBarOpenedWorkspaceIdsSet.has(workspace.id),
+    folding: getFoldEvents('workspaces', workspace.id),
+    href,
+    active: true, //  href === currentPathWithStorage,
+    navigateTo: () => push(href),
+    dropIn: true,
+    onDrop: () => dropInWorkspace(workspace.id),
+    controls: [
+      {
+        icon: mdiFilePlusOutline,
+        onClick: undefined,
+        placeholder: 'Note title..',
+        create: (title: string) =>
+          createNote({ workspaceId: workspace.id, docProps: { title: title } }),
+      },
+      {
+        icon: mdiFolderPlusOutline,
+        onClick: undefined,
+        placeholder: 'Folder name..',
+        create: (folderName: string) =>
+          createFolder({
+            workspaceId: workspace.id,
+            folderName: folderName,
+            destinationPathname: '/',
+          }),
+      },
+    ],
+    // todo: what is default for?
+    contextControls: [
+      {
+        type: MenuTypes.Normal,
+        icon: mdiApplicationCog,
+        label: 'Edit',
+        onClick: () => openWorkspaceEditForm(workspace),
+      },
+      {
+        type: MenuTypes.Normal,
+        icon: mdiTrashCanOutline,
+        label: 'Delete',
+        onClick: () => deleteWorkspace(workspace),
+      },
+    ],
+  })
 
   folders.forEach((folder) => {
     const folderId = folder._id
@@ -250,7 +253,11 @@ export function mapTree(
       active: href === currentPathWithWorkspace,
       navigateTo: () => push(href),
       onDrop: (position: SidebarDragState) =>
-        dropInFolderOrDoc({ type: 'folder', result: folder }, position),
+        dropInFolderOrDoc(
+          workspace.id,
+          { type: 'folder', result: folder },
+          position
+        ),
       onDragStart: () => {
         draggedResource.current = { type: 'folder', result: folder }
       },
@@ -322,11 +329,11 @@ export function mapTree(
     })
   })
 
-  notes.forEach((note) => {
-    const noteId = note._id
-    const href = getDocHref(note, workspace.id)
-    const bookmarked = !!note.data.bookmarked
-    const parentFolderDoc = workspace.folderMap[note.folderPathname]
+  notes.forEach((doc) => {
+    const noteId = doc._id
+    const href = getDocHref(doc, workspace.id)
+    const bookmarked = !!doc.data.bookmarked
+    const parentFolderDoc = workspace.folderMap[doc.folderPathname]
     const parentNoteId =
       parentFolderDoc != null
         ? parentFolderDoc.pathname == '/'
@@ -335,20 +342,20 @@ export function mapTree(
         : workspace.id
     items.set(noteId, {
       id: noteId,
-      lastUpdated: note.updatedAt, // doc.head != null ? doc.head.created : doc.updatedAt,
-      label: getNoteTitle(note, 'Untitled'),
+      lastUpdated: doc.updatedAt, // doc.head != null ? doc.head.created : doc.updatedAt,
+      label: getNoteTitle(doc, 'Untitled'),
       bookmarked: bookmarked,
       defaultIcon: mdiFileDocumentOutline,
-      trashed: note.trashed,
+      trashed: doc.trashed,
       children: [],
       href,
       active: href === currentPathWithWorkspace,
       dropAround: sortingOrder === 'drag',
       navigateTo: () => push(href),
       onDrop: (position: SidebarDragState) =>
-        dropInFolderOrDoc({ type: 'note', result: note }, position),
+        dropInFolderOrDoc(workspace.id, { type: 'doc', result: doc }, position),
       onDragStart: () => {
-        draggedResource.current = { type: 'note', result: note }
+        draggedResource.current = { type: 'doc', result: doc }
       },
       contextControls: [
         {
@@ -361,13 +368,13 @@ export function mapTree(
           type: MenuTypes.Normal,
           icon: mdiPencil,
           label: 'Rename',
-          onClick: () => openRenameNoteForm(workspace.id, note),
+          onClick: () => openRenameNoteForm(workspace.id, doc),
         },
         {
           type: MenuTypes.Normal,
           icon: mdiArchiveOutline,
-          label: note.trashed ? 'Restore' : 'Archive',
-          onClick: () => toggleNoteArchived(workspace.id, noteId, note.trashed),
+          label: doc.trashed ? 'Restore' : 'Archive',
+          onClick: () => toggleNoteArchived(workspace.id, noteId, doc.trashed),
         },
       ],
       parentId: parentNoteId,
@@ -396,7 +403,7 @@ export function mapTree(
   }, [] as SidebarTreeChildRow[])
 
   const navTree = arrayItems
-    // .filter((item) => item.parentId == null)
+    .filter((item) => item.parentId == null)
     .reduce((acc, val) => {
       acc.push({
         ...val,

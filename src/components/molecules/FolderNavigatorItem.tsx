@@ -183,8 +183,8 @@ const FolderNavigatorItem = ({
     }
 
     const {
-      storageId: originalNoteStorageId,
-      note: originalNote,
+      workspaceId: originalNoteStorageId,
+      doc: originalNote,
     } = transferrableNoteData
 
     if (storageId === originalNoteStorageId) {

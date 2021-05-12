@@ -119,26 +119,26 @@ function useContent(
       return <BoostHubAccountDeletePage />
     case 'boosthub.teams.show':
       return null
-    case 'storages.notes':
-    case 'storages.trashCan':
-    case 'storages.tags.show': {
-      const { storageId } = routeParams
-      const storage = storageMap[storageId]
+    case 'workspaces.notes':
+    case 'workspaces.archive':
+    case 'workspaces.labels.show': {
+      const { workspaceId } = routeParams
+      const storage = storageMap[workspaceId]
       if (storage == null) {
         break
       }
 
       return <WikiNotePage storage={storage} />
     }
-    case 'storages.attachments': {
-      const { storageId } = routeParams
-      const storage = storageMap[storageId]
+    case 'workspaces.attachments': {
+      const { workspaceId } = routeParams
+      const storage = storageMap[workspaceId]
       if (storage == null) {
         break
       }
       return <AttachmentsPage storage={storage} />
     }
-    case 'storages.create':
+    case 'workspaces.create':
       return <StorageCreatePage />
   }
   return (

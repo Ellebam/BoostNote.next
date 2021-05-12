@@ -86,7 +86,7 @@ const NotePageToolbar = ({ storage, note }: NotePageToolbarProps) => {
     openNewDocForm,
     openNewFolderForm,
     openRenameFolderForm,
-    openRenameNoteForm,
+    openRenameDocForm,
     deleteFolder,
     // deleteWorkspace,
     deleteOrTrashNote,
@@ -322,7 +322,7 @@ const NotePageToolbar = ({ storage, note }: NotePageToolbarProps) => {
 
   const folderPathname =
     note == null
-      ? routeParams.name === 'storages.notes'
+      ? routeParams.name === 'workspaces.notes'
         ? routeParams.folderPathname
         : '/'
       : note.folderPathname
@@ -330,7 +330,7 @@ const NotePageToolbar = ({ storage, note }: NotePageToolbarProps) => {
   const noteFolderOrFolder = useMemo(() => {
     if (note != null) {
       return storage.folderMap[note.folderPathname]
-    } else if (routeParams.name === 'storages.notes') {
+    } else if (routeParams.name === 'workspaces.notes') {
       return storage.folderMap[folderPathname]
     } else {
       return undefined
@@ -370,7 +370,7 @@ const NotePageToolbar = ({ storage, note }: NotePageToolbarProps) => {
           push,
           { pageNote: note, pageFolder: noteFolderOrFolder },
           openRenameFolderForm,
-          openRenameNoteForm,
+          openRenameDocForm,
           openNewDocForm,
           openNewFolderForm,
           openWorkspaceEditForm,
@@ -460,7 +460,7 @@ const NotePageToolbar = ({ storage, note }: NotePageToolbarProps) => {
     openNewDocForm,
     openNewFolderForm,
     openRenameFolderForm,
-    openRenameNoteForm,
+    openRenameDocForm,
     openWorkspaceEditForm,
     push,
     selectEditMode,

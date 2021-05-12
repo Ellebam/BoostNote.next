@@ -12,7 +12,7 @@ import { useActiveStorageId } from '../../../routeParams'
 
 const initialContent: CollapsableContent = {
   folders: [],
-  storages: [],
+  workspaces: [],
   links: [],
 }
 
@@ -76,7 +76,7 @@ function useSidebarCollapseStore(): SidebarCollapseContext {
   }, [currentStorageCollapsable])
 
   const sideBarOpenedStorageIdsSet = useMemo(() => {
-    return new Set(currentStorageCollapsable.storages)
+    return new Set(currentStorageCollapsable.workspaces)
   }, [currentStorageCollapsable])
 
   const sideBarOpenedLinksIdsSet = useMemo(() => {

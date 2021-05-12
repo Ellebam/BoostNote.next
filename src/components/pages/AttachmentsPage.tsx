@@ -23,7 +23,7 @@ interface AttachmentsPageProps {
 
 const AttachmentsPage = ({ storage }: AttachmentsPageProps) => {
   const routeParams = useRouteParams() as StorageAttachmentsRouteParams
-  const { storageId } = routeParams
+  const { workspaceId } = routeParams
 
   const { addAttachments } = useDb()
 
@@ -37,7 +37,7 @@ const AttachmentsPage = ({ storage }: AttachmentsPageProps) => {
           event.preventDefault()
 
           const files = getFileList(event)
-          addAttachments(storageId, files)
+          addAttachments(workspaceId, files)
         }}
       >
         <PageDraggableHeader

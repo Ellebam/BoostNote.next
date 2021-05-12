@@ -208,9 +208,9 @@ export function useLocalDB() {
   )
 
   const updateDocApi = useCallback(
-    async (target: NoteDoc, body: UpdateNoteRequestBody) => {
-      await send(target._id, 'update', {
-        api: () => updateNote(body.workspaceId, target._id, body.docProps),
+    async (docId: string, body: UpdateDocRequestBody) => {
+      await send(docId, 'update', {
+        api: () => updateNote(body.workspaceId, docId, body.docProps),
         cb: (doc: NoteDoc) => {
           console.log('Updated note...', doc)
           // if (pageDoc != null && doc.id === pageDoc.id) {
@@ -233,7 +233,7 @@ export function useLocalDB() {
     deleteStorageApi,
     deleteFolderApi,
     deleteDocApi,
-    updateNote: updateDocApi,
+    updateDocApi,
     updateFolder: updateFolderApi,
     workspaceMap,
   }
@@ -261,7 +261,7 @@ export interface UpdateFolderRequestBody {
   newPathname: string
 }
 
-export interface UpdateNoteRequestBody {
+export interface UpdateDocRequestBody {
   workspaceId: string
   docProps: Partial<NoteDoc>
 }

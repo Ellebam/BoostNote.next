@@ -32,13 +32,13 @@ import { topParentId } from '../../../../cloud/lib/mappers/topbarTree'
 
 type AddedProperties =
   | { type: 'folder'; item: FolderDoc }
-  | { type: 'note'; item: NoteDoc }
-  | { type: 'storage'; item: NoteStorage }
+  | { type: 'doc'; item: NoteDoc }
+  | { type: 'workspace'; item: NoteStorage }
   | { type: undefined; item: undefined }
 
 export function mapTopbarBreadcrumbs(
   foldersMap: ObjectMap<FolderDoc>,
-  storage: NoteStorage,
+  workspace: NoteStorage,
   push: (url: string) => void,
   {
     pageNote,
@@ -70,7 +70,7 @@ export function mapTopbarBreadcrumbs(
 
   let parent:
     | { type: 'folder'; item?: FolderDoc }
-    | { type: 'storage'; item?: NoteStorage }
+    | { type: 'workspace'; item?: NoteStorage }
     | undefined
 
   if (pageNote != null) {
@@ -78,10 +78,10 @@ export function mapTopbarBreadcrumbs(
     parent =
       parentFolderDoc != null && pageNote.folderPathname != '/'
         ? { type: 'folder', item: parentFolderDoc }
-        : { type: 'storage', item: storage }
+        : { type: 'workspace', item: workspace }
     items.unshift(
       getDocBreadcrumb(
-        storage.id,
+        workspace.id,
         pageNote,
         true,
         push,
@@ -99,13 +99,13 @@ export function mapTopbarBreadcrumbs(
     parent =
       parentFolderDoc != null && parentFolderPathname != '/'
         ? { type: 'folder', item: parentFolderDoc }
-        : { type: 'storage', item: storage }
+        : { type: 'workspace', item: workspace }
     const pageFolderPathname = getFolderPathname(pageFolder._id)
     if (pageFolderPathname != '/') {
       items.unshift(
         getFolderBreadcrumb(
           pageFolder,
-          storage,
+          workspace,
           push,
           openNewDocForm,
           openNewFolderForm,
@@ -132,13 +132,13 @@ export function mapTopbarBreadcrumbs(
           }
         : parent.type === 'folder'
         ? {
-            href: getFolderHref(parent.item, storage.id),
+            href: getFolderHref(parent.item, workspace.id),
             type: 'folder',
             item: parent.item,
           }
         : {
             href: getWorkspaceHref(parent.item),
-            type: 'storage',
+            type: 'workspace',
             item: parent.item,
           }
 
@@ -158,7 +158,7 @@ export function mapTopbarBreadcrumbs(
         items.unshift(
           getFolderBreadcrumb(
             parent.item,
-            storage,
+            workspace,
             push,
             openNewDocForm,
             openNewFolderForm,
@@ -180,7 +180,7 @@ export function mapTopbarBreadcrumbs(
       }
     }
 
-    if (parent.type === 'storage') {
+    if (parent.type === 'workspace') {
       reversedToTop = true
     } else {
       if (parent.item == null) {
@@ -193,8 +193,8 @@ export function mapTopbarBreadcrumbs(
           parentFolderDoc != null && parentFolderPathname != '/'
             ? { type: 'folder', item: parentFolderDoc }
             : {
-                type: 'storage',
-                item: storage,
+                type: 'workspace',
+                item: workspace,
               }
       }
     }
@@ -204,7 +204,7 @@ export function mapTopbarBreadcrumbs(
 }
 
 function getDocBreadcrumb(
-  storageId: string,
+  workspaceId: string,
   note: NoteDoc,
   active: boolean,
   push: (url: string) => void,
@@ -219,14 +219,14 @@ function getDocBreadcrumb(
   return {
     label: getNoteTitle(note, 'Untitled'),
     active,
-    parentId: getUnsignedId(storageId, parentFolderId),
+    parentId: getUnsignedId(workspaceId, parentFolderId),
     icon: mdiFileDocumentOutline,
     emoji: undefined,
-    type: 'note',
+    type: 'doc',
     item: note,
     link: {
-      href: getDocHref(note, storageId),
-      navigateTo: () => push(getDocHref(note, storageId)),
+      href: getDocHref(note, workspaceId),
+      navigateTo: () => push(getDocHref(note, workspaceId)),
     },
     controls: [
       ...(renameNote != null
@@ -235,7 +235,7 @@ function getDocBreadcrumb(
               icon: mdiPencil,
               label: 'Rename',
               onClick: () => {
-                renameNote(storageId, note)
+                renameNote(workspaceId, note)
               },
             },
           ]
@@ -247,13 +247,13 @@ function getDocBreadcrumb(
                   icon: mdiTrashCanOutline,
                   label: 'Delete',
                   onClick: () =>
-                    deleteOrTrashNote(storageId, note._id, note.trashed),
+                    deleteOrTrashNote(workspaceId, note._id, note.trashed),
                 }
               : {
                   icon: mdiArchive,
                   label: 'Archive',
                   onClick: () =>
-                    deleteOrTrashNote(storageId, note._id, note.trashed),
+                    deleteOrTrashNote(workspaceId, note._id, note.trashed),
                 },
           ]
         : []),
@@ -263,7 +263,7 @@ function getDocBreadcrumb(
 
 function getFolderBreadcrumb(
   folder: FolderDoc,
-  storage: NoteStorage,
+  workspace: NoteStorage,
   push: (url: string) => void,
   openNewNoteForm?: (
     body: LocalNewResourceRequestBody,
@@ -278,22 +278,22 @@ function getFolderBreadcrumb(
 ): TopbarBreadcrumbProps & AddedProperties {
   const folderPathname = getFolderPathname(folder._id)
   const parentFolderPathname = getParentFolderPathname(folderPathname)
-  const parentFolderId = storage.folderMap[parentFolderPathname]?._id
+  const parentFolderId = workspace.folderMap[parentFolderPathname]?._id
   const newResourceBody = {
-    storageId: storage.id, // folder storage ID (only one)
+    workspaceId: workspace.id, // folder storage ID (only one)
     parentFolderPathname: parentFolderPathname,
   }
-  const currentPath = `${storage.name}${folderPathname}`
+  const currentPath = `${workspace.name}${folderPathname}`
   return {
     type: 'folder',
     item: folder,
-    label: getFolderNameFromPathname(folderPathname) ?? storage.name,
+    label: getFolderNameFromPathname(folderPathname) ?? workspace.name,
     active: true,
-    parentId: getUnsignedId(storage.id, parentFolderId),
+    parentId: getUnsignedId(workspace.id, parentFolderId),
     emoji: undefined,
     link: {
-      href: getFolderHref(folder, storage.id),
-      navigateTo: () => push(getFolderHref(folder, storage.id)),
+      href: getFolderHref(folder, workspace.id),
+      navigateTo: () => push(getFolderHref(folder, workspace.id)),
     },
     controls: [
       ...(openNewNoteForm != null
@@ -329,7 +329,7 @@ function getFolderBreadcrumb(
             {
               icon: mdiPencil,
               label: 'Rename',
-              onClick: () => renameFolder(storage.id, folder),
+              onClick: () => renameFolder(workspace.id, folder),
             },
           ]
         : []),
@@ -338,7 +338,7 @@ function getFolderBreadcrumb(
             {
               icon: mdiTrashCanOutline,
               label: 'Delete',
-              onClick: () => deleteFolder(storage.id, folder),
+              onClick: () => deleteFolder(workspace.id, folder),
             },
           ]
         : []),
@@ -347,7 +347,7 @@ function getFolderBreadcrumb(
 }
 
 export function mapStorageBreadcrumb(
-  storage: NoteStorage,
+  workspace: NoteStorage,
   push: (url: string) => void,
   openNewDocForm?: (
     body: LocalNewResourceRequestBody,
@@ -361,19 +361,19 @@ export function mapStorageBreadcrumb(
   deleteWorkspace?: (storage: NoteStorage) => void
 ): TopbarBreadcrumbProps & AddedProperties {
   const newResourceBody = {
-    storageId: storage.id,
+    workspaceId: workspace.id,
   }
 
   return {
-    type: 'storage',
-    item: storage,
-    label: storage.name,
+    type: 'workspace',
+    item: workspace,
+    label: workspace.name,
     active: true,
     icon: mdiLock, // Default workspace Icon/Emoji
     parentId: topParentId,
     link: {
-      href: getWorkspaceHref(storage),
-      navigateTo: () => push(getWorkspaceHref(storage)),
+      href: getWorkspaceHref(workspace),
+      navigateTo: () => push(getWorkspaceHref(workspace)),
     },
     controls: [
       ...(openNewDocForm != null
@@ -384,7 +384,7 @@ export function mapStorageBreadcrumb(
               onClick: () =>
                 openNewDocForm(newResourceBody, [
                   {
-                    description: storage.name,
+                    description: workspace.name,
                   },
                 ]),
             },
@@ -398,7 +398,7 @@ export function mapStorageBreadcrumb(
               onClick: () =>
                 openNewFolderForm(newResourceBody, [
                   {
-                    description: storage.name,
+                    description: workspace.name,
                   },
                 ]),
             },
@@ -409,7 +409,7 @@ export function mapStorageBreadcrumb(
             {
               icon: mdiApplicationCog,
               label: 'Edit',
-              onClick: () => editWorkspace(storage),
+              onClick: () => editWorkspace(workspace),
             },
           ]
         : []),
@@ -418,7 +418,7 @@ export function mapStorageBreadcrumb(
             {
               icon: mdiTrashCanOutline,
               label: 'Delete',
-              onClick: () => deleteWorkspace(storage),
+              onClick: () => deleteWorkspace(workspace),
             },
           ]
         : []),

@@ -6,12 +6,12 @@ export type SerializedFolderNav = {
 }
 
 export type SerializedNoteNav = {
-  type: 'note'
+  type: 'doc'
   result: NoteDoc
 }
 
 export type SerializedPendingNav = {
-  type: 'folder' | 'note'
+  type: 'folder' | 'doc'
   result: string
 }
 

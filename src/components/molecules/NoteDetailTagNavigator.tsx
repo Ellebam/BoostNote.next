@@ -54,7 +54,7 @@ const NoteDetailTagNavigator = ({
   const routeParams = useRouteParams()
 
   const currentTagName = useMemo(() => {
-    if (routeParams.name !== 'storages.tags.show') {
+    if (routeParams.name !== 'workspaces.labels.show') {
       return null
     }
     return routeParams.tagName

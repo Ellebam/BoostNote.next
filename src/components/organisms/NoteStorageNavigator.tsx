@@ -217,11 +217,11 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
     let tags: string[] = []
     let baseHrefAfterCreate = `/app/storages/${storageId}/notes`
     switch (routeParams.name) {
-      case 'storages.tags.show':
+      case 'workspaces.labels.show':
         tags = [routeParams.tagName]
         baseHrefAfterCreate = `/app/storages/${storageId}/tags/${routeParams.tagName}`
         break
-      case 'storages.notes':
+      case 'workspaces.notes':
         if (routeParams.folderPathname !== '/') {
           folderPathname = routeParams.folderPathname
           baseHrefAfterCreate = `/app/storages/${storageId}/notes${folderPathname}`
@@ -388,7 +388,7 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
   )
   const {
     updateFolder,
-    updateDoc,
+    updateDocApi,
     createFolder,
     createDocApi,
     deleteFolderApi,
@@ -403,7 +403,7 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
     openRenameDocForm,
     // deleteWorkspace,
   } = useLocalUI()
-  const { draggedResource, dropInDocOrFolder, dropInStorage } = useLocalDnd()
+  const { draggedResource, dropInDocOrFolder, dropInWorkspace } = useLocalDnd()
   const tree = useMemo(() => {
     return mapTree(
       initialLoadDone,
@@ -427,7 +427,7 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
       createDocApi,
       draggedResource,
       dropInDocOrFolder,
-      (id: string) => dropInStorage(id, storage.name, updateFolder, updateDoc),
+      (id: string) => dropInWorkspace(id, updateFolder, updateDocApi),
       openRenameFolderForm,
       openRenameDocForm,
       openWorkspaceEditForm
@@ -454,9 +454,9 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
     openRenameFolderForm,
     openRenameDocForm,
     openWorkspaceEditForm,
-    dropInStorage,
+    dropInWorkspace,
     updateFolder,
-    updateDoc,
+    updateDocApi,
   ])
 
   return (
