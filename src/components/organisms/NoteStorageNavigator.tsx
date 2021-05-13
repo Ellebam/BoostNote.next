@@ -461,123 +461,93 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
 
   return (
     <NavigatorContainer onContextMenu={openStorageContextMenu}>
-      {/*<TopButton onClick={openStorageContextMenu}>*/}
-      {/*  <div className='topButtonLabel'>{storage.name}</div>*/}
-      {/*</TopButton>*/}
-
-      {/*<Button*/}
-      {/*  variant='primary'*/}
-      {/*  iconPath={mdiTextBoxPlusOutline}*/}
-      {/*  id='sidebar-newdoc-btn'*/}
-      {/*  iconSize={16}*/}
-      {/*  onClick={createNoteByRoute}*/}
-      {/*>*/}
-      {/*  Create new note*/}
-      {/*</Button>*/}
-
-      {/*<NewNoteButton onClick={createNoteByRoute}>*/}
-      {/*  <div className='icon'>*/}
-      {/*    <Icon path={mdiPlus} />*/}
-      {/*  </div>*/}
-      {/*  <div className='label'>New Note</div>*/}
-      {/*  {extraNewNoteLabel != null && (*/}
-      {/*    <div className='extra'>{extraNewNoteLabel}</div>*/}
-      {/*  )}*/}
-      {/*</NewNoteButton>*/}
-
-      <ScrollableContainer>
-        {/*<BookmarkNavigatorFragment storage={storage} />*/}
-        {/*<NavigatorSeparator />*/}
-        {/* Here is side bar */}
-        <Sidebar
-          className={cc(['application__sidebar'])}
-          showToolbar={!appIsElectron}
-          showSpaces={showSpaces}
-          onSpacesBlur={() => setShowSpaces(false)}
-          toolbarRows={toolbarRows}
-          spaces={storages}
-          //  maybe remove this and provide nothing?
-          spaceBottomRows={buildSpacesBottomRows(push)}
-          sidebarExpandedWidth={generalStatus.sideBarWidth}
-          sidebarState={sidebarState}
-          tree={tree}
-          sidebarResize={sidebarResize}
-          searchQuery={sidebarSearchQuery}
-          setSearchQuery={setSearchQuery}
-          // todo: add search history for local space (or use general search history when a shared component)
-          searchHistory={[]}
-          recentPages={historyItems}
-          treeControls={[
-            {
-              icon:
-                generalStatus.sidebarTreeSortingOrder === 'a-z'
-                  ? SidebarTreeSortingOrders.aZ.icon
-                  : generalStatus.sidebarTreeSortingOrder === 'z-a'
-                  ? SidebarTreeSortingOrders.zA.icon
-                  : generalStatus.sidebarTreeSortingOrder === 'last-updated'
-                  ? SidebarTreeSortingOrders.lastUpdated.icon
-                  : SidebarTreeSortingOrders.dragDrop.icon,
-              onClick: (event) => {
-                popup(
-                  event,
-                  Object.values(SidebarTreeSortingOrders).map((sort) => {
-                    return {
-                      type: MenuTypes.Normal,
-                      onClick: () =>
-                        setGeneralStatus({
-                          sidebarTreeSortingOrder: sort.value,
-                        }),
-                      label: sort.label,
-                      icon: sort.icon,
-                      active:
-                        sort.value === generalStatus.sidebarTreeSortingOrder,
-                    }
-                  })
-                )
-              },
+      <Sidebar
+        className={cc(['application__sidebar'])}
+        showToolbar={!appIsElectron}
+        showSpaces={showSpaces}
+        onSpacesBlur={() => setShowSpaces(false)}
+        toolbarRows={toolbarRows}
+        spaces={storages}
+        //  maybe remove this and provide nothing?
+        spaceBottomRows={buildSpacesBottomRows(push)}
+        sidebarExpandedWidth={generalStatus.sideBarWidth}
+        sidebarState={sidebarState}
+        tree={tree}
+        sidebarResize={sidebarResize}
+        searchQuery={sidebarSearchQuery}
+        setSearchQuery={setSearchQuery}
+        // todo: add search history for local space (or use general search history when a shared component)
+        searchHistory={[]}
+        recentPages={historyItems}
+        treeControls={[
+          {
+            icon:
+              generalStatus.sidebarTreeSortingOrder === 'a-z'
+                ? SidebarTreeSortingOrders.aZ.icon
+                : generalStatus.sidebarTreeSortingOrder === 'z-a'
+                ? SidebarTreeSortingOrders.zA.icon
+                : generalStatus.sidebarTreeSortingOrder === 'last-updated'
+                ? SidebarTreeSortingOrders.lastUpdated.icon
+                : SidebarTreeSortingOrders.dragDrop.icon,
+            onClick: (event) => {
+              popup(
+                event,
+                Object.values(SidebarTreeSortingOrders).map((sort) => {
+                  return {
+                    type: MenuTypes.Normal,
+                    onClick: () =>
+                      setGeneralStatus({
+                        sidebarTreeSortingOrder: sort.value,
+                      }),
+                    label: sort.label,
+                    icon: sort.icon,
+                    active:
+                      sort.value === generalStatus.sidebarTreeSortingOrder,
+                  }
+                })
+              )
             },
-          ]}
-          /* See why its not full width */
-          treeTopRows={
-            storage == null ? null : (
-              <Button
-                variant='primary'
-                size={'sm'}
-                iconPath={mdiTextBoxPlusOutline}
-                id='sidebar-newdoc-btn'
-                iconSize={16}
-                onClick={() =>
-                  openNewDocForm({
-                    parentFolderPathname: '/',
-                    workspaceId: storage.id,
-                  })
-                }
-              >
-                Create new doc
-              </Button>
-            )
-          }
-          searchResults={searchResults}
-          // todo: no users?
-          users={usersMap}
-          // todo: timeline rows implementation!
-          timelineRows={[]}
-          timelineMore={
-            storage != null
-              ? {
-                  variant: 'primary',
-                  // todo: implement timeline page - push open page with timeline
-                  onClick: () => push(getTimelineHref(storage)),
-                }
-              : undefined
-          }
-          sidebarSearchState={{
-            fetching: fetchingSearchResults,
-            isNotDebouncing: isNotDebouncing() === true,
-          }}
-        />
-        {/*<StorageNavigatorFragment storage={storage} />*/}
-      </ScrollableContainer>
+          },
+        ]}
+        // See why its not full width
+        treeTopRows={
+          storage == null ? null : (
+            <Button
+              variant='primary'
+              size={'sm'}
+              iconPath={mdiTextBoxPlusOutline}
+              id='sidebar-newdoc-btn'
+              iconSize={16}
+              onClick={() =>
+                openNewDocForm({
+                  parentFolderPathname: '/',
+                  workspaceId: storage.id,
+                })
+              }
+            >
+              Create new doc
+            </Button>
+          )
+        }
+        searchResults={searchResults}
+        // todo: no users?
+        users={usersMap}
+        // todo: timeline rows implementation!
+        timelineRows={[]}
+        timelineMore={
+          storage != null
+            ? {
+                variant: 'primary',
+                // todo: implement timeline page - push open page with timeline
+                onClick: () => push(getTimelineHref(storage)),
+              }
+            : undefined
+        }
+        sidebarSearchState={{
+          fetching: fetchingSearchResults,
+          isNotDebouncing: isNotDebouncing() === true,
+        }}
+      />
     </NavigatorContainer>
   )
 }
@@ -585,17 +555,15 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
 export default NoteStorageNavigator
 
 const NavigatorContainer = styled.nav`
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  background-color: ${({ theme }) => theme.colors.background.primary};
+  //flex: 0 0 auto;
+  //min-width: 0;
 `
 
-const ScrollableContainer = styled.div`
-  flex: 1;
-  padding: 8px;
-  overflow: auto;
-`
+// const ScrollableContainer = styled.div`
+//   flex: 1;
+//   padding: 8px;
+//   overflow: auto;
+// `
 
 // const TopButton = styled.button`
 //   height: 50px;

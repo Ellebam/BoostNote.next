@@ -258,7 +258,7 @@ const StorageNavigatorFragment = ({
       {trashed.length > 0 && (
         <NavigatorItem
           depth={0}
-          label={t('general.trash')}
+          label={t('general.archive')}
           iconPath={mdiTrashCanOutline}
           active={trashcanPageIsActive}
           onClick={() => push(trashcanPagePathname)}

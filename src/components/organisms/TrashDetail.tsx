@@ -6,7 +6,7 @@ import { usePreferences } from '../../lib/preferences'
 import NoteSortingOptionsFragment from '../molecules/NoteSortingOptionsFragment'
 import { NoteSortingOptions } from '../../lib/sort'
 import Icon from '../atoms/Icon'
-import { mdiTrashCanOutline } from '@mdi/js'
+import { mdiArchive } from '@mdi/js'
 import styled from '../../lib/styled'
 import {
   flexCenter,
@@ -14,6 +14,7 @@ import {
   selectStyle,
 } from '../../lib/styled/styleFunctions'
 import { values } from '../../lib/db/utils'
+import { useTranslation } from 'react-i18next'
 
 interface TrashDetailProps {
   storage: NoteStorage
@@ -22,6 +23,7 @@ interface TrashDetailProps {
 const TrashDetail = ({ storage }: TrashDetailProps) => {
   const { preferences, setPreferences } = usePreferences()
   const noteSorting = preferences['general.noteSorting']
+  const { t } = useTranslation()
 
   const notes = useMemo(() => {
     return values(storage.noteMap)
@@ -70,12 +72,12 @@ const TrashDetail = ({ storage }: TrashDetailProps) => {
     <PageContainer>
       <Header>
         <div className='icon'>
-          <Icon path={mdiTrashCanOutline} />
+          <Icon path={mdiArchive} />
         </div>
-        Trash
+        {t('general.archive')}
       </Header>
       <Control>
-        <div className='left'></div>
+        <div className='left' />
         <div className='right'>
           <select onChange={selectNoteSorting} value={noteSorting}>
             {<NoteSortingOptionsFragment />}
@@ -106,7 +108,7 @@ const Header = styled.h1`
     font-size: 25px;
     width: 25px;
     height: 25px;
-    ${flexCenter}
+    ${flexCenter};
     margin-right: 4px;
   }
 `
@@ -123,7 +125,7 @@ const Control = styled.div`
     align-items: center;
 
     select {
-      ${selectStyle}
+      ${selectStyle};
       width: 120px;
       height: 25px;
       margin-bottom: 10px;

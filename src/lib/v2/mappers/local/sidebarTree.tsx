@@ -545,7 +545,7 @@ export function mapTree(
     category.hidden = sideBarOpenedLinksIdsSet.has(hideKey)
     category.toggleHidden = () => toggleItem('links', hideKey)
   })
-  console.log('Got Sidebar tree', tree)
+  // console.log('Got Sidebar tree', tree)
   return tree as SidebarNavCategory[]
 }
 
