@@ -7,14 +7,15 @@ import {
   UpdateDocRequestBody,
   useLocalDB,
 } from './useLocalDB'
-import { getFolderPathname } from '../../../db/utils'
+import { getFolderName, getFolderPathname } from '../../../db/utils'
 import { DraggedTo, SidebarDragState } from '../../../../shared/lib/dnd'
 import { getResourceId } from '../../../db/patterns'
+import { join } from 'path'
 
 export function useLocalDnd() {
   const draggedResource = useRef<NavResource>()
   const { pushApiErrorMessage, pushMessage } = useToast()
-  const { updateDocApi } = useLocalDB()
+  const { updateDocApi, updateFolder } = useLocalDB()
 
   const dropInWorkspace = useCallback(
     async (
@@ -39,13 +40,15 @@ export function useLocalDnd() {
         updateFolder(folder, {
           workspaceId: workspaceId,
           oldPathname: getFolderPathname(folder._id),
-          newPathname: getFolderPathname(folder._id), // how to update this correctly (use actual local space DND implementation
+          newPathname: '/', // how to update this correctly (use actual local space DND implementation
         })
       } else if (draggedResource.current.type === 'doc') {
         const doc = draggedResource.current.result
         updateDoc(doc._id, {
           workspaceId: workspaceId,
-          docProps: doc,
+          docProps: {
+            folderPathname: '/',
+          },
         })
       }
     },
@@ -90,6 +93,28 @@ export function useLocalDnd() {
           }
         } else {
           // move folder
+          if (targetedResource.type == 'folder') {
+            // move folder inside target folder
+            console.log('Moving folder to', targetedPosition)
+            if (targetedPosition == DraggedTo.insideFolder) {
+              const folderResource = draggedResource.current?.result
+              const folderOriginalPathname = getFolderPathname(
+                folderResource._id
+              )
+              const targetFolderPathname = getFolderPathname(
+                targetedResource.result._id
+              )
+              const newFolderPathname = join(
+                targetFolderPathname,
+                getFolderName(folderResource)
+              )
+              await updateFolder(draggedResource.current?.result, {
+                workspaceId: workspaceId,
+                oldPathname: folderOriginalPathname,
+                newPathname: newFolderPathname,
+              })
+            }
+          }
         }
       } catch (error) {
         // const pos = targetedPosition
@@ -105,10 +130,11 @@ export function useLocalDnd() {
         // if (pageDoc != null && changedDocs.get(pageDoc.id) != null) {
         //   setCurrentPath(changedDocs.get(pageDoc.id)!.folderPathname)
         // }
+        console.warn('Error while DnD', error)
         pushApiErrorMessage(error)
       }
     },
-    [pushApiErrorMessage, updateDocApi]
+    [pushApiErrorMessage, updateDocApi, updateFolder]
   )
 
   return {

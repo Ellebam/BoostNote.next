@@ -8,8 +8,11 @@ import {
   mdiMagnify,
 } from '@mdi/js'
 import { PreferencesTab } from '../../../preferences'
+import { NoteStorage } from '../../../db/types'
+import RoundedImage from '../../../../shared/components/atoms/RoundedImage'
 
 export function mapToolbarRows(
+  workspace: NoteStorage,
   showSpaces: boolean,
   setShowSpaces: React.Dispatch<React.SetStateAction<boolean>>,
   openState: (sidebarState: SidebarState) => void,
@@ -17,20 +20,14 @@ export function mapToolbarRows(
   sidebarState?: SidebarState
 ) {
   const rows: SidebarToolbarRow[] = []
-  // if (team != null) {
-  //   rows.push({
-  //     tooltip: 'Spaces',
-  //     active: showSpaces,
-  //     icon: (
-  //       <RoundedImage
-  //         size={26}
-  //     alt={team.name}
-  //     url={team.icon != null ? buildIconUrl(team.icon.location) : undefined}
-  //   />
-  // ),
-  //   onClick: () => setShowSpaces((prev) => !prev),
-  // })
-  // }
+  if (workspace != null) {
+    rows.push({
+      tooltip: 'Spaces',
+      active: showSpaces,
+      icon: <RoundedImage size={26} alt={workspace.name} />,
+      onClick: () => setShowSpaces((prev) => !prev),
+    })
+  }
   rows.push({
     tooltip: 'Tree',
     active: sidebarState === 'tree',

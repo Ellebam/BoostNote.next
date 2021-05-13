@@ -26,7 +26,6 @@ import {
   SidebarTreeSortingOrders,
 } from '../../shared/lib/sidebar'
 import { MenuTypes, useContextMenu } from '../../shared/lib/stores/contextMenu'
-import { appIsElectron } from '../../lib/platform'
 import { SidebarToolbarRow } from '../../shared/components/organisms/Sidebar/molecules/SidebarToolbar'
 import { mapToolbarRows } from '../../lib/v2/mappers/local/sidebarRows'
 import { mapStorages } from '../../lib/v2/mappers/local/sidebarStorages'
@@ -51,6 +50,7 @@ import { useLocalDnd } from '../../lib/v2/hooks/local/useLocalDnd'
 import { buildSpacesBottomRows } from '../../cloud/components/Application'
 import { CollapsableType } from '../../lib/v2/stores/sidebarCollapse'
 import { useSidebarCollapse } from '../../lib/v2/stores/sidebarCollapse'
+import { appIsElectron } from '../../lib/platform'
 
 interface NoteStorageNavigatorProps {
   storage: NoteStorage
@@ -285,13 +285,14 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
   }, [])
   const toolbarRows: SidebarToolbarRow[] = useMemo(() => {
     return mapToolbarRows(
+      storage,
       showSpaces,
       setShowSpaces,
       openState,
       openTab,
       sidebarState
     )
-  }, [openState, openTab, showSpaces, sidebarState])
+  }, [openState, openTab, showSpaces, sidebarState, storage])
 
   const localSpaces = values(storageMap)
   const storages = useMemo(() => {

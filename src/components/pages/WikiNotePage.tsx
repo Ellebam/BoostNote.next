@@ -46,15 +46,11 @@ import {
   mdiChevronRight,
   mdiEyeOutline,
   mdiPencil,
-  mdiStar,
-  mdiStarOutline,
   mdiViewSplitVertical,
 } from '@mdi/js'
 import { mapTopbarBreadcrumbs } from '../../lib/v2/mappers/local/topbarBreadcrumbs'
 import { TopbarProps } from '../../shared/components/organisms/Topbar'
-import { LoadingButton } from '../../shared/components/atoms/Button'
 import NoteContextView from '../organisms/NoteContextView'
-import { useLocalDB } from '../../lib/v2/hooks/local/useLocalDB'
 import styled from '../../lib/styled/styled'
 
 interface WikiNotePageProps {
@@ -494,8 +490,6 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
     toggleContextView,
     topbarTree,
   ])
-  const { toggleDocBookmark } = useLocalDB()
-  const bookmarked = note != null ? !!note.data.bookmarked : false
   return (
     <>
       {showSearchModal && <SearchModal storage={storage} />}
@@ -520,22 +514,6 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
                   goBack,
                   goForward,
                 },
-                children: (
-                  <LoadingButton
-                    variant='icon'
-                    // disabled={sendingMap.has(doc.id)}
-                    // spinning={sendingMap.has(doc.id)}
-                    size='sm'
-                    iconPath={bookmarked ? mdiStar : mdiStarOutline}
-                    onClick={() =>
-                      toggleDocBookmark(
-                        storage.id,
-                        note?._id as string,
-                        bookmarked
-                      )
-                    }
-                  />
-                ),
               }}
             >
               {/*<ContentContainer>*/}
@@ -619,27 +597,27 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
 export default WikiNotePage
 
 const DocContextViewContainer = styled.div`
-  display: flex;
-  height: 100%;
-  width: 100%;
-  position: relative;
+  //display: flex;
+  //height: 100%;
+  //width: 100%;
+  //position: relative;
 `
 
-const ContentContainer = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 350px;
-  &.expand {
-    right: 0;
-  }
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-
-  .detail {
-    flex: 1;
-    overflow: hidden;
-  }
-`
+// const ContentContainer = styled.div`
+//   position: absolute;
+//   top: 0;
+//   left: 0;
+//   bottom: 0;
+//   right: 350px;
+//   &.expand {
+//     right: 0;
+//   }
+//   display: flex;
+//   flex-direction: column;
+//   height: 100%;
+//
+//   .detail {
+//     flex: 1;
+//     overflow: hidden;
+//   }
+// `
