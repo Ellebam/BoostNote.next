@@ -26,6 +26,11 @@ export function getSearchResultItems(
   if (storage == null) {
     return []
   }
+  if (!searchQuery || searchQuery == '') {
+    return []
+  }
+
+  console.log('Got search query', searchQuery)
 
   const notes = values(storage.noteMap)
   const folders = values(storage.folderMap)
@@ -38,9 +43,7 @@ export function getSearchResultItems(
       return
     }
     const matchDataContent = getMatchData(note.content, regex)
-
     const titleMatchResult = note.title.match(regex)
-
     const titleSearchResult =
       titleMatchResult != null ? titleMatchResult[0] : null
     const tagSearchResults = note.tags.reduce<TagSearchResult[]>(
@@ -66,7 +69,11 @@ export function getSearchResultItems(
         titleSearchResult,
         tagSearchResults,
         item: {
-          type: 'note',
+          type: matchDataContent.length > 0 ? 'noteContent' : 'note',
+          context:
+            matchDataContent.length > 0
+              ? matchDataContent[0].lineString
+              : note.title,
           result: note,
         },
         results: matchDataContent,
@@ -89,6 +96,7 @@ export function getSearchResultItems(
     }
   })
 
+  console.log('Got serach results ', searchResultData)
   return searchResultData
 }
 
@@ -105,6 +113,7 @@ export function mapSearchResults(
     // maybe get results as folder, folder title, note, note title, tags etc. results
     // for now just use same result
     // add search metadata (type and actual item)
+    console.log('Got result', searchData)
     if (searchData.item.type === 'folder') {
       const href = getFolderHref(searchData.item.result, storage.id)
       acc.push({

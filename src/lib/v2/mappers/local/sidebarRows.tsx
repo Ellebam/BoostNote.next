@@ -3,6 +3,7 @@ import { SidebarState } from '../../../../shared/lib/sidebar'
 import { SidebarToolbarRow } from '../../../../shared/components/organisms/Sidebar/molecules/SidebarToolbar'
 import {
   mdiClockOutline,
+  mdiCloudOffOutline,
   mdiCogOutline,
   mdiFileDocumentMultipleOutline,
   mdiMagnify,
@@ -17,6 +18,7 @@ export function mapToolbarRows(
   setShowSpaces: React.Dispatch<React.SetStateAction<boolean>>,
   openState: (sidebarState: SidebarState) => void,
   openSettingsTab: (tab: PreferencesTab) => void,
+  toggleCloudIntroModal: () => void,
   sidebarState?: SidebarState
 ) {
   const rows: SidebarToolbarRow[] = []
@@ -30,14 +32,14 @@ export function mapToolbarRows(
   }
   rows.push({
     tooltip: 'Tree',
-    active: sidebarState === 'tree',
+    active: sidebarState === 'tree', // !showSearchModal && closed && !showSpaces
     icon: mdiFileDocumentMultipleOutline,
     onClick: () => openState('tree'),
   })
   // Use fuzzy search for nav, and for global use global from local space (when global from cloud will be shared it can be used)
   rows.push({
     tooltip: 'Search',
-    active: sidebarState === 'search',
+    active: sidebarState === 'search', // showSearchModal && closed && !showSpaces
     icon: mdiMagnify,
     onClick: () => openState('search'),
   })
@@ -55,9 +57,16 @@ export function mapToolbarRows(
   //   onClick: () => openModal(<ImportModal />, { showCloseIcon: true }),
   // })
   rows.push({
+    tooltip: 'Cloud Space',
+    active: false,
+    position: 'bottom',
+    icon: mdiCloudOffOutline,
+    onClick: toggleCloudIntroModal,
+  })
+  rows.push({
     tooltip: 'Settings',
-    active: sidebarState === 'settings',
-    icon: mdiCogOutline,
+    active: sidebarState === 'settings', // !closed && !showSpaces,
+    icon: mdiCogOutline, // mdiCog
     position: 'bottom',
     onClick: () => openSettingsTab('about'),
   })

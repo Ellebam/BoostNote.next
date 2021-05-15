@@ -9,7 +9,7 @@ import {
   addIpcListener,
   removeIpcListener,
 } from '../../lib/electronOnly'
-import { getTimelineHref, values } from '../../lib/db/utils'
+import { entries, getTimelineHref, values } from '../../lib/db/utils'
 import { MenuItemConstructorOptions } from 'electron'
 import { useStorageRouter } from '../../lib/storageRouter'
 import { useRouteParams } from '../../lib/routeParams'
@@ -28,7 +28,6 @@ import {
 import { MenuTypes, useContextMenu } from '../../shared/lib/stores/contextMenu'
 import { SidebarToolbarRow } from '../../shared/components/organisms/Sidebar/molecules/SidebarToolbar'
 import { mapToolbarRows } from '../../lib/v2/mappers/local/sidebarRows'
-import { mapStorages } from '../../lib/v2/mappers/local/sidebarStorages'
 import { useGeneralStatus } from '../../lib/generalStatus'
 import { mapHistory } from '../../lib/v2/mappers/local/sidebarHistory'
 import { SidebarSearchResult } from '../../shared/components/organisms/Sidebar/molecules/SidebarSearch'
@@ -50,7 +49,9 @@ import { useLocalDnd } from '../../lib/v2/hooks/local/useLocalDnd'
 import { buildSpacesBottomRows } from '../../cloud/components/Application'
 import { CollapsableType } from '../../lib/v2/stores/sidebarCollapse'
 import { useSidebarCollapse } from '../../lib/v2/stores/sidebarCollapse'
-import { appIsElectron } from '../../lib/platform'
+import { useCloudIntroModal } from '../../lib/cloudIntroModal'
+import { mapLocalSpaces } from '../../lib/v2/mappers/local/sidebarSpaces'
+import { osName } from '../../shared/lib/platform'
 
 interface NoteStorageNavigatorProps {
   storage: NoteStorage
@@ -283,6 +284,8 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
   const openState = useCallback((state: SidebarState) => {
     setSidebarState((prev) => (prev === state ? undefined : state))
   }, [])
+  const { toggleShowingCloudIntroModal } = useCloudIntroModal()
+
   const toolbarRows: SidebarToolbarRow[] = useMemo(() => {
     return mapToolbarRows(
       storage,
@@ -290,14 +293,22 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
       setShowSpaces,
       openState,
       openTab,
+      toggleShowingCloudIntroModal,
       sidebarState
     )
-  }, [openState, openTab, showSpaces, sidebarState, storage])
+  }, [
+    openState,
+    openTab,
+    showSpaces,
+    sidebarState,
+    storage,
+    toggleShowingCloudIntroModal,
+  ])
 
   const localSpaces = values(storageMap)
-  const storages = useMemo(() => {
-    return mapStorages(push, localSpaces, storage)
-  }, [localSpaces, push, storage])
+  // const storages = useMemo(() => {
+  //   return mapStorages(push, localSpaces, storage)
+  // }, [localSpaces, push, storage])
   const sidebarResize = useCallback(
     (width: number) => setGeneralStatus({ sideBarWidth: width }),
     [setGeneralStatus]
@@ -321,12 +332,16 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
     { results: NoteSearchData[] }
   >({
     api: ({ query }: { query: any }) => {
-      return new Promise(() => {
-        return { results: getSearchResultItems(storage, query) }
+      // return new Promise(() => {
+      return Promise.resolve({
+        results: getSearchResultItems(storage, query.query),
       })
+      // })
     },
-    cb: ({ results }) =>
-      setSearchResults(mapSearchResults(results, push, storage)),
+    cb: ({ results }) => {
+      // console.log('got results', results)
+      setSearchResults(mapSearchResults(results, push, storage))
+    },
   })
 
   const [isNotDebouncing, cancel] = useDebounce(
@@ -460,15 +475,115 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
     updateDocApi,
   ])
 
+  const activeBoostHubTeamDomain = useMemo<string | null>(() => {
+    if (routeParams.name !== 'boosthub.teams.show') {
+      return null
+    }
+    return routeParams.domain
+  }, [routeParams])
+
+  const spaces = useMemo(() => {
+    const onSpaceLinkClick = (event: MouseEvent, workspace: NoteStorage) => {
+      event.preventDefault()
+      navigate(workspace.id)
+    }
+    const onSpaceContextMenu = (event: MouseEvent, workspace: NoteStorage) => {
+      event.preventDefault()
+      event.stopPropagation()
+      const menuItems: MenuItemConstructorOptions[] = [
+        {
+          type: 'normal',
+          label: t('storage.rename'),
+          click: async () => {
+            prompt({
+              title: `Rename "${workspace.name}" storage`,
+              message: t('storage.renameMessage'),
+              iconType: DialogIconTypes.Question,
+              defaultValue: workspace.name,
+              submitButtonLabel: t('storage.rename'),
+              onClose: async (value: string | null) => {
+                if (value == null) return
+                await renameStorage(workspace.id, value)
+              },
+            })
+          },
+        },
+        { type: 'separator' },
+        {
+          type: 'normal',
+          label: t('storage.remove'),
+          click: async () => {
+            messageBox({
+              title: `Remove "${storage.name}" storage`,
+              message:
+                storage.type === 'fs'
+                  ? "This operation won't delete the actual storage folder. You can add it to the app again."
+                  : t('storage.removeMessage'),
+              iconType: DialogIconTypes.Warning,
+              buttons: [t('storage.remove'), t('general.cancel')],
+              defaultButtonIndex: 0,
+              cancelButtonIndex: 1,
+              onClose: (value: number | null) => {
+                if (value === 0) {
+                  removeStorage(storage.id)
+                }
+              },
+            })
+          },
+        },
+      ]
+      openContextMenu({ menuItems })
+    }
+    const allSpaces = mapLocalSpaces(
+      localSpaces,
+      storage.id,
+      onSpaceLinkClick,
+      onSpaceContextMenu
+    )
+    generalStatus.boostHubTeams.forEach((boostHubTeam, index) => {
+      allSpaces.push({
+        label: boostHubTeam.name,
+        icon: boostHubTeam.iconUrl,
+        active: activeBoostHubTeamDomain === boostHubTeam.domain,
+        tooltip: `${osName === 'macos' ? '⌘' : 'Ctrl'} ${
+          entries(storageMap).length + index + 1
+        }`,
+        linkProps: {
+          onClick: (event) => {
+            event.preventDefault()
+            push(`/app/boosthub/teams/${boostHubTeam.domain}`)
+          },
+        },
+      })
+    })
+
+    return allSpaces
+  }, [
+    activeBoostHubTeamDomain,
+    generalStatus.boostHubTeams,
+    localSpaces,
+    messageBox,
+    navigate,
+    prompt,
+    push,
+    removeStorage,
+    renameStorage,
+    storage.id,
+    storage.name,
+    storage.type,
+    storageMap,
+    t,
+  ])
+
   return (
     <NavigatorContainer onContextMenu={openStorageContextMenu}>
       <Sidebar
         className={cc(['application__sidebar'])}
-        showToolbar={!appIsElectron}
+        showToolbar={true}
         showSpaces={showSpaces}
         onSpacesBlur={() => setShowSpaces(false)}
         toolbarRows={toolbarRows}
-        spaces={storages}
+        spaces={spaces}
         //  maybe remove this and provide nothing?
         spaceBottomRows={buildSpacesBottomRows(push)}
         sidebarExpandedWidth={generalStatus.sideBarWidth}

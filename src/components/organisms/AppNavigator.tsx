@@ -365,19 +365,19 @@ const TopLevelNavigator = () => {
 
   return (
     <Container>
-      <SidebarToolbar
-        rows={toolbarRows}
-        className='sidebar__toolbar'
-        iconSize={26}
-      />
-      {showSpaces && (
-        <SidebarSpaces
-          className='sidebar__spaces'
-          spaces={spaces}
-          spaceBottomRows={spaceBottomRows}
-          onSpacesBlur={() => setShowSpaces(false)}
-        />
-      )}
+      {/*<SidebarToolbar*/}
+      {/*  rows={toolbarRows}*/}
+      {/*  className='sidebar__toolbar'*/}
+      {/*  iconSize={26}*/}
+      {/*/>*/}
+      {/*{showSpaces && (*/}
+      {/*  <SidebarSpaces*/}
+      {/*    className='sidebar__spaces'*/}
+      {/*    spaces={spaces}*/}
+      {/*    spaceBottomRows={spaceBottomRows}*/}
+      {/*    onSpacesBlur={() => setShowSpaces(false)}*/}
+      {/*  />*/}
+      {/*)}*/}
       {showingCloudIntroModal && <CloudIntroModal />}
     </Container>
   )
@@ -386,9 +386,9 @@ const TopLevelNavigator = () => {
 export default TopLevelNavigator
 
 const Container = styled.div`
-  .sidebar__toolbar .sidebar__toolbar__top {
-    .sidebar__toolbar__item:first-of-type {
-      height: 32px;
-    }
-  }
+  //.sidebar__toolbar .sidebar__toolbar__top {
+  //  .sidebar__toolbar__item:first-of-type {
+  //    height: 32px;
+  //  }
+  //}
 `
