@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from '../../lib/styled'
 import { useDb } from '../../lib/db'
 import { entries } from '../../lib/db/utils'
@@ -236,6 +236,10 @@ const TopLevelNavigator = () => {
     t,
   ])
 
+  const openState = useCallback((state: SidebarState) => {
+    setSidebarState((prev) => (prev === state ? undefined : state))
+  }, [])
+
   const toolbarRows = useMemo<SidebarToolbarRow[]>(() => {
     const boosthubTeam =
       activeBoostHubTeamDomain != null
@@ -325,6 +329,12 @@ const TopLevelNavigator = () => {
           onClick: toggleShowSearchModal,
         },
         {
+          tooltip: 'Timeline',
+          active: sidebarState === 'timeline',
+          icon: mdiClockOutline,
+          onClick: () => openState('timeline'),
+        },
+        {
           tooltip: 'Cloud Space',
           active: false,
           position: 'bottom',
@@ -352,32 +362,33 @@ const TopLevelNavigator = () => {
   }, [
     activeBoostHubTeamDomain,
     generalStatus.boostHubTeams,
-    showSpaces,
     storageMap,
+    showSpaces,
+    sidebarState,
     activeStorageId,
     showSearchModal,
     closed,
-    togglePreferencesModal,
     toggleShowSearchModal,
-    sidebarState,
     toggleShowingCloudIntroModal,
+    togglePreferencesModal,
+    openState,
   ])
 
   return (
     <Container>
-      {/*<SidebarToolbar*/}
-      {/*  rows={toolbarRows}*/}
-      {/*  className='sidebar__toolbar'*/}
-      {/*  iconSize={26}*/}
-      {/*/>*/}
-      {/*{showSpaces && (*/}
-      {/*  <SidebarSpaces*/}
-      {/*    className='sidebar__spaces'*/}
-      {/*    spaces={spaces}*/}
-      {/*    spaceBottomRows={spaceBottomRows}*/}
-      {/*    onSpacesBlur={() => setShowSpaces(false)}*/}
-      {/*  />*/}
-      {/*)}*/}
+      <SidebarToolbar
+        rows={toolbarRows}
+        className='sidebar__toolbar'
+        iconSize={26}
+      />
+      {showSpaces && (
+        <SidebarSpaces
+          className='sidebar__spaces'
+          spaces={spaces}
+          spaceBottomRows={spaceBottomRows}
+          onSpacesBlur={() => setShowSpaces(false)}
+        />
+      )}
       {showingCloudIntroModal && <CloudIntroModal />}
     </Container>
   )
@@ -386,9 +397,9 @@ const TopLevelNavigator = () => {
 export default TopLevelNavigator
 
 const Container = styled.div`
-  //.sidebar__toolbar .sidebar__toolbar__top {
-  //  .sidebar__toolbar__item:first-of-type {
-  //    height: 32px;
-  //  }
-  //}
+  .sidebar__toolbar .sidebar__toolbar__top {
+    .sidebar__toolbar__item:first-of-type {
+      height: 32px;
+    }
+  }
 `

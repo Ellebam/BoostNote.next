@@ -52,6 +52,8 @@ import { useSidebarCollapse } from '../../lib/v2/stores/sidebarCollapse'
 import { useCloudIntroModal } from '../../lib/cloudIntroModal'
 import { mapLocalSpaces } from '../../lib/v2/mappers/local/sidebarSpaces'
 import { osName } from '../../shared/lib/platform'
+import { mapTimelineItems } from '../../lib/v2/mappers/local/timelineRows'
+import { usingElectron } from '../../cloud/lib/stores/electron'
 
 interface NoteStorageNavigatorProps {
   storage: NoteStorage
@@ -277,9 +279,13 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
   const { popup } = useContextMenu()
   const [showSpaces, setShowSpaces] = useState(false)
   const [sidebarState, setSidebarState] = useState<SidebarState | undefined>(
-    'tree'
+    generalStatus.lastSidebarState
   )
   const [sidebarSearchQuery, setSidebarSearchQuery] = useState('')
+
+  useEffect(() => {
+    setGeneralStatus({ lastSidebarState: sidebarState })
+  }, [sidebarState, setSidebarState, setGeneralStatus])
 
   const openState = useCallback((state: SidebarState) => {
     setSidebarState((prev) => (prev === state ? undefined : state))
@@ -575,11 +581,15 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
     t,
   ])
 
+  const timelineRows = useMemo(() => {
+    return mapTimelineItems(values(storage.noteMap), push, storage)
+  }, [push, storage])
+
   return (
     <NavigatorContainer onContextMenu={openStorageContextMenu}>
       <Sidebar
         className={cc(['application__sidebar'])}
-        showToolbar={true}
+        showToolbar={!usingElectron}
         showSpaces={showSpaces}
         onSpacesBlur={() => setShowSpaces(false)}
         toolbarRows={toolbarRows}
@@ -649,7 +659,7 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
         // todo: no users?
         users={usersMap}
         // todo: timeline rows implementation!
-        timelineRows={[]}
+        timelineRows={timelineRows}
         timelineMore={
           storage != null
             ? {
