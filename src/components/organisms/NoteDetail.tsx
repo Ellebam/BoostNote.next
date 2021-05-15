@@ -644,6 +644,8 @@ const Container = styled.div`
     }
     z-index: 5001;
   }
+
+  overflow: hidden;
 `
 
 const SearchBarContainer = styled.div`

@@ -31,7 +31,6 @@ import { usePreferences } from '../../lib/preferences'
 import { usePreviewStyle } from '../../lib/preview'
 import { useCloudIntroModal } from '../../lib/cloudIntroModal'
 import styled from '../../shared/lib/styled'
-import { borderLeft } from '../../shared/lib/styled/styleFunctions'
 
 interface NoteContextViewProps {
   storage: NoteStorage
@@ -317,18 +316,12 @@ const NoteContextView = ({ storage, note }: NoteContextViewProps) => {
 export default NoteContextView
 
 const Container = styled.div`
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  padding: 8px 0;
-  display: flex;
-  flex-direction: column;
-  width: 350px;
-  overflow-y: auto;
-  ${borderLeft};
-  flex-shrink: 0;
-  color: ${({ theme }) => theme.colors.text.primary};
+  padding: 4px 0;
+  width: 400px;
+  // overflow-y: auto;
+  border-left: 1px solid ${({ theme }) => theme.colors.border.second};
+  border-radius: 0;
+  height: 100vh;
 `
 
 const Separator = styled.div`

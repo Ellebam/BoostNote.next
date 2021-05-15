@@ -10,7 +10,6 @@ import CodeMirrorStyle from './CodeMirrorStyle'
 import ToastList from './Toast'
 import styled from '../lib/styled'
 import { useEffectOnce } from 'react-use'
-import AppNavigator from './organisms/AppNavigator'
 import { useRouter } from '../lib/router'
 import { values, keys } from '../lib/db/utils'
 import {

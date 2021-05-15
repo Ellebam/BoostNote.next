@@ -51,7 +51,6 @@ import {
 import { mapTopbarBreadcrumbs } from '../../lib/v2/mappers/local/topbarBreadcrumbs'
 import { TopbarProps } from '../../shared/components/organisms/Topbar'
 import NoteContextView from '../organisms/NoteContextView'
-import styled from '../../lib/styled/styled'
 
 interface WikiNotePageProps {
   storage: NoteStorage
@@ -498,13 +497,10 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
         pageBody={
           <>
             <ContentLayout
-              // reduced={true}
               right={
                 note != null &&
                 generalStatus.showingNoteContextMenu && (
-                  <DocContextViewContainer>
-                    <NoteContextView storage={storage} note={note} />
-                  </DocContextViewContainer>
+                  <NoteContextView storage={storage} note={note} />
                 )
               }
               topbar={{
@@ -516,8 +512,6 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
                 },
               }}
             >
-              {/*<ContentContainer>*/}
-              {/*  <div className='detail'>*/}
               {note == null ? (
                 routeParams.name === 'workspaces.notes' ? (
                   <FolderDetail
@@ -541,52 +535,8 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
                   initialCursorPosition={getCurrentPositionFromRoute()}
                 />
               )}
-              {/*</div>*/}
-              {/*</ContentContainer>*/}
             </ContentLayout>
           </>
-          // <Container>
-          //   <ContentContainer
-          //     className={
-          //       note != null && generalStatus.showingNoteContextMenu
-          //         ? ''
-          //         : 'expand'
-          //     }
-          //   >
-          //     <NotePageToolbar note={note} storage={storage} />
-          //     <div className='detail'>
-          //       {note == null ? (
-          //         routeParams.name === 'workspaces.notes' ? (
-          //           <FolderDetail
-          //             storage={storage}
-          //             folderPathname={routeParams.folderPathname}
-          //           />
-          //         ) : routeParams.name === 'workspaces.labels.show' ? (
-          //           <TagDetail
-          //             storage={storage}
-          //             tagName={routeParams.tagName}
-          //           />
-          //         ) : routeParams.name === 'workspaces.archive' ? (
-          //           <TrashDetail storage={storage} />
-          //         ) : (
-          //           <div>Idle</div>
-          //         )
-          //       ) : (
-          //         <NoteDetail
-          //           note={note}
-          //           storage={storage}
-          //           updateNote={updateNote}
-          //           addAttachments={addAttachments}
-          //           viewMode={noteViewMode}
-          //           initialCursorPosition={getCurrentPositionFromRoute()}
-          //         />
-          //       )}
-          //     </div>
-          //   </ContentContainer>
-          //   {note != null && generalStatus.showingNoteContextMenu && (
-          //     <NoteContextView storage={storage} note={note} />
-          //   )}
-          // </Container>
         }
       />
       {showingCloudIntroModal && <CloudIntroModal />}
@@ -595,29 +545,3 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
 }
 
 export default WikiNotePage
-
-const DocContextViewContainer = styled.div`
-  //display: flex;
-  //height: 100%;
-  //width: 100%;
-  //position: relative;
-`
-
-// const ContentContainer = styled.div`
-//   position: absolute;
-//   top: 0;
-//   left: 0;
-//   bottom: 0;
-//   right: 350px;
-//   &.expand {
-//     right: 0;
-//   }
-//   display: flex;
-//   flex-direction: column;
-//   height: 100%;
-//
-//   .detail {
-//     flex: 1;
-//     overflow: hidden;
-//   }
-// `

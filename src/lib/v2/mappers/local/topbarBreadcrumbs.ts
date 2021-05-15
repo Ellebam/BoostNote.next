@@ -83,7 +83,7 @@ export function mapTopbarBreadcrumbs(
       getDocBreadcrumb(
         workspace.id,
         pageNote,
-        true,
+        true, // why always active
         push,
         renameNote,
         deleteOrTrashNote
