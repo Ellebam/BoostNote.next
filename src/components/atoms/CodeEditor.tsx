@@ -12,6 +12,7 @@ import { borderRight } from '../../shared/lib/styled/styleFunctions'
 const StyledContainer = styled.div`
   .CodeMirror {
     font-family: inherit;
+    z-index: 0 !important;
   }
 
   .CodeMirror-dialog button {

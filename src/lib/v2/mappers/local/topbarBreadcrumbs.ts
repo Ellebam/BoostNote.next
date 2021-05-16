@@ -281,7 +281,7 @@ function getFolderBreadcrumb(
   const parentFolderId = workspace.folderMap[parentFolderPathname]?._id
   const newResourceBody = {
     workspaceId: workspace.id, // folder storage ID (only one)
-    parentFolderPathname: parentFolderPathname,
+    parentFolderPathname: folderPathname,
   }
   const currentPath = `${workspace.name}${folderPathname}`
   return {
