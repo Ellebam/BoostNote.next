@@ -149,7 +149,7 @@ const StorageNavigatorFragment = ({
 
   const rootFolderPathname = `/app/storages/${storage.id}/notes`
 
-  const trashcanPagePathname = `/app/storages/${storage.id}/trashcan`
+  const trashcanPagePathname = `/app/storages/${storage.id}/archive`
   const trashcanPageIsActive = routeParams.name === 'workspaces.archive'
 
   const attachmentsPagePathname = `/app/storages/${storage.id}/attachments`

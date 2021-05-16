@@ -54,7 +54,7 @@ export function getTimelineHref(storage: NoteStorage, query?: any): string {
 }
 
 export function getArchiveHref(storage: NoteStorage): string {
-  return `/app/storages/${storage.id}/trashcan`
+  return `/app/storages/${storage.id}/archive`
 }
 
 export function getLabelHref(

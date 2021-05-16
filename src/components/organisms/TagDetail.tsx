@@ -86,7 +86,7 @@ const TagDetail = ({ storage, tagName }: TagDetailProps) => {
         {tagName}
       </Header>
       <Control>
-        <div className='left'></div>
+        <div className='left' />
         <div className='right'>
           <select onChange={selectNoteSorting} value={noteSorting}>
             {<NoteSortingOptionsFragment />}

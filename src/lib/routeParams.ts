@@ -165,7 +165,7 @@ export const useRouteParams = () => {
       }
     }
 
-    if (names[2] === 'trashcan') {
+    if (names[2] === 'archive') {
       return {
         name: 'workspaces.archive',
         workspaceId,
@@ -198,7 +198,7 @@ export const usePathnameWithoutNoteId = () => {
       case 'workspaces.labels.show':
         return `/app/storages/${routeParams.workspaceId}/tags/${routeParams.tagName}`
       case 'workspaces.archive':
-        return `/app/storages/${routeParams.workspaceId}/trashcan`
+        return `/app/storages/${routeParams.workspaceId}/archive`
     }
     return pathname
   }, [routeParams, pathname])

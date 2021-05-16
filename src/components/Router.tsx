@@ -19,6 +19,8 @@ import { openNew } from '../lib/platform'
 import BoostHubLoginPage from './pages/BoostHubLoginPage'
 import { ObjectMap, NoteStorage } from '../lib/db/types'
 import { useGeneralStatus } from '../lib/generalStatus'
+import ArchivePage from './pages/ArchivePage'
+import LabelsPage from './pages/LabelsPage'
 
 const NotFoundPageContainer = styled.div`
   padding: 15px 25px;
@@ -119,9 +121,7 @@ function useContent(
       return <BoostHubAccountDeletePage />
     case 'boosthub.teams.show':
       return null
-    case 'workspaces.notes':
-    case 'workspaces.archive':
-    case 'workspaces.labels.show': {
+    case 'workspaces.notes': {
       const { workspaceId } = routeParams
       const storage = storageMap[workspaceId]
       if (storage == null) {
@@ -129,6 +129,24 @@ function useContent(
       }
 
       return <WikiNotePage storage={storage} />
+    }
+
+    case 'workspaces.labels.show': {
+      const { workspaceId, tagName } = routeParams
+      const storage = storageMap[workspaceId]
+      if (storage == null) {
+        break
+      }
+      return <LabelsPage storage={storage} tagName={tagName}></LabelsPage>
+    }
+
+    case 'workspaces.archive': {
+      const { workspaceId } = routeParams
+      const storage = storageMap[workspaceId]
+      if (storage == null) {
+        break
+      }
+      return <ArchivePage storage={storage} />
     }
     case 'workspaces.attachments': {
       const { workspaceId } = routeParams

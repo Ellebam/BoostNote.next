@@ -11,7 +11,10 @@ import AttachmentList from '../organisms/AttachmentList'
 import { mdiPaperclip } from '@mdi/js'
 import PageDraggableHeader from '../atoms/PageDraggableHeader'
 import { NoteStorage } from '../../lib/db/types'
-import StorageLayout from '../atoms/StorageLayout'
+import Application from '../Application'
+import { topParentId } from '../../cloud/lib/mappers/topbarTree'
+import { getAttachmentsHref } from '../../lib/db/utils'
+import { push } from 'mixpanel-browser'
 
 const Container = styled.div`
   height: 100%;
@@ -27,8 +30,27 @@ const AttachmentsPage = ({ storage }: AttachmentsPageProps) => {
 
   const { addAttachments } = useDb()
 
+  const attachmentsHref = getAttachmentsHref(storage)
   return (
-    <StorageLayout storage={storage}>
+    <Application
+      storage={storage}
+      content={{
+        topbar: {
+          breadcrumbs: [
+            {
+              label: 'Attachments',
+              active: true,
+              parentId: topParentId,
+              icon: mdiPaperclip,
+              link: {
+                href: attachmentsHref,
+                navigateTo: () => push([attachmentsHref]),
+              },
+            },
+          ],
+        },
+      }}
+    >
       <Container
         onDragOver={(event: React.DragEvent) => {
           event.preventDefault()
@@ -47,7 +69,7 @@ const AttachmentsPage = ({ storage }: AttachmentsPageProps) => {
 
         <AttachmentList storage={storage} />
       </Container>
-    </StorageLayout>
+    </Application>
   )
 }
 

@@ -468,7 +468,6 @@ export function mapTree(
   }
   tree.push({
     label: 'Workspace',
-    shrink: 2,
     rows: navTree,
     controls: [
       {
@@ -507,7 +506,7 @@ export function mapTree(
     label: 'More',
     rows: [
       {
-        id: 'sidenav-attachment',
+        id: 'sidenav-attachment-local',
         label: 'Attachments',
         defaultIcon: mdiPaperclip,
         href: attachmentsHref,
@@ -515,17 +514,8 @@ export function mapTree(
         navigateTo: () => push(attachmentsHref),
         depth: 0,
       },
-      // {
-      //   id: 'sidenav-shared',
-      //   label: 'Shared',
-      //   defaultIcon: mdiWeb,
-      //   href: getTeamLinkHref(team, 'shared'),
-      //   active: getTeamLinkHref(team, 'shared') === currentPath,
-      //   navigateTo: () => push(getTeamLinkHref(team, 'shared')),
-      //   depth: 0,
-      // },
       {
-        id: 'sidenav-archived', // todo: custom ID? style it?
+        id: 'sidenav-archived-local',
         label: 'Archive',
         defaultIcon: mdiArchiveOutline,
         href: archiveHref,

@@ -10,17 +10,8 @@ import {
 import { useGeneralStatus } from '../../lib/generalStatus'
 import { useDb } from '../../lib/db'
 import FolderDetail from '../organisms/FolderDetail'
-import TagDetail from '../organisms/TagDetail'
-import TrashDetail from '../organisms/TrashDetail'
-import SearchModal from '../organisms/SearchModal'
-import { useSearchModal } from '../../lib/searchModal'
 import { useRouter } from '../../lib/router'
 import { filenamify, parseNumberStringOrReturnZero } from '../../lib/string'
-import CloudIntroModal from '../organisms/CloudIntroModal'
-import { useCloudIntroModal } from '../../lib/cloudIntroModal'
-import ApplicationLayout from '../../shared/components/molecules/ApplicationLayout'
-import NoteStorageNavigator from '../organisms/NoteStorageNavigator'
-import ContentLayout from '../../shared/components/templates/ContentLayout'
 import { useTranslation } from 'react-i18next'
 import { usePreferences } from '../../lib/preferences'
 import { usePreviewStyle } from '../../lib/preview'
@@ -51,6 +42,7 @@ import {
 import { mapTopbarBreadcrumbs } from '../../lib/v2/mappers/local/topbarBreadcrumbs'
 import { TopbarProps } from '../../shared/components/organisms/Topbar'
 import NoteContextView from '../organisms/NoteContextView'
+import Application from '../Application'
 
 interface WikiNotePageProps {
   storage: NoteStorage
@@ -62,7 +54,6 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
     | StorageTrashCanRouteParams
     | StorageTagsRouteParams
 
-  const { showingCloudIntroModal } = useCloudIntroModal()
   const { hash } = useRouter()
   const { generalStatus, setGeneralStatus } = useGeneralStatus()
   const { noteViewMode, preferredEditingViewMode } = generalStatus
@@ -110,8 +101,6 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
   }, [routeParams, storage.noteMap])
 
   const { updateNote, addAttachments } = useDb()
-
-  const { showSearchModal } = useSearchModal()
 
   const getCurrentPositionFromRoute = useCallback(() => {
     let focusLine = 0
@@ -489,58 +478,38 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
     toggleContextView,
     topbarTree,
   ])
+
   return (
-    <>
-      {showSearchModal && <SearchModal storage={storage} />}
-      <ApplicationLayout
-        sidebar={<NoteStorageNavigator storage={storage} />}
-        pageBody={
-          <>
-            <ContentLayout
-              right={
-                note != null &&
-                generalStatus.showingNoteContextMenu && (
-                  <NoteContextView storage={storage} note={note} />
-                )
-              }
-              topbar={{
-                ...topbar,
-                tree: topbarTree,
-                navigation: {
-                  goBack,
-                  goForward,
-                },
-              }}
-            >
-              {note == null ? (
-                routeParams.name === 'workspaces.notes' ? (
-                  <FolderDetail
-                    storage={storage}
-                    folderPathname={routeParams.folderPathname}
-                  />
-                ) : routeParams.name === 'workspaces.labels.show' ? (
-                  <TagDetail storage={storage} tagName={routeParams.tagName} />
-                ) : routeParams.name === 'workspaces.archive' ? (
-                  <TrashDetail storage={storage} />
-                ) : (
-                  <div>Idle</div>
-                )
-              ) : (
-                <NoteDetail
-                  note={note}
-                  storage={storage}
-                  updateNote={updateNote}
-                  addAttachments={addAttachments}
-                  viewMode={noteViewMode}
-                  initialCursorPosition={getCurrentPositionFromRoute()}
-                />
-              )}
-            </ContentLayout>
-          </>
-        }
-      />
-      {showingCloudIntroModal && <CloudIntroModal />}
-    </>
+    <Application
+      storage={storage}
+      content={{
+        topbar: topbar,
+        right:
+          note != null && generalStatus.showingNoteContextMenu ? (
+            <NoteContextView storage={storage} note={note} />
+          ) : undefined,
+      }}
+    >
+      {note == null ? (
+        routeParams.name === 'workspaces.notes' ? (
+          <FolderDetail
+            storage={storage}
+            folderPathname={routeParams.folderPathname}
+          />
+        ) : (
+          <div>Idle</div>
+        )
+      ) : (
+        <NoteDetail
+          note={note}
+          storage={storage}
+          updateNote={updateNote}
+          addAttachments={addAttachments}
+          viewMode={noteViewMode}
+          initialCursorPosition={getCurrentPositionFromRoute()}
+        />
+      )}
+    </Application>
   )
 }
 

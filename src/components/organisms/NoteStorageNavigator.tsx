@@ -57,9 +57,13 @@ import { usingElectron } from '../../cloud/lib/stores/electron'
 
 interface NoteStorageNavigatorProps {
   storage: NoteStorage
+  initialSidebarState?: SidebarState
 }
 
-const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
+const NoteStorageNavigator = ({
+  storage,
+  initialSidebarState,
+}: NoteStorageNavigatorProps) => {
   const {
     createNote,
     createStorage,
@@ -279,7 +283,9 @@ const NoteStorageNavigator = ({ storage }: NoteStorageNavigatorProps) => {
   const { popup } = useContextMenu()
   const [showSpaces, setShowSpaces] = useState(false)
   const [sidebarState, setSidebarState] = useState<SidebarState | undefined>(
-    generalStatus.lastSidebarState
+    initialSidebarState != null
+      ? initialSidebarState
+      : generalStatus.lastSidebarState
   )
   const [sidebarSearchQuery, setSidebarSearchQuery] = useState('')
 

@@ -107,7 +107,7 @@ export function useLocalUI() {
               })
             })
 
-            // Should update the UI, again works weirdly in pouch DB, works ok in FS storage but opens folder?
+            // Should update the UI, again works weirdly in pouch DB, works ok in FS storage
             // does not update the note properly?
             // push(`/app/storages/${storageId}/notes${newFolderPathname}`)
             openSideNavFolderItemRecursively(workspaceId, newFolderPathname)

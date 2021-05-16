@@ -50,7 +50,8 @@ import GlobalStyle from '../shared/components/atoms/GlobalStyle'
 import { DialogIconTypes, useDialog } from '../shared/lib/stores/dialog'
 import Dialog from '../shared/components/organisms/Dialog/Dialog'
 import ContextMenu from '../shared/components/molecules/ContextMenu'
-import AppNavigator from './organisms/AppNavigator'
+import { useCloudIntroModal } from '../lib/cloudIntroModal'
+import CloudIntroModal from './organisms/CloudIntroModal'
 
 const LoadingText = styled.div`
   margin: 30px;
@@ -370,6 +371,8 @@ const App = () => {
     toggleShowCreateWorkspaceModal,
   } = useCreateWorkspaceModal()
 
+  const { showingCloudIntroModal } = useCloudIntroModal()
+
   return (
     <ThemeProvider theme={selectV2Theme(preferences['general.theme'] as any)}>
       <AppContainer
@@ -379,7 +382,7 @@ const App = () => {
       >
         {initialized ? (
           <>
-            <AppNavigator />
+            {showingCloudIntroModal && <CloudIntroModal />}
             <Router />
             {showCreateWorkspaceModal && (
               <CreateWorkspaceModal
