@@ -50,7 +50,9 @@ export function getWorkspaceHref(storage: NoteStorage, query?: any): string {
 }
 
 export function getTimelineHref(storage: NoteStorage, query?: any): string {
-  return `/app/storages/${storage.id}/timeline?${query}`
+  return `/app/storages/${storage.id}/timeline${
+    query != null ? `?${query}` : ''
+  }`
 }
 
 export function getArchiveHref(storage: NoteStorage): string {
@@ -77,7 +79,11 @@ export function getNoteTitle(note: NoteDoc, fallback: string) {
 }
 
 export function getDocHref(note: NoteDoc, storageId: string) {
-  return `/app/storages/${storageId}/notes/${note._id}`
+  return getDocHrefRaw(note._id, storageId)
+}
+
+export function getDocHrefRaw(noteId: string, storageId: string) {
+  return `/app/storages/${storageId}/notes/${noteId}`
 }
 
 export function getFolderName(

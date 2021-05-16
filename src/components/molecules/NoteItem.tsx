@@ -85,11 +85,11 @@ const TagListSection = styled.div`
   display: flex;
 `
 
-const TagListItem = styled.div<BaseTheme & TagStyleProps>`
+export const TagListItem = styled.div<BaseTheme & TagStyleProps>`
   height: 20px;
   padding: 0 8px;
   margin-right: 2px;
-  border-radius: 10px;
+  border-radius: 4px;
   background-color: ${({ theme, color }) =>
     color || theme.secondaryBackgroundColor};
 
@@ -98,7 +98,7 @@ const TagListItem = styled.div<BaseTheme & TagStyleProps>`
   ${textOverflow}
 `
 
-const TagItemAnchor = styled.button<BaseTheme & TagStyleProps>`
+export const TagItemAnchor = styled.button<BaseTheme & TagStyleProps>`
   background-color: transparent;
   border: none;
   text-decoration: none;

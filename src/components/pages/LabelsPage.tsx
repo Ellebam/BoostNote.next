@@ -3,9 +3,9 @@ import { getLabelHref } from '../../lib/db/utils'
 import Application from '../Application'
 import { topParentId } from '../../cloud/lib/mappers/topbarTree'
 import { mdiTag } from '@mdi/js'
-import { push } from 'mixpanel-browser'
 import React from 'react'
 import TagDetail from '../organisms/TagDetail'
+import { useRouter } from '../../lib/router'
 
 interface LabelsPageProps {
   storage: NoteStorage
@@ -14,6 +14,7 @@ interface LabelsPageProps {
 
 const LabelsPage = ({ storage, tagName }: LabelsPageProps) => {
   const labelHref = getLabelHref(storage, tagName)
+  const { push } = useRouter()
   return (
     <Application
       storage={storage}
@@ -27,7 +28,7 @@ const LabelsPage = ({ storage, tagName }: LabelsPageProps) => {
               icon: mdiTag,
               link: {
                 href: labelHref,
-                navigateTo: () => push([labelHref]),
+                navigateTo: () => push(labelHref),
               },
             },
           ],

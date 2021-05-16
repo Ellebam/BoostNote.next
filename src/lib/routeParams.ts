@@ -34,6 +34,11 @@ export interface StorageAttachmentsRouteParams extends BaseRouteParams {
   workspaceId: string
 }
 
+export interface StorageTimelineRouteParams extends BaseRouteParams {
+  name: 'workspaces.timeline'
+  workspaceId: string
+}
+
 export interface BoostHubLoginRouteParams extends BaseRouteParams {
   name: 'boosthub.login'
 }
@@ -61,6 +66,7 @@ export type AllRouteParams =
   | StorageTrashCanRouteParams
   | StorageTagsRouteParams
   | StorageAttachmentsRouteParams
+  | StorageTimelineRouteParams
   | UnknownRouteParams
   | BoostHubTeamsShowRouteParams
   | BoostHubTeamsCreateRouteParams
@@ -176,6 +182,13 @@ export const useRouteParams = () => {
     if (names[2] === 'attachments') {
       return {
         name: 'workspaces.attachments',
+        workspaceId,
+      }
+    }
+
+    if (names[2] === 'timeline') {
+      return {
+        name: 'workspaces.timeline',
         workspaceId,
       }
     }

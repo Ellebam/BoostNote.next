@@ -21,6 +21,7 @@ import { ObjectMap, NoteStorage } from '../lib/db/types'
 import { useGeneralStatus } from '../lib/generalStatus'
 import ArchivePage from './pages/ArchivePage'
 import LabelsPage from './pages/LabelsPage'
+import TimelinePage from './pages/TimelinePage'
 
 const NotFoundPageContainer = styled.div`
   padding: 15px 25px;
@@ -137,7 +138,7 @@ function useContent(
       if (storage == null) {
         break
       }
-      return <LabelsPage storage={storage} tagName={tagName}></LabelsPage>
+      return <LabelsPage storage={storage} tagName={tagName} />
     }
 
     case 'workspaces.archive': {
@@ -155,6 +156,14 @@ function useContent(
         break
       }
       return <AttachmentsPage storage={storage} />
+    }
+    case 'workspaces.timeline': {
+      const { workspaceId } = routeParams
+      const storage = storageMap[workspaceId]
+      if (storage == null) {
+        break
+      }
+      return <TimelinePage storage={storage} />
     }
     case 'workspaces.create':
       return <StorageCreatePage />

@@ -670,7 +670,6 @@ const NoteStorageNavigator = ({
           storage != null
             ? {
                 variant: 'primary',
-                // todo: implement timeline page - push open page with timeline
                 onClick: () => push(getTimelineHref(storage)),
               }
             : undefined
