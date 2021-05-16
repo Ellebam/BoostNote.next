@@ -5,7 +5,7 @@ import { topParentId } from '../../cloud/lib/mappers/topbarTree'
 import { mdiArchive } from '@mdi/js'
 import { push } from 'mixpanel-browser'
 import React from 'react'
-import TrashDetail from '../organisms/TrashDetail'
+import ArchiveDetail from '../organisms/ArchiveDetail'
 
 interface ArchivePageProps {
   storage: NoteStorage
@@ -33,7 +33,7 @@ const ArchivePage = ({ storage }: ArchivePageProps) => {
         },
       }}
     >
-      <TrashDetail storage={storage} />
+      <ArchiveDetail storage={storage} />
     </Application>
   )
 }

@@ -20,7 +20,7 @@ interface TrashDetailProps {
   storage: NoteStorage
 }
 
-const TrashDetail = ({ storage }: TrashDetailProps) => {
+const ArchiveDetail = ({ storage }: TrashDetailProps) => {
   const { preferences, setPreferences } = usePreferences()
   const noteSorting = preferences['general.noteSorting']
   const { t } = useTranslation()
@@ -99,7 +99,7 @@ const TrashDetail = ({ storage }: TrashDetailProps) => {
   )
 }
 
-export default TrashDetail
+export default ArchiveDetail
 
 const Header = styled.h1`
   display: flex;

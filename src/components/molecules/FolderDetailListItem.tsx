@@ -1,12 +1,13 @@
 import React, { ReactNode, MouseEventHandler } from 'react'
 import { textOverflow, flexCenter } from '../../lib/styled/styleFunctions'
-import Icon from '../atoms/Icon'
 import cc from 'classcat'
 import styled from '../../shared/lib/styled'
 import { borderBottom } from '../../shared/lib/styled/styleFunctions'
+import Icon, { IconSize } from '../../shared/components/atoms/Icon'
 
 interface FolderDetailListItemProps {
   iconPath?: string
+  iconSize?: IconSize
   label: string
   onClick?: MouseEventHandler<HTMLDivElement>
   meta?: ReactNode
@@ -15,6 +16,7 @@ interface FolderDetailListItemProps {
 
 const FolderDetailListItem = ({
   iconPath,
+  iconSize = 20,
   label,
   onClick,
   meta,
@@ -24,7 +26,7 @@ const FolderDetailListItem = ({
     <Container>
       <div className='clickable' onClick={onClick}>
         <div className='icon'>
-          {iconPath != null && <Icon path={iconPath} />}
+          {iconPath != null && <Icon path={iconPath} size={iconSize} />}
         </div>
         <div className={cc(['label', label.trim().length === 0 && 'subtle'])}>
           {label.trim().length === 0 ? 'Untitled' : label}
@@ -61,7 +63,9 @@ const Container = styled.li`
   .icon {
     width: 40px;
     height: 40px;
-    ${flexCenter}
+    ${flexCenter};
+
+    color: ${({ theme }) => theme.colors.text.link};
   }
   .label {
     flex: 1;
