@@ -23,20 +23,16 @@ const TimelineList = ({ heading, events, storage }: TimelineListProps) => {
         doc: NoteDoc
       }[]
     >((acc, event) => {
-      if (event.type == 'createDoc' || event.type == 'contentUpdate') {
+      if (
+        event.type === 'createDoc' ||
+        event.type === 'contentUpdate' ||
+        event.type === 'archiveDoc'
+      ) {
         const doc = storage.noteMap[event.id]
         if (doc != null) {
           acc.push({ doc })
         }
       }
-      // const { resource, editors } = event.data || {}
-      // if (!Array.isArray(editors) || typeof resource !== 'string') {
-      //   return acc
-      // }
-      // const doc = storage.noteMap[getOriginalDocId(resource)]
-      // if (doc != null) {
-      //   acc.push({ doc })
-      // }
       return acc
     }, [])
   }, [events, storage.noteMap])

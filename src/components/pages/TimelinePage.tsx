@@ -11,6 +11,7 @@ import { useRouter } from '../../lib/router'
 import TimelineList from '../molecules/Timeline/TimelineList'
 import styled from '../../shared/lib/styled'
 import { linkText } from '../../lib/styled/styleFunctionsLocal'
+import Button from '../../shared/components/atoms/Button'
 
 interface TimelinePageProps {
   storage: NoteStorage
@@ -56,33 +57,38 @@ const TimelinePage = ({ storage }: TimelinePageProps) => {
   const href = getTimelineHref(storage)
 
   const [events, setEvents] = useState<TimelineEvent[]>([])
+  const [totalNumberOfEvents, setTotalNumberOfEvents] = useState<number>(0)
 
   const loadEvents = useCallback(
     (amount: number) => {
       const newEvents: TimelineEvent[] = []
       const notes = values(storage.noteMap)
       notes.forEach((note) => {
-        if (newEvents.length <= amount) {
-          // const createdAt = subDays(todayDate, 7)
-          // if(isBefore(sevenDaysAgo, new Date(event.createdAt))
-          if (note.updatedAt) {
-            newEvents.push({
-              createdAt: note.updatedAt,
-              type: 'contentUpdate',
-              id: note._id,
-              data: { ...note },
-            })
-          } else {
-            newEvents.push({
-              createdAt: note.createdAt,
-              type: 'createDoc',
-              id: note._id,
-              data: { ...note },
-            })
-          }
+        if (note.archivedAt != null) {
+          newEvents.push({
+            createdAt: note.archivedAt,
+            type: 'archiveDoc',
+            id: note._id,
+            data: { ...note },
+          })
+        } else if (note.updatedAt) {
+          newEvents.push({
+            createdAt: note.updatedAt,
+            type: 'contentUpdate',
+            id: note._id,
+            data: { ...note },
+          })
+        } else {
+          newEvents.push({
+            createdAt: note.createdAt,
+            type: 'createDoc',
+            id: note._id,
+            data: { ...note },
+          })
         }
       })
-      setEvents(newEvents)
+      setTotalNumberOfEvents(newEvents.length)
+      setEvents(newEvents.slice(0, amount))
     },
     [storage.noteMap]
   )
@@ -213,14 +219,15 @@ const TimelinePage = ({ storage }: TimelinePageProps) => {
           events={others}
           storage={storage}
         />
-        {events.length !== 10 && events.length % 10 === 0 && (
-          <div
-            className='more-button'
-            onClick={() =>
-              showMoreEvents({ amount: Math.max(events.length, 20) + 10 })
-            }
-          >
-            Show More..
+        {totalNumberOfEvents != events.length && (
+          <div className={'more-button'}>
+            <Button
+              onClick={() =>
+                showMoreEvents({ amount: Math.max(events.length, 20) + 10 })
+              }
+            >
+              Show More..
+            </Button>
           </div>
         )}
       </StyledTimelinePage>

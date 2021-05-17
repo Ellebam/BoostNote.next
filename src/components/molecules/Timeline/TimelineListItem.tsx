@@ -4,8 +4,7 @@ import cc from 'classcat'
 import { mdiFileDocumentOutline } from '@mdi/js'
 import { getFormattedBoosthubDate } from '../../../cloud/lib/date'
 import Icon from '../../../shared/components/atoms/Icon'
-import Link from '../../../shared/components/atoms/Link'
-import { getDocHref, getNoteTitle } from '../../../lib/db/utils'
+import { getNoteTitle } from '../../../lib/db/utils'
 import { useStorageRouter } from '../../../lib/storageRouter'
 import {
   SideNavItemStyle,
@@ -15,10 +14,10 @@ import {
   SideNavClickableButtonStyle,
   SideNavControlStyle,
   StyledTag,
+  sidebarText,
 } from '../../../lib/styled/styleFunctionsLocal'
 import styled from '../../../shared/lib/styled'
-import { defaultTagColor, isColorBright } from '../../../lib/colors'
-import { TagStyleProps } from '../../../lib/styled/styleFunctions'
+import { defaultTagColor } from '../../../lib/colors'
 
 interface TimelineListItemProps {
   className?: string
@@ -45,20 +44,20 @@ const TimelineListItem = ({
   }
 
   const dateLabel = useMemo(() => {
-    // if (item.archivedAt != null) {
-    // return (
-    //   <div className='date-label'>
-    //      Archived {getFormattedBoosthubDate(item.archivedAt, true)}
-    //    </div>
-    //  )
-    // }
+    if (item.archivedAt != null) {
+      return (
+        <div className='date-label'>
+          Archived {getFormattedBoosthubDate(item.archivedAt, true)}
+        </div>
+      )
+    }
 
     return (
       <div className='date-label'>
         Updated {getFormattedBoosthubDate(item.updatedAt, true)}
       </div>
     )
-  }, [item.updatedAt])
+  }, [item.archivedAt, item.updatedAt])
 
   const { navigateToNote: _navigateToNote } = useStorageRouter()
 
@@ -92,13 +91,13 @@ const TimelineListItem = ({
     [storage.tagMap]
   )
 
-  const getTagDynamicStyle = useCallback((tag: TagStyleProps) => {
-    const invertPercentage = isColorBright(tag.color) ? '100%' : '0%'
-    return {
-      color: '#fff',
-      filter: `invert(${invertPercentage})`,
-    }
-  }, [])
+  // const getTagDynamicStyle = useCallback((tag: TagStyleProps) => {
+  //   const invertPercentage = isColorBright(tag.color) ? '100%' : '0%'
+  //   return {
+  //     color: '#fff',
+  //     filter: `invert(${invertPercentage})`,
+  //   }
+  // }, [])
 
   return (
     <SideNavItemStyle
@@ -113,38 +112,26 @@ const TimelineListItem = ({
             </SideNavIconStyle>
           </TimelineIconColorStyle>
 
-          <Link
-            href={getDocHref(item, storage.id)}
+          <DocLinkStyle
             className='itemLink'
-            onFocus={() => setFocused(true)}
             id={id}
-            onClick={() => navigateToNote(item)}
+            onClick={() => {
+              navigateToNote(item)
+            }}
           >
             <SideNavLabelStyle>
               {getNoteTitle(item, 'Untitled')}
             </SideNavLabelStyle>
             {item.tags != null && item.tags.length > 0 && (
               <StyledNavTagsList>
-                <div className='wrapper'>
-                  {noteTags(item).map((tag: TagItemProps) => (
-                    <StyledTag
-                      className='mb-0 size-s ml-xsmall'
-                      style={{ backgroundColor: tag.color }}
-                      key={tag.id}
-                    >
-                      <span style={getTagDynamicStyle(tag)}>{tag.name}</span>
-                    </StyledTag>
-                  ))}
-                  {item.tags.length > 3 && (
-                    <StyledTag className='mb-0 size-s bg-none'>
-                      +{item.tags.length - 3}
-                    </StyledTag>
-                  )}
-                </div>
                 {/*<div className='wrapper'>*/}
                 {/*  {noteTags(item).map((tag: TagItemProps) => (*/}
-                {/*    <StyledTag className='mb-0 size-s ml-xsmall' key={tag.id}>*/}
-                {/*      {tag.name}*/}
+                {/*    <StyledTag*/}
+                {/*      className='mb-0 size-s ml-xsmall'*/}
+                {/*      style={{ backgroundColor: tag.color }}*/}
+                {/*      key={tag.id}*/}
+                {/*    >*/}
+                {/*      <span style={getTagDynamicStyle(tag)}>{tag.name}</span>*/}
                 {/*    </StyledTag>*/}
                 {/*  ))}*/}
                 {/*  {item.tags.length > 3 && (*/}
@@ -153,9 +140,21 @@ const TimelineListItem = ({
                 {/*    </StyledTag>*/}
                 {/*  )}*/}
                 {/*</div>*/}
+                <div className='wrapper'>
+                  {noteTags(item).map((tag: TagItemProps) => (
+                    <StyledTag className='mb-0 size-s ml-xsmall' key={tag.id}>
+                      {tag.name}
+                    </StyledTag>
+                  ))}
+                  {item.tags.length > 3 && (
+                    <StyledTag className='mb-0 size-s bg-none'>
+                      +{item.tags.length - 3}
+                    </StyledTag>
+                  )}
+                </div>
               </StyledNavTagsList>
             )}
-          </Link>
+          </DocLinkStyle>
         </SideNavClickableButtonStyle>
         <SideNavControlStyle className='controls always'>
           {dateLabel}
@@ -173,6 +172,23 @@ interface TagItemProps {
 
 const TimelineIconColorStyle = styled.div`
   color: ${({ theme }) => theme.colors.text.link};
+`
+
+const DocLinkStyle = styled.div`
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  min-width: 0;
+  width: 100%;
+  flex: 1 1 auto;
+  font-size: ${({ theme }) => theme.sizes.fonts.df}px;
+  cursor: pointer;
+  ${sidebarText}
+
+  .icon {
+    flex: 0 0 auto;
+    color: ${({ theme }) => theme.colors.text.subtle};
+  }
 `
 
 export default TimelineListItem
