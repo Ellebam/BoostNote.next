@@ -6,23 +6,23 @@ import React, {
   useRef,
   useCallback,
 } from 'react'
-import {
-  border,
-  backgroundColor,
-  borderColor,
-  contextMenuShadow,
-  uiTextColor,
-  activeBackgroundColor,
-  textOverflow,
-  inputStyle,
-} from '../../lib/styled/styleFunctions'
-import styled from '../../lib/styled'
 import { useEffectOnce } from 'react-use'
 import { mdiTag } from '@mdi/js'
 import Icon from './Icon'
 import { isTagNameValid } from '../../lib/db/utils'
 import { useAnalytics, analyticsEvents } from '../../lib/analytics'
 import { PopulatedTagDoc } from '../../lib/db/types'
+import styled from '../../shared/lib/styled'
+import {
+  backgroundColor,
+  border,
+  borderColor,
+  contextMenuShadow,
+  inputStyle,
+  textColor,
+  textOverflow,
+  activeBackgroundColor,
+} from '../../shared/lib/styled/styleFunctions'
 
 const Container = styled.div`
   position: fixed;
@@ -34,7 +34,6 @@ const Container = styled.div`
   ${backgroundColor}
   ${border}
   z-index: 9000;
-  ${backgroundColor}
   ${borderColor}
   ${contextMenuShadow}
 `
@@ -49,7 +48,7 @@ const TagNameInput = styled.input`
 const MenuButton = styled.button`
   width: 100%;
   height: 30px;
-  ${uiTextColor};
+  ${textColor};
   background-color: transparent;
   border: none;
   display: flex;

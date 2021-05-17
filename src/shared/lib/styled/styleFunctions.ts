@@ -21,6 +21,14 @@ export function selectV2Theme(theme: ThemeTypes) {
 /* ———————————–———————————–———————————–——–——
     Text
 ———————————–———————————–———————————–——–—— */
+export const textColor = ({ theme }: StyledProps) =>
+  `color: ${theme.colors.text.primary};`
+
+export const textOverflow = () => `
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+`
 
 export const overflowEllipsis = () => `
   flex: 1 1 5px;
@@ -40,6 +48,8 @@ export const overflowEllipsis = () => `
 /* ———————————–———————————–———————————–——–——
     Background
 ———————————–———————————–———————————–——–—— */
+export const activeBackgroundColor = ({ theme }: StyledProps) =>
+  `background-color: ${theme.colors.background.tertiary};`
 
 export const scrollbarOverlay = (
   { theme }: StyledProps,
@@ -102,6 +112,9 @@ background-color: ${color || theme.colors.background.secondary};
 /* ———————————–———————————–———————————–——–——
     Border
 ———————————–———————————–———————————–——–—— */
+export const borderColor = ({ theme }: StyledProps) =>
+  `border-color: ${theme.colors.border.main};`
+
 export const backgroundColor = ({ theme }: StyledProps) =>
   `background-color: ${theme.colors.background.primary};`
 
@@ -139,6 +152,8 @@ export const hideScroll = () => `
 /* ———————————–———————————–———————————–——–——
     Shadow
 ———————————–———————————–———————————–——–—— */
+export const contextMenuShadow = ({ theme }: StyledProps) =>
+  `box-shadow: ${theme.colors.shadow};`
 
 /* ———————————–———————————–———————————–——–——
     Button
@@ -245,6 +260,32 @@ color: ${theme.colors.text.primary};
 /* ———————————–———————————–———————————–——–——
     Table
 ———————————–———————————–———————————–——–—— */
+export const tableStyle = ({ theme }: StyledProps) => `
+  width: 100%;
+  border: 1px solid ${theme.colors.border.main};
+  border-collapse: collapse;
+  color: ${theme.colors.text.link};
+  text-align: left;
+
+  th, td {
+    padding: ${theme.sizes.spaces.xsm}px ${theme.sizes.spaces.sm}px;
+    border: 1px solid ${theme.colors.border.main};
+    font-weight: 400;
+  }
+
+  thead th {
+    font-size: ${theme.sizes.fonts.l}px;
+    font-weight: 500;
+
+    span {
+      display: block;
+    }
+  }
+
+  tbody td {
+    text-align: center;
+  }
+`
 
 /* ———————————–———————————–———————————–——–——
     Responsive Styles
