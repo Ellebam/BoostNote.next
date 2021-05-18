@@ -251,7 +251,7 @@ const NotePageToolbarNoteHeader = ({
 export default NotePageToolbarNoteHeader
 
 const TitleInput = styled.input`
-  ${inputStyle}
+  ${inputStyle};
   flex: 1;
   margin: 0 5px;
   display: block;
@@ -284,7 +284,7 @@ const NoteTitleButtonContainer = styled.button`
   outline: none;
 
   background-color: transparent;
-  ${flexCenter}
+  ${flexCenter};
   overflow: hidden;
 
   border: none;

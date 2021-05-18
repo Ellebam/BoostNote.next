@@ -1,7 +1,7 @@
 import React, { Ref } from 'react'
 import { flexCenter } from '../../lib/styled/styleFunctions'
 import styled from '../../shared/lib/styled'
-import Icon from './Icon'
+import Icon from '../../shared/components/atoms/Icon'
 
 const Container = styled.button`
   height: 32px;
@@ -66,7 +66,7 @@ const ToolbarIconButton = React.forwardRef(
       ref={ref}
       title={title}
     >
-      <Icon size={18} path={iconPath} />
+      <Icon size={16} path={iconPath} />
     </Container>
   )
 )

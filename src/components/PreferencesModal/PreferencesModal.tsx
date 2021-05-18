@@ -7,7 +7,6 @@ import MarkdownTab from './MarkdownTab'
 import AboutTab from './AboutTab'
 import { flexCenter } from '../../lib/styled/styleFunctions'
 import { useTranslation } from 'react-i18next'
-import Icon from '../atoms/Icon'
 import { mdiClose, mdiHammerWrench } from '@mdi/js'
 import { useDb } from '../../lib/db'
 import { useRouteParams } from '../../lib/routeParams'
@@ -24,6 +23,7 @@ import {
   closeIconColor,
 } from '../../shared/lib/styled/styleFunctions'
 import SettingNavButtonItem from '../../shared/components/organisms/Settings/atoms/SettingNavItem'
+import Icon from '../../shared/components/atoms/Icon'
 
 const FullScreenContainer = styled.div`
   z-index: 7000;
@@ -168,7 +168,7 @@ const PreferencesModal = () => {
       <ContentContainer>
         <ModalHeader>
           <ModalTitle>
-            <Icon size={24} path={mdiHammerWrench} />
+            <Icon size={26} path={mdiHammerWrench} />
             {t('preferences.general')}
           </ModalTitle>
           <CloseButton onClick={togglePreferencesModal}>

@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo } from 'react'
 import { NoteDoc, NoteStorage } from '../../lib/db/types'
-import Icon from '../atoms/Icon'
 import {
   mdiClockOutline,
   mdiTrashCanOutline,
@@ -31,6 +30,7 @@ import { usePreferences } from '../../lib/preferences'
 import { usePreviewStyle } from '../../lib/preview'
 import { useCloudIntroModal } from '../../lib/cloudIntroModal'
 import styled from '../../shared/lib/styled'
+import Icon from '../../shared/components/atoms/Icon'
 
 interface NoteContextViewProps {
   storage: NoteStorage
@@ -355,7 +355,7 @@ interface LabelIconProps {
 const LabelIcon = ({ path }: LabelIconProps) => {
   return (
     <ControlItemLabelIconContainer>
-      <Icon size={18} path={path} />
+      <Icon size={16} path={path} />
     </ControlItemLabelIconContainer>
   )
 }

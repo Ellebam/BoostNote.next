@@ -33,7 +33,6 @@ const AttachmentsPage = ({ storage }: AttachmentsPageProps) => {
   const attachmentsHref = getAttachmentsHref(storage)
   return (
     <Application
-      storage={storage}
       content={{
         topbar: {
           breadcrumbs: [

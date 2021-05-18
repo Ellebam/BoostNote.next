@@ -13,7 +13,6 @@ import {
   mdiMagnify,
   mdiPlus,
   mdiMenu,
-  mdiCloudOffOutline,
 } from '@mdi/js'
 import { useRouter } from '../../lib/router'
 import { useActiveStorageId, useRouteParams } from '../../lib/routeParams'
@@ -45,22 +44,21 @@ import {
   boostHubToggleSidebarTimelineEventEmitter,
   boostHubToggleSidebarTreeEventEmitter,
 } from '../../lib/events'
-import { useSearchModal } from '../../lib/searchModal'
 import { SidebarState } from '../../shared/lib/sidebar'
 import CloudIntroModal from './CloudIntroModal'
 import { useCloudIntroModal } from '../../lib/cloudIntroModal'
+import { mapToolbarRows } from '../../lib/v2/mappers/local/sidebarRows'
 
 const TopLevelNavigator = () => {
   const { storageMap, renameStorage, removeStorage } = useDb()
   const { push } = useRouter()
-  const { preferences, togglePreferencesModal, closed } = usePreferences()
+  const { preferences, openTab } = usePreferences()
   const { generalStatus } = useGeneralStatus()
   const routeParams = useRouteParams()
   const { signOut } = useBoostHub()
   const { navigate } = useStorageRouter()
   const { prompt, messageBox } = useDialog()
   const { t } = useTranslation()
-  const { toggleShowSearchModal, showSearchModal } = useSearchModal()
   const [sidebarState, setSidebarState] = useState<SidebarState | undefined>(
     'tree'
   )
@@ -308,47 +306,56 @@ const TopLevelNavigator = () => {
       (storage) => activeStorageId === storage?.id
     )
     if (activeStorage) {
-      return [
-        {
-          tooltip: 'Spaces',
-          active: showSpaces,
-          icon: <RoundedImage size={30} alt={activeStorage.name} />,
-          onClick: () => setShowSpaces((prev) => !prev),
-        },
-
-        {
-          tooltip: 'Tree',
-          icon: mdiFileDocumentMultipleOutline,
-          active: !showSearchModal && closed && !showSpaces,
-          onClick: undefined,
-        },
-        {
-          tooltip: 'Search',
-          active: showSearchModal && closed && !showSpaces,
-          icon: mdiMagnify,
-          onClick: toggleShowSearchModal,
-        },
-        {
-          tooltip: 'Timeline',
-          active: sidebarState === 'timeline',
-          icon: mdiClockOutline,
-          onClick: () => openState('timeline'),
-        },
-        {
-          tooltip: 'Cloud Space',
-          active: false,
-          position: 'bottom',
-          icon: mdiCloudOffOutline,
-          onClick: toggleShowingCloudIntroModal,
-        },
-        {
-          tooltip: 'Settings',
-          active: !closed && !showSpaces,
-          position: 'bottom',
-          icon: mdiCog,
-          onClick: togglePreferencesModal,
-        },
-      ] as SidebarToolbarRow[]
+      return mapToolbarRows(
+        showSpaces,
+        setShowSpaces,
+        openState,
+        openTab,
+        toggleShowingCloudIntroModal,
+        sidebarState,
+        activeStorage
+      )
+      // return [
+      //   {
+      //     tooltip: 'Spaces',
+      //     active: showSpaces,
+      //     icon: <RoundedImage size={30} alt={activeStorage.name} />,
+      //     onClick: () => setShowSpaces((prev) => !prev),
+      //   },
+      //
+      //   {
+      //     tooltip: 'Tree',
+      //     icon: mdiFileDocumentMultipleOutline,
+      //     active: !showSearchModal && closed && !showSpaces,
+      //     onClick: undefined,
+      //   },
+      //   {
+      //     tooltip: 'Search',
+      //     active: showSearchModal && closed && !showSpaces,
+      //     icon: mdiMagnify,
+      //     onClick: toggleShowSearchModal,
+      //   },
+      //   {
+      //     tooltip: 'Timeline',
+      //     active: sidebarState === 'timeline',
+      //     icon: mdiClockOutline,
+      //     onClick: () => openState('timeline'),
+      //   },
+      //   {
+      //     tooltip: 'Cloud Space',
+      //     active: false,
+      //     position: 'bottom',
+      //     icon: mdiCloudOffOutline,
+      //     onClick: toggleShowingCloudIntroModal,
+      //   },
+      //   {
+      //     tooltip: 'Settings',
+      //     active: !closed && !showSpaces,
+      //     position: 'bottom',
+      //     icon: mdiCog,
+      //     onClick: togglePreferencesModal,
+      //   },
+      // ] as SidebarToolbarRow[]
     }
 
     return [
@@ -366,13 +373,12 @@ const TopLevelNavigator = () => {
     showSpaces,
     sidebarState,
     activeStorageId,
-    showSearchModal,
-    closed,
-    toggleShowSearchModal,
-    toggleShowingCloudIntroModal,
-    togglePreferencesModal,
     openState,
+    openTab,
+    toggleShowingCloudIntroModal,
   ])
+
+  console.log('got rows', toolbarRows)
 
   return (
     <Container>

@@ -1,5 +1,4 @@
 import React, { useMemo, useState, useEffect } from 'react'
-import styled from '../../lib/styled'
 import { NoteStorage, Attachment, AttachmentData } from '../../lib/db/types'
 import { useDialog, DialogIconTypes } from '../../lib/dialog'
 import { useDb } from '../../lib/db'
@@ -8,6 +7,7 @@ import { downloadBlob } from '../../lib/download'
 import { openNew } from '../../lib/platform'
 import { openContextMenu } from '../../lib/electronOnly'
 import copy from 'copy-to-clipboard'
+import styled from '../../shared/lib/styled'
 
 const ListContainer = styled.div`
   display: flex;

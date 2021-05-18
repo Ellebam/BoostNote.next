@@ -6,13 +6,7 @@ import ContentLayout, {
 } from '../shared/components/templates/ContentLayout'
 import { SidebarState } from '../shared/lib/sidebar'
 import { useRouter } from '../lib/router'
-import {
-  StorageNotesRouteParams,
-  StorageTagsRouteParams,
-  StorageTrashCanRouteParams,
-  useRouteParams,
-} from '../lib/routeParams'
-import { NoteStorage } from '../lib/db/types'
+import { StorageNotesRouteParams, useRouteParams } from '../lib/routeParams'
 import { filenamify } from '../lib/string'
 import { usePreferences } from '../lib/preferences'
 import { usePreviewStyle } from '../lib/preview'
@@ -41,19 +35,17 @@ interface ApplicationProps {
   content: ContentLayoutProps
   className?: string
   initialSidebarState?: SidebarState
-  storage: NoteStorage
 }
 
 const Application = ({
   content: { topbar, ...content },
   children,
-  storage,
   initialSidebarState,
 }: React.PropsWithChildren<ApplicationProps>) => {
-  const routeParams = useRouteParams() as
-    | StorageNotesRouteParams
-    | StorageTrashCanRouteParams
-    | StorageTagsRouteParams
+  const { storageMap } = useDb()
+  const routeParams = useRouteParams() as StorageNotesRouteParams
+  const { workspaceId } = routeParams
+  const storage = storageMap[workspaceId]
 
   const { push, goBack, goForward } = useRouter()
   const { generalStatus, setGeneralStatus } = useGeneralStatus()
@@ -65,6 +57,9 @@ const Application = ({
   const { pushMessage } = useToast()
 
   const note = useMemo(() => {
+    if (storage == null) {
+      return undefined
+    }
     switch (routeParams.name) {
       case 'workspaces.notes': {
         if (routeParams.noteId == null) {
@@ -79,53 +74,37 @@ const Application = ({
         }
         return note
       }
-      case 'workspaces.labels.show': {
-        if (routeParams.noteId == null) {
-          return undefined
-        }
-        const note = storage.noteMap[routeParams.noteId]
-        if (note == null) {
-          return undefined
-        }
-        if (!note.tags.includes(routeParams.tagName)) {
-          return undefined
-        }
-        return note
-      }
-      case 'workspaces.archive': {
-        if (routeParams.noteId == null) {
-          return undefined
-        }
-        const note = storage.noteMap[routeParams.noteId]
-        if (note == null || !note.trashed) {
-          return undefined
-        }
-        return note
-      }
     }
     return undefined
-  }, [routeParams, storage.noteMap])
+  }, [
+    routeParams.folderPathname,
+    routeParams.name,
+    routeParams.noteId,
+    storage,
+  ])
 
-  const storageId = storage.id
   const noteId = note?._id
 
   const topbarTree = useMemo(() => {
+    if (storage == null) {
+      return undefined
+    }
     return mapTopBarTree(storage.noteMap, storage.folderMap, storage, push)
   }, [push, storage])
 
   const bookmark = useCallback(async () => {
-    if (noteId == null) {
+    if (noteId == null || storage == null) {
       return
     }
-    await bookmarkNote(storageId, noteId)
-  }, [storageId, noteId, bookmarkNote])
+    await bookmarkNote(storage.id, noteId)
+  }, [noteId, storage, bookmarkNote])
 
   const unbookmark = useCallback(async () => {
-    if (noteId == null) {
+    if (noteId == null || storage == null) {
       return
     }
-    await unbookmarkNote(storageId, noteId)
-  }, [storageId, noteId, unbookmarkNote])
+    await unbookmarkNote(storage.id, noteId)
+  }, [storage, noteId, unbookmarkNote])
 
   const selectEditMode = useCallback(() => {
     setGeneralStatus({
@@ -191,7 +170,7 @@ const Application = ({
 
   useEffect(() => {
     const handler = () => {
-      if (note == null) {
+      if (note == null || storage == null) {
         return
       }
       showSaveDialog({
@@ -283,7 +262,7 @@ const Application = ({
     preferences,
     previewStyle,
     pushMessage,
-    storage.attachmentMap,
+    storage,
   ])
 
   const toggleBookmark = useCallback(() => {
@@ -306,12 +285,12 @@ const Application = ({
 
   return (
     <>
-      {showSearchModal && <SearchModal storage={storage} />}
+      {storage != null && showSearchModal && <SearchModal storage={storage} />}
       <ApplicationLayout
         sidebar={
           <NoteStorageNavigator
-            storage={storage}
             initialSidebarState={initialSidebarState}
+            storage={storage}
           />
         }
         pageBody={

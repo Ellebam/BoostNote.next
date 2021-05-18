@@ -20,8 +20,8 @@ export function getSearchRegex(rawSearch: string) {
 }
 
 export function getSearchResultItems(
-  storage: NoteStorage,
-  searchQuery: string
+  storage?: NoteStorage,
+  searchQuery?: string
 ): NoteSearchData[] {
   if (storage == null) {
     return []
@@ -30,7 +30,7 @@ export function getSearchResultItems(
     return []
   }
 
-  console.log('Got search query', searchQuery)
+  // console.log('Got search query', searchQuery)
 
   const notes = values(storage.noteMap)
   const folders = values(storage.folderMap)

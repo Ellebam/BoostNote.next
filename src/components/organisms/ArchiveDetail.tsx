@@ -7,14 +7,14 @@ import NoteSortingOptionsFragment from '../molecules/NoteSortingOptionsFragment'
 import { NoteSortingOptions } from '../../lib/sort'
 import Icon from '../atoms/Icon'
 import { mdiArchive } from '@mdi/js'
-import styled from '../../lib/styled'
+import { values } from '../../lib/db/utils'
+import { useTranslation } from 'react-i18next'
+import styled from '../../shared/lib/styled'
 import {
   flexCenter,
   borderBottom,
   selectStyle,
-} from '../../lib/styled/styleFunctions'
-import { values } from '../../lib/db/utils'
-import { useTranslation } from 'react-i18next'
+} from '../../shared/lib/styled/styleFunctions'
 
 interface TrashDetailProps {
   storage: NoteStorage

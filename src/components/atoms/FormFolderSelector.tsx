@@ -1,8 +1,11 @@
 import React, { useCallback, useState, CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
-import styled from '../../lib/styled'
-import { border, secondaryButtonStyle } from '../../lib/styled/styleFunctions'
 import { getPathByName, showOpenDialog } from '../../lib/electronOnly'
+import styled from '../../shared/lib/styled'
+import {
+  border,
+  secondaryButtonStyle,
+} from '../../shared/lib/styled/styleFunctions'
 
 const FormFolderSelectorInput = styled.input`
   display: block;
@@ -11,7 +14,7 @@ const FormFolderSelectorInput = styled.input`
   line-height: 1.5;
   border-top-left-radius: 0.25rem;
   border-bottom-left-radius: 0.25rem;
-  ${border}
+  ${border};
   background-color: white;
   cursor: pointer;
   &:disabled {
@@ -25,8 +28,8 @@ const FormFolderSelectorContainer = styled.div`
 `
 
 const FormFolderSelectorButton = styled.button`
-  ${secondaryButtonStyle}
-  padding: .375rem .75rem;
+  ${secondaryButtonStyle};
+  padding: 0.375rem 0.75rem;
   font-size: 1rem;
   line-height: 1.5;
   border-top-right-radius: 0.25rem;

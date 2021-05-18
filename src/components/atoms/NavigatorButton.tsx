@@ -1,6 +1,6 @@
 import React from 'react'
-import Icon from './Icon'
 import styled from '../../shared/lib/styled'
+import Icon from '../../shared/components/atoms/Icon'
 
 const ButtonContainer = styled.button`
   width: 26px;

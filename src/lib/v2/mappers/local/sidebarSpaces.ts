@@ -1,24 +1,22 @@
-import { SidebarSpace } from '../../../../shared/components/organisms/Sidebar/molecules/SidebarSpaces'
 import { osName } from '../../../../shared/lib/platform'
 import { NoteStorage } from '../../../db/types'
+import React from 'react'
 
-export function mapLocalSpaces(
-  localWorkspaces: NoteStorage[],
-  activeWorkspaceId: string,
-  linkOnClick: (event: any, workspace: NoteStorage) => void,
-  linkOnContextMenu: (event: any, workspace: NoteStorage) => void
+export function mapLocalSpace(
+  workspace: NoteStorage,
+  workspaceIndex: number,
+  activeWorkspaceId: string | null,
+  linkOnClick: (event: React.MouseEvent, workspace: NoteStorage) => void,
+  linkOnContextMenu: (event: React.MouseEvent, workspace: NoteStorage) => void
 ) {
-  const spaces: SidebarSpace[] = []
-  localWorkspaces.forEach((workspace, index) => {
-    spaces.push({
-      label: workspace.name,
-      active: activeWorkspaceId === workspace.id,
-      tooltip: `${osName === 'macos' ? '⌘' : 'Ctrl'} ${index + 1}`,
-      linkProps: {
-        onClick: (event) => linkOnClick(event, workspace),
-        onContextMenu: (event) => linkOnContextMenu(event, workspace),
-      },
-    })
-  })
-  return spaces
+  return {
+    label: workspace.name,
+    active: activeWorkspaceId === workspace.id,
+    tooltip: `${osName === 'macos' ? '⌘' : 'Ctrl'} ${workspaceIndex + 1}`,
+    linkProps: {
+      onClick: (event: React.MouseEvent) => linkOnClick(event, workspace),
+      onContextMenu: (event: React.MouseEvent) =>
+        linkOnContextMenu(event, workspace),
+    },
+  }
 }

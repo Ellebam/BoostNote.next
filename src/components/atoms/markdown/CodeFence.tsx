@@ -1,10 +1,10 @@
 import React from 'react'
 import copy from 'copy-to-clipboard'
-import Icon from '../Icon'
 import { mdiContentCopy, mdiContentSave } from '@mdi/js'
 import { flexCenter } from '../../../lib/styled/styleFunctions'
 import { downloadBlob } from '../../../lib/download'
 import styled from '../../../shared/lib/styled'
+import Icon from '../../../shared/components/atoms/Icon'
 
 const CodeFenceContainer = styled.div`
   position: relative;

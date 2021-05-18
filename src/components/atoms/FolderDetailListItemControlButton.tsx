@@ -1,6 +1,6 @@
 import React, { MouseEventHandler } from 'react'
-import Icon from './Icon'
 import styled from '../../shared/lib/styled'
+import Icon from '../../shared/components/atoms/Icon'
 
 interface FolderDetailListItemControlButtonProps {
   onClick?: MouseEventHandler<HTMLButtonElement>

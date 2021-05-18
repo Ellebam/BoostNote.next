@@ -16,7 +16,6 @@ import {
   SearchReplaceOptions,
 } from '../../lib/search/search'
 import CodeMirror, { MarkerRange, TextMarker } from 'codemirror'
-import Icon from '../atoms/Icon'
 import {
   mdiArrowDown,
   mdiArrowUp,
@@ -32,6 +31,7 @@ import { SearchResultItem } from '../atoms/search/SearchResultItem'
 import { compareEventKeyWithKeymap } from '../../lib/keymap'
 import { usePreferences } from '../../lib/preferences'
 import styled from '../../shared/lib/styled'
+import Icon from '../../shared/components/atoms/Icon'
 
 const LOCAL_SEARCH_MAX_RESULTS = 10000
 

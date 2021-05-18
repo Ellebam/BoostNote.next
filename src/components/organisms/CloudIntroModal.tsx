@@ -6,7 +6,6 @@ import React, {
   useEffect,
 } from 'react'
 import Image from '../atoms/Image'
-import Icon from '../atoms/Icon'
 import {
   mdiAccountPlus,
   mdiHistory,
@@ -18,7 +17,6 @@ import {
   mdiLinkPlus,
   mdiConnection,
 } from '@mdi/js'
-import { flexCenter } from '../../lib/styled/styleFunctions'
 import { openNew } from '../../lib/platform'
 import { boostHubLearnMorePageUrl } from '../../lib/boosthub'
 import cc from 'classcat'
@@ -28,7 +26,12 @@ import { useRouter } from '../../lib/router'
 import { useCloudIntroModal } from '../../lib/cloudIntroModal'
 import { useGeneralStatus } from '../../lib/generalStatus'
 import styled from '../../shared/lib/styled'
-import { closeIconColor, border } from '../../shared/lib/styled/styleFunctions'
+import {
+  closeIconColor,
+  border,
+  flexCenter,
+} from '../../shared/lib/styled/styleFunctions'
+import Icon from '../../shared/components/atoms/Icon'
 
 const CloudIntroModal = () => {
   const { preferences, openTab } = usePreferences()

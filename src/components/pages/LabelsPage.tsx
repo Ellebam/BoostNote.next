@@ -17,7 +17,6 @@ const LabelsPage = ({ storage, tagName }: LabelsPageProps) => {
   const { push } = useRouter()
   return (
     <Application
-      storage={storage}
       content={{
         topbar: {
           breadcrumbs: [

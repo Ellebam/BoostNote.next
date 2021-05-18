@@ -13,8 +13,18 @@ import { entries, getTimelineHref, values } from '../../lib/db/utils'
 import { MenuItemConstructorOptions } from 'electron'
 import { useStorageRouter } from '../../lib/storageRouter'
 import { useRouteParams } from '../../lib/routeParams'
-import { mdiTextBoxPlusOutline } from '@mdi/js'
-import { noteDetailFocusTitleInputEventEmitter } from '../../lib/events'
+import {
+  mdiLogin,
+  mdiLogout,
+  mdiMenu,
+  mdiPlus,
+  mdiTextBoxPlusOutline,
+} from '@mdi/js'
+import {
+  boostHubSidebarStateEvent,
+  boostHubSidebarStateEventEmitter,
+  noteDetailFocusTitleInputEventEmitter,
+} from '../../lib/events'
 import { useTranslation } from 'react-i18next'
 import { useSearchModal } from '../../lib/searchModal'
 import styled from '../../shared/lib/styled'
@@ -46,23 +56,27 @@ import { useLocalUI } from '../../lib/v2/hooks/local/useLocalUI'
 import { mapTree } from '../../lib/v2/mappers/local/sidebarTree'
 import { useLocalDB } from '../../lib/v2/hooks/local/useLocalDB'
 import { useLocalDnd } from '../../lib/v2/hooks/local/useLocalDnd'
-import { buildSpacesBottomRows } from '../../cloud/components/Application'
 import { CollapsableType } from '../../lib/v2/stores/sidebarCollapse'
 import { useSidebarCollapse } from '../../lib/v2/stores/sidebarCollapse'
 import { useCloudIntroModal } from '../../lib/cloudIntroModal'
-import { mapLocalSpaces } from '../../lib/v2/mappers/local/sidebarSpaces'
+import { mapLocalSpace } from '../../lib/v2/mappers/local/sidebarSpaces'
 import { osName } from '../../shared/lib/platform'
 import { mapTimelineItems } from '../../lib/v2/mappers/local/timelineRows'
 import { usingElectron } from '../../cloud/lib/stores/electron'
+import {
+  SidebarSpace,
+  SidebarSpaceContentRow,
+} from '../../shared/components/organisms/Sidebar/molecules/SidebarSpaces'
+import { useBoostHub } from '../../lib/boosthub'
 
 interface NoteStorageNavigatorProps {
-  storage: NoteStorage
   initialSidebarState?: SidebarState
+  storage?: NoteStorage
 }
 
 const NoteStorageNavigator = ({
-  storage,
   initialSidebarState,
+  storage,
 }: NoteStorageNavigatorProps) => {
   const {
     createNote,
@@ -74,10 +88,11 @@ const NoteStorageNavigator = ({
   const { prompt, messageBox } = useDialog()
   const { push, hash, pathname } = useRouter()
   const { navigate } = useStorageRouter()
-  const { openTab, togglePreferencesModal } = usePreferences()
+  const { preferences, openTab, togglePreferencesModal } = usePreferences()
   const routeParams = useRouteParams()
-  const storageId = storage.id
   const { t } = useTranslation()
+  const boostHubUserInfo = preferences['cloud.user']
+  const { signOut } = useBoostHub()
 
   const openCreateStorageDialog = useCallback(() => {
     prompt({
@@ -95,10 +110,14 @@ const NoteStorageNavigator = ({
 
   const openStorageContextMenu = useCallback(
     (event: React.MouseEvent) => {
+      if (storage == null) {
+        return
+      }
       event.preventDefault()
       event.stopPropagation()
 
       const storages = values(storageMap)
+      const workspaceId = storage.id
       openContextMenu({
         menuItems: [
           {
@@ -155,7 +174,7 @@ const NoteStorageNavigator = ({
           },
           ...storages
             .filter((storage) => {
-              return storage.id !== storageId
+              return storage.id !== workspaceId
             })
             .map<MenuItemConstructorOptions>((storage) => {
               return {
@@ -180,19 +199,16 @@ const NoteStorageNavigator = ({
       })
     },
     [
+      storage,
       storageMap,
       t,
       prompt,
-      storage.name,
-      storage.id,
-      storage.type,
       renameStorage,
       messageBox,
+      removeStorage,
       togglePreferencesModal,
-      storageId,
       navigate,
       openCreateStorageDialog,
-      removeStorage,
     ]
   )
 
@@ -220,23 +236,27 @@ const NoteStorageNavigator = ({
   // }, [routeParams])
 
   const createNoteByRoute = useCallback(async () => {
+    if (storage == null) {
+      return
+    }
+    const workspaceId = storage.id
     let folderPathname = '/'
     let tags: string[] = []
-    let baseHrefAfterCreate = `/app/storages/${storageId}/notes`
+    let baseHrefAfterCreate = `/app/storages/${workspaceId}/notes`
     switch (routeParams.name) {
       case 'workspaces.labels.show':
         tags = [routeParams.tagName]
-        baseHrefAfterCreate = `/app/storages/${storageId}/tags/${routeParams.tagName}`
+        baseHrefAfterCreate = `/app/storages/${workspaceId}/tags/${routeParams.tagName}`
         break
       case 'workspaces.notes':
         if (routeParams.folderPathname !== '/') {
           folderPathname = routeParams.folderPathname
-          baseHrefAfterCreate = `/app/storages/${storageId}/notes${folderPathname}`
+          baseHrefAfterCreate = `/app/storages/${workspaceId}/notes${folderPathname}`
         }
         break
     }
 
-    const note = await createNote(storageId, {
+    const note = await createNote(workspaceId, {
       folderPathname,
       tags,
     })
@@ -245,7 +265,7 @@ const NoteStorageNavigator = ({
     }
 
     push(`${baseHrefAfterCreate}/${note._id}#new`)
-  }, [storageId, routeParams, push, createNote])
+  }, [storage, routeParams, push, createNote])
 
   useEffect(() => {
     if (hash === '#new') {
@@ -299,15 +319,26 @@ const NoteStorageNavigator = ({
   const { toggleShowingCloudIntroModal } = useCloudIntroModal()
 
   const toolbarRows: SidebarToolbarRow[] = useMemo(() => {
-    return mapToolbarRows(
-      storage,
-      showSpaces,
-      setShowSpaces,
-      openState,
-      openTab,
-      toggleShowingCloudIntroModal,
-      sidebarState
-    )
+    if (storage != null) {
+      return mapToolbarRows(
+        showSpaces,
+        setShowSpaces,
+        openState,
+        openTab,
+        toggleShowingCloudIntroModal,
+        sidebarState,
+        storage
+      )
+    } else {
+      return [
+        {
+          tooltip: 'Spaces',
+          active: showSpaces,
+          icon: mdiMenu,
+          onClick: () => setShowSpaces((prev) => !prev),
+        },
+      ] as SidebarToolbarRow[]
+    }
   }, [
     openState,
     openTab,
@@ -330,6 +361,9 @@ const NoteStorageNavigator = ({
   }, [])
 
   const historyItems = useMemo(() => {
+    if (storage == null) {
+      return []
+    }
     return mapHistory(
       // implement history items for search
       [],
@@ -433,6 +467,9 @@ const NoteStorageNavigator = ({
   } = useLocalUI()
   const { draggedResource, dropInDocOrFolder, dropInWorkspace } = useLocalDnd()
   const tree = useMemo(() => {
+    if (storage == null) {
+      return undefined
+    }
     return mapTree(
       initialLoadDone,
       generalStatus.sidebarTreeSortingOrder,
@@ -495,11 +532,19 @@ const NoteStorageNavigator = ({
   }, [routeParams])
 
   const spaces = useMemo(() => {
-    const onSpaceLinkClick = (event: MouseEvent, workspace: NoteStorage) => {
+    const activeWorkspaceId: string | null = storage == null ? null : storage.id
+    const allSpaces: SidebarSpace[] = []
+    const onSpaceLinkClick = (
+      event: React.MouseEvent,
+      workspace: NoteStorage
+    ) => {
       event.preventDefault()
       navigate(workspace.id)
     }
-    const onSpaceContextMenu = (event: MouseEvent, workspace: NoteStorage) => {
+    const onSpaceContextMenu = (
+      event: React.MouseEvent,
+      workspace: NoteStorage
+    ) => {
       event.preventDefault()
       event.stopPropagation()
       const menuItems: MenuItemConstructorOptions[] = [
@@ -526,9 +571,9 @@ const NoteStorageNavigator = ({
           label: t('storage.remove'),
           click: async () => {
             messageBox({
-              title: `Remove "${storage.name}" storage`,
+              title: `Remove "${workspace.name}" storage`,
               message:
-                storage.type === 'fs'
+                workspace.type === 'fs'
                   ? "This operation won't delete the actual storage folder. You can add it to the app again."
                   : t('storage.removeMessage'),
               iconType: DialogIconTypes.Warning,
@@ -537,7 +582,7 @@ const NoteStorageNavigator = ({
               cancelButtonIndex: 1,
               onClose: (value: number | null) => {
                 if (value === 0) {
-                  removeStorage(storage.id)
+                  removeStorage(workspace.id)
                 }
               },
             })
@@ -546,12 +591,18 @@ const NoteStorageNavigator = ({
       ]
       openContextMenu({ menuItems })
     }
-    const allSpaces = mapLocalSpaces(
-      localSpaces,
-      storage.id,
-      onSpaceLinkClick,
-      onSpaceContextMenu
-    )
+
+    localSpaces.forEach((workspace, index) => {
+      allSpaces.push(
+        mapLocalSpace(
+          workspace,
+          index,
+          activeWorkspaceId,
+          onSpaceLinkClick,
+          onSpaceContextMenu
+        )
+      )
+    })
     generalStatus.boostHubTeams.forEach((boostHubTeam, index) => {
       allSpaces.push({
         label: boostHubTeam.name,
@@ -580,16 +631,77 @@ const NoteStorageNavigator = ({
     push,
     removeStorage,
     renameStorage,
-    storage.id,
-    storage.name,
-    storage.type,
+    storage,
     storageMap,
     t,
   ])
 
   const timelineRows = useMemo(() => {
+    if (storage == null) {
+      return []
+    }
     return mapTimelineItems(values(storage.noteMap), push, storage)
   }, [push, storage])
+
+  const spaceBottomRows = useMemo(() => {
+    const rows: SidebarSpaceContentRow[] = []
+    rows.push({
+      label: 'Create Space',
+      icon: mdiPlus,
+      linkProps: {
+        onClick: (event) => {
+          event.preventDefault()
+          if (boostHubUserInfo == null) {
+            push('/app/boosthub/login')
+          } else {
+            push('/app/boosthub/teams')
+          }
+        },
+      },
+    })
+
+    if (boostHubUserInfo == null) {
+      rows.push({
+        label: 'Sign in',
+        icon: mdiLogin,
+        linkProps: {
+          onClick: (event) => {
+            event.preventDefault()
+
+            push('/app/boosthub/login')
+          },
+        },
+      })
+    } else {
+      rows.push({
+        label: 'Sign Out Team Account',
+        icon: mdiLogout,
+        linkProps: {
+          onClick: (event) => {
+            event.preventDefault()
+            signOut()
+          },
+        },
+      })
+    }
+
+    return rows
+  }, [boostHubUserInfo, push, signOut])
+
+  useEffect(() => {
+    const boostHubSidebarStateEventHandler = (
+      event: boostHubSidebarStateEvent
+    ) => {
+      setSidebarState(event.detail.state)
+    }
+
+    boostHubSidebarStateEventEmitter.listen(boostHubSidebarStateEventHandler)
+    return () => {
+      boostHubSidebarStateEventEmitter.unlisten(
+        boostHubSidebarStateEventHandler
+      )
+    }
+  }, [])
 
   return (
     <NavigatorContainer onContextMenu={openStorageContextMenu}>
@@ -600,8 +712,7 @@ const NoteStorageNavigator = ({
         onSpacesBlur={() => setShowSpaces(false)}
         toolbarRows={toolbarRows}
         spaces={spaces}
-        //  maybe remove this and provide nothing?
-        spaceBottomRows={buildSpacesBottomRows(push)}
+        spaceBottomRows={spaceBottomRows}
         sidebarExpandedWidth={generalStatus.sideBarWidth}
         sidebarState={sidebarState}
         tree={tree}
@@ -641,7 +752,7 @@ const NoteStorageNavigator = ({
             },
           },
         ]}
-        // See why its not full width
+        // todo: See why its not full width
         treeTopRows={
           storage == null ? null : (
             <Button
@@ -664,7 +775,6 @@ const NoteStorageNavigator = ({
         searchResults={searchResults}
         // todo: no users?
         users={usersMap}
-        // todo: timeline rows implementation!
         timelineRows={timelineRows}
         timelineMore={
           storage != null
@@ -689,72 +799,3 @@ const NavigatorContainer = styled.nav`
   //flex: 0 0 auto;
   //min-width: 0;
 `
-
-// const ScrollableContainer = styled.div`
-//   flex: 1;
-//   padding: 8px;
-//   overflow: auto;
-// `
-
-// const TopButton = styled.button`
-//   height: 50px;
-//   display: flex;
-//   flex-direction: row;
-//   align-items: center;
-//   cursor: pointer;
-//   text-align: left;
-//   padding: 0 16px;
-//   border: none;
-//   color: ${({ theme }) => theme.colors.text.secondary};
-//   background-color: transparent;
-//   margin: 4px 0;
-//   & > .topButtonLabel {
-//     font-size: 14px;
-//     padding-right: 4px;
-//     ${textOverflow}
-//   }
-// `
-
-// const NewNoteButton = styled.button`
-//   margin: 4px 8px;
-//   height: 28px;
-//   color: ${({ theme }) => theme.colors.text.primary};
-//   background-color: ${({ theme }) => theme.colors.variants.primary.base};
-//   border: none;
-//   border-radius: 3px;
-//   cursor: pointer;
-//   text-align: left;
-//   align-items: center;
-//   display: flex;
-//   padding: 0 8px 0 4px;
-//   font-size: 14px;
-//   &:hover {
-//     background-color: ${({ theme }) => theme.colors.background.secondary};
-//     .extra {
-//       display: flex;
-//     }
-//   }
-//
-//   & > .icon {
-//     width: 28px;
-//     height: 28px;
-//     ${flexCenter};
-//     flex-shrink: 0;
-//     font-size: 20px;
-//   }
-//   & > .label {
-//     white-space: nowrap;
-//     flex-shrink: 0;
-//   }
-//   & > .extra {
-//     display: none;
-//     font-size: 12px;
-//     margin-left: 5px;
-//     ${textOverflow};
-//     align-items: center;
-//     & > .icon {
-//       flex-shrink: 0;
-//       margin: 0 4px;
-//     }
-//   }
-// `

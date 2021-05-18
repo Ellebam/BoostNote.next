@@ -11,7 +11,6 @@ import { excludeNoteIdPrefix } from '../../lib/db/utils'
 import { useSearchModal } from '../../lib/searchModal'
 import { flexCenter, textOverflow } from '../../lib/styled/styleFunctions'
 import { mdiMagnify, mdiClose, mdiCardTextOutline } from '@mdi/js'
-import Icon from '../atoms/Icon'
 import SearchModalNoteResultItem from '../molecules/SearchModalNoteResultItem'
 import { useStorageRouter } from '../../lib/storageRouter'
 import {
@@ -35,6 +34,7 @@ import {
   getSearchResultItems,
   getSearchRegex,
 } from '../../lib/v2/mappers/local/searchResults'
+import Icon from '../../shared/components/atoms/Icon'
 
 interface SearchModalProps {
   storage: NoteStorage
@@ -167,7 +167,7 @@ const SearchModal = ({ storage }: SearchModalProps) => {
         }
       }
     },
-    [getSearchRegex]
+    []
   )
 
   const focusEditorOnSelectedItem = useCallback(

@@ -124,7 +124,6 @@ const TimelinePage = ({ storage }: TimelinePageProps) => {
   if (today.length + thisWeek.length + others.length === 0) {
     return (
       <Application
-        storage={storage}
         content={{
           reduced: true,
           topbar: {
@@ -165,7 +164,6 @@ const TimelinePage = ({ storage }: TimelinePageProps) => {
 
   return (
     <Application
-      storage={storage}
       content={{
         reduced: true,
         topbar: {

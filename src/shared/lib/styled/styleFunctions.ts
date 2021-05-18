@@ -319,3 +319,9 @@ export const rightSidePageLayout = () => `
   width: 100%;
   max-width: 920px;
 `
+
+// refactor to local specific
+export const flexCenter = () => `display: flex;
+align-items: center;
+justify-content: center;
+`

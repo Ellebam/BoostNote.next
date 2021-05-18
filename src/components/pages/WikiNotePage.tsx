@@ -481,7 +481,6 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
 
   return (
     <Application
-      storage={storage}
       content={{
         topbar: topbar,
         right:

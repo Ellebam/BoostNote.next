@@ -1,13 +1,11 @@
 import React, { useCallback, useMemo } from 'react'
 import { NoteDoc } from '../../lib/db/types'
-import Icon from '../atoms/Icon'
 import {
   mdiCardTextOutline,
   mdiTagMultiple,
   mdiFolderOutline,
   mdiChevronRight,
 } from '@mdi/js'
-import { flexCenter, textOverflow } from '../../lib/styled/styleFunctions'
 import {
   getSearchResultKey,
   MAX_SEARCH_PREVIEW_LINE_LENGTH,
@@ -18,7 +16,12 @@ import { SearchMatchHighlight } from '../PreferencesModal/styled'
 import { escapeRegExp } from '../../lib/string'
 import cc from 'classcat'
 import styled from '../../shared/lib/styled'
-import { borderBottom } from '../../shared/lib/styled/styleFunctions'
+import {
+  borderBottom,
+  flexCenter,
+  textOverflow,
+} from '../../shared/lib/styled/styleFunctions'
+import Icon from '../../shared/components/atoms/Icon'
 
 interface SearchModalNoteResultItemProps {
   note: NoteDoc

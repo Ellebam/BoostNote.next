@@ -16,7 +16,6 @@ const ArchivePage = ({ storage }: ArchivePageProps) => {
   const archiveHref = getArchiveHref(storage)
   return (
     <Application
-      storage={storage}
       content={{
         topbar: {
           breadcrumbs: [

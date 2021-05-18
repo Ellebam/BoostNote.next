@@ -13,13 +13,13 @@ import { NoteStorage } from '../../../db/types'
 import RoundedImage from '../../../../shared/components/atoms/RoundedImage'
 
 export function mapToolbarRows(
-  workspace: NoteStorage,
   showSpaces: boolean,
   setShowSpaces: React.Dispatch<React.SetStateAction<boolean>>,
   openState: (sidebarState: SidebarState) => void,
   openSettingsTab: (tab: PreferencesTab) => void,
   toggleCloudIntroModal: () => void,
-  sidebarState?: SidebarState
+  sidebarState?: SidebarState,
+  workspace?: NoteStorage
 ) {
   const rows: SidebarToolbarRow[] = []
   if (workspace != null) {

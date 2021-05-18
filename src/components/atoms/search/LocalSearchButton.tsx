@@ -1,6 +1,6 @@
 import React from 'react'
-import Icon from '../Icon'
 import styled from '../../../shared/lib/styled'
+import Icon from '../../../shared/components/atoms/Icon'
 
 interface LocalSearchButtonProps {
   title?: string
@@ -24,7 +24,7 @@ const LocalSearchButton = ({
       className={className}
       onClick={onClick}
     >
-      <Icon path={iconPath} />
+      <Icon size={16} path={iconPath} />
     </LocalSearchStyledButton>
   )
 }
