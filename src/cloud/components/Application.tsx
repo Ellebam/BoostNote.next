@@ -755,7 +755,7 @@ function mapSpaces(
   return rows
 }
 
-export function buildSpacesBottomRows(push: (url: string) => void) {
+function buildSpacesBottomRows(push: (url: string) => void) {
   return [
     {
       label: 'Create an account',
