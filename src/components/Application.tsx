@@ -28,7 +28,7 @@ import {
   exportNoteAsMarkdownFile,
 } from '../lib/exports'
 import SearchModal from './organisms/SearchModal'
-import NoteStorageNavigator from './organisms/NoteStorageNavigator'
+import SidebarContainer from './organisms/SidebarContainer'
 import ApplicationLayout from '../shared/components/molecules/ApplicationLayout'
 
 interface ApplicationProps {
@@ -288,7 +288,7 @@ const Application = ({
       {storage != null && showSearchModal && <SearchModal storage={storage} />}
       <ApplicationLayout
         sidebar={
-          <NoteStorageNavigator
+          <SidebarContainer
             initialSidebarState={initialSidebarState}
             storage={storage}
           />

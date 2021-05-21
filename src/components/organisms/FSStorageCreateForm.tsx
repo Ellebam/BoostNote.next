@@ -25,6 +25,7 @@ const FSStorageCreateForm = () => {
       const storage = await createStorage(name, { type: 'fs', location })
       report(analyticsEvents.createStorage)
       push(`/app/storages/${storage.id}/notes`)
+      // todo: [komediruzecki-21/05/2021] Not opening sidebar and proper welcome screen, just empty list of notes
     } catch (error) {
       pushMessage({
         title: 'Something went wrong',

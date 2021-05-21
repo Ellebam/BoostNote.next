@@ -64,15 +64,15 @@ import {
 } from '../../shared/components/organisms/Sidebar/molecules/SidebarSpaces'
 import { useBoostHub } from '../../lib/boosthub'
 
-interface NoteStorageNavigatorProps {
+interface SidebarContainerProps {
   initialSidebarState?: SidebarState
   storage?: NoteStorage
 }
 
-const NoteStorageNavigator = ({
+const SidebarContainer = ({
   initialSidebarState,
   storage,
-}: NoteStorageNavigatorProps) => {
+}: SidebarContainerProps) => {
   const {
     createNote,
     createStorage,
@@ -344,9 +344,6 @@ const NoteStorageNavigator = ({
   ])
 
   const localSpaces = values(storageMap)
-  // const storages = useMemo(() => {
-  //   return mapStorages(push, localSpaces, storage)
-  // }, [localSpaces, push, storage])
   const sidebarResize = useCallback(
     (width: number) => setGeneralStatus({ sideBarWidth: width }),
     [setGeneralStatus]
@@ -682,21 +679,6 @@ const NoteStorageNavigator = ({
 
     return rows
   }, [boostHubUserInfo, push, signOut])
-  //
-  // useEffect(() => {
-  //   const boostHubSidebarStateEventHandler = (
-  //     event: boostHubSidebarStateEvent
-  //   ) => {
-  //     setSidebarState(event.detail.state)
-  //   }
-  //
-  //   boostHubSidebarStateEventEmitter.listen(boostHubSidebarStateEventHandler)
-  //   return () => {
-  //     boostHubSidebarStateEventEmitter.unlisten(
-  //       boostHubSidebarStateEventHandler
-  //     )
-  //   }
-  // }, [])
 
   return (
     <NavigatorContainer onContextMenu={openStorageContextMenu}>
@@ -788,7 +770,7 @@ const NoteStorageNavigator = ({
   )
 }
 
-export default NoteStorageNavigator
+export default SidebarContainer
 
 const NavigatorContainer = styled.nav`
   //flex: 0 0 auto;
