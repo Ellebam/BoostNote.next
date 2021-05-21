@@ -20,11 +20,7 @@ import {
   mdiPlus,
   mdiTextBoxPlusOutline,
 } from '@mdi/js'
-import {
-  boostHubSidebarStateEvent,
-  boostHubSidebarStateEventEmitter,
-  noteDetailFocusTitleInputEventEmitter,
-} from '../../lib/events'
+import { noteDetailFocusTitleInputEventEmitter } from '../../lib/events'
 import { useTranslation } from 'react-i18next'
 import { useSearchModal } from '../../lib/searchModal'
 import styled from '../../shared/lib/styled'
@@ -62,7 +58,6 @@ import { useCloudIntroModal } from '../../lib/cloudIntroModal'
 import { mapLocalSpace } from '../../lib/v2/mappers/local/sidebarSpaces'
 import { osName } from '../../shared/lib/platform'
 import { mapTimelineItems } from '../../lib/v2/mappers/local/timelineRows'
-import { usingElectron } from '../../cloud/lib/stores/electron'
 import {
   SidebarSpace,
   SidebarSpaceContentRow,
@@ -687,27 +682,27 @@ const NoteStorageNavigator = ({
 
     return rows
   }, [boostHubUserInfo, push, signOut])
-
-  useEffect(() => {
-    const boostHubSidebarStateEventHandler = (
-      event: boostHubSidebarStateEvent
-    ) => {
-      setSidebarState(event.detail.state)
-    }
-
-    boostHubSidebarStateEventEmitter.listen(boostHubSidebarStateEventHandler)
-    return () => {
-      boostHubSidebarStateEventEmitter.unlisten(
-        boostHubSidebarStateEventHandler
-      )
-    }
-  }, [])
+  //
+  // useEffect(() => {
+  //   const boostHubSidebarStateEventHandler = (
+  //     event: boostHubSidebarStateEvent
+  //   ) => {
+  //     setSidebarState(event.detail.state)
+  //   }
+  //
+  //   boostHubSidebarStateEventEmitter.listen(boostHubSidebarStateEventHandler)
+  //   return () => {
+  //     boostHubSidebarStateEventEmitter.unlisten(
+  //       boostHubSidebarStateEventHandler
+  //     )
+  //   }
+  // }, [])
 
   return (
     <NavigatorContainer onContextMenu={openStorageContextMenu}>
       <Sidebar
         className={cc(['application__sidebar'])}
-        showToolbar={!usingElectron}
+        showToolbar={true}
         showSpaces={showSpaces}
         onSpacesBlur={() => setShowSpaces(false)}
         toolbarRows={toolbarRows}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import Router from './Router'
 import { ThemeProvider } from 'styled-components'
 import { useDb } from '../lib/db'
@@ -52,6 +52,7 @@ import Dialog from '../shared/components/organisms/Dialog/Dialog'
 import ContextMenu from '../shared/components/molecules/ContextMenu'
 import { useCloudIntroModal } from '../lib/cloudIntroModal'
 import CloudIntroModal from './organisms/CloudIntroModal'
+import AppNavigator from './organisms/AppNavigator'
 
 const LoadingText = styled.div`
   margin: 30px;
@@ -373,6 +374,20 @@ const App = () => {
 
   const { showingCloudIntroModal } = useCloudIntroModal()
 
+  const activeBoostHubTeamDomain = useMemo<string | null>(() => {
+    if (routeParams.name !== 'boosthub.teams.show') {
+      return null
+    }
+    return routeParams.domain
+  }, [routeParams])
+
+  const boosthubTeam =
+    activeBoostHubTeamDomain != null
+      ? generalStatus.boostHubTeams.find(
+          (team) => team.domain === activeBoostHubTeamDomain
+        )
+      : null
+
   return (
     <ThemeProvider theme={selectV2Theme(preferences['general.theme'] as any)}>
       <AppContainer
@@ -382,7 +397,11 @@ const App = () => {
       >
         {initialized ? (
           <>
-            {showingCloudIntroModal && <CloudIntroModal />}
+            {boosthubTeam != null ? (
+              <AppNavigator />
+            ) : (
+              showingCloudIntroModal && <CloudIntroModal />
+            )}
             <Router />
             {showCreateWorkspaceModal && (
               <CreateWorkspaceModal
