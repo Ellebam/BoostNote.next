@@ -1,32 +1,15 @@
 import React, { useCallback, useEffect, useMemo } from 'react'
-import path from 'path'
-import pathParse from 'path-parse'
 import ContentLayout, {
   ContentLayoutProps,
 } from '../shared/components/templates/ContentLayout'
 import { SidebarState } from '../shared/lib/sidebar'
 import { useRouter } from '../lib/router'
 import { StorageNotesRouteParams, useRouteParams } from '../lib/routeParams'
-import { filenamify } from '../lib/string'
-import { usePreferences } from '../lib/preferences'
-import { usePreviewStyle } from '../lib/preview'
-import { useToast } from '../shared/lib/stores/toast'
 import { mapTopBarTree } from '../lib/v2/mappers/local/topbarTree'
 import { useDb } from '../lib/db'
 import { useGeneralStatus } from '../lib/generalStatus'
 import { useSearchModal } from '../lib/searchModal'
-import {
-  addIpcListener,
-  getPathByName,
-  removeIpcListener,
-  showSaveDialog,
-  writeFile,
-} from '../lib/electronOnly'
-import {
-  convertNoteDocToPdfBuffer,
-  exportNoteAsHtmlFile,
-  exportNoteAsMarkdownFile,
-} from '../lib/exports'
+import { addIpcListener, removeIpcListener } from '../lib/electronOnly'
 import SearchModal from './organisms/SearchModal'
 import SidebarContainer from './organisms/SidebarContainer'
 import ApplicationLayout from '../shared/components/molecules/ApplicationLayout'
@@ -52,9 +35,6 @@ const Application = ({
   const { noteViewMode, preferredEditingViewMode } = generalStatus
   const { bookmarkNote, unbookmarkNote } = useDb()
   const { showSearchModal } = useSearchModal()
-  const { preferences } = usePreferences()
-  const { previewStyle } = usePreviewStyle()
-  const { pushMessage } = useToast()
 
   const note = useMemo(() => {
     if (storage == null) {
@@ -165,105 +145,6 @@ const Application = ({
       removeIpcListener('toggle-split-edit-mode', toggleSplitEditMode)
     }
   }, [toggleSplitEditMode])
-
-  const includeFrontMatter = preferences['markdown.includeFrontMatter']
-
-  useEffect(() => {
-    const handler = () => {
-      if (note == null || storage == null) {
-        return
-      }
-      showSaveDialog({
-        properties: ['createDirectory', 'showOverwriteConfirmation'],
-        buttonLabel: 'Save',
-        defaultPath: path.join(
-          getPathByName('home'),
-          filenamify(note.title) + '.md'
-        ),
-        filters: [
-          {
-            name: 'Markdown',
-            extensions: ['md'],
-          },
-          {
-            name: 'HTML',
-            extensions: ['html'],
-          },
-          {
-            name: 'PDF',
-            extensions: ['pdf'],
-          },
-        ],
-      }).then(async (result) => {
-        if (result.canceled || result.filePath == null) {
-          return
-        }
-        const parsedFilePath = pathParse(result.filePath)
-        switch (parsedFilePath.ext) {
-          case '.html':
-            await exportNoteAsHtmlFile(
-              parsedFilePath.dir,
-              parsedFilePath.name,
-              note,
-              preferences['markdown.codeBlockTheme'],
-              preferences['general.theme'],
-              pushMessage,
-              storage.attachmentMap,
-              previewStyle
-            )
-            pushMessage({
-              title: 'HTML export',
-              description: 'HTML file exported successfully.',
-            })
-            return
-          case '.pdf':
-            try {
-              const pdfBuffer = await convertNoteDocToPdfBuffer(
-                note,
-                preferences['markdown.codeBlockTheme'],
-                preferences['general.theme'],
-                pushMessage,
-                storage.attachmentMap,
-                previewStyle
-              )
-              await writeFile(result.filePath, pdfBuffer)
-            } catch (error) {
-              console.error(error)
-              pushMessage({
-                title: 'PDF export failed',
-                description: error.message,
-              })
-            }
-            return
-          case '.md':
-          default:
-            await exportNoteAsMarkdownFile(
-              parsedFilePath.dir,
-              parsedFilePath.name,
-              note,
-              storage.attachmentMap,
-              includeFrontMatter
-            )
-            pushMessage({
-              title: 'Markdown export',
-              description: 'Markdown file exported successfully.',
-            })
-            return
-        }
-      })
-    }
-    addIpcListener('save-as', handler)
-    return () => {
-      removeIpcListener('save-as', handler)
-    }
-  }, [
-    note,
-    includeFrontMatter,
-    preferences,
-    previewStyle,
-    pushMessage,
-    storage,
-  ])
 
   const toggleBookmark = useCallback(() => {
     if (note == null) {

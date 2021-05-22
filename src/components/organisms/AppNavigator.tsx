@@ -14,6 +14,7 @@ import {
   mdiPlus,
   mdiMenu,
   mdiCloudOffOutline,
+  mdiMessageQuestion,
 } from '@mdi/js'
 import { useRouter } from '../../lib/router'
 import { useActiveStorageId, useRouteParams } from '../../lib/routeParams'
@@ -31,7 +32,6 @@ import SidebarSpaces, {
 } from '../../shared/components/organisms/Sidebar/molecules/SidebarSpaces'
 import { useStorageRouter } from '../../lib/storageRouter'
 import { MenuItemConstructorOptions } from 'electron/main'
-import { DialogIconTypes, useDialog } from '../../lib/dialog'
 import { useTranslation } from 'react-i18next'
 import RoundedImage from '../../shared/components/atoms/RoundedImage'
 import { values } from 'ramda'
@@ -49,6 +49,10 @@ import { SidebarState } from '../../shared/lib/sidebar'
 import CloudIntroModal from './CloudIntroModal'
 import { useCloudIntroModal } from '../../lib/cloudIntroModal'
 import { useSearchModal } from '../../lib/searchModal'
+import { DialogIconTypes, useDialog } from '../../shared/lib/stores/dialog'
+import BasicInputFormLocal from '../v2/organisms/BasicInputFormLocal'
+import { useModal } from '../../shared/lib/stores/modal'
+import { useToast } from '../../shared/lib/stores/toast'
 
 const TopLevelNavigator = () => {
   const { storageMap, renameStorage, removeStorage } = useDb()
@@ -58,7 +62,9 @@ const TopLevelNavigator = () => {
   const routeParams = useRouteParams()
   const { signOut } = useBoostHub()
   const { navigate } = useStorageRouter()
-  const { prompt, messageBox } = useDialog()
+  const { messageBox } = useDialog()
+  const { openModal, closeLastModal } = useModal()
+  const { pushMessage } = useToast()
   const { t } = useTranslation()
   const [sidebarState, setSidebarState] = useState<SidebarState | undefined>(
     'tree'
@@ -141,15 +147,15 @@ const TopLevelNavigator = () => {
   const spaces = useMemo(() => {
     const spaces: SidebarSpace[] = []
 
-    entries(storageMap).forEach(([storageId, storage], index) => {
+    entries(storageMap).forEach(([workspaceId, workspace], index) => {
       spaces.push({
-        label: storage.name,
-        active: activeStorageId === storageId,
+        label: workspace.name,
+        active: activeStorageId === workspaceId,
         tooltip: `${osName === 'macos' ? '⌘' : 'Ctrl'} ${index + 1}`,
         linkProps: {
           onClick: (event) => {
             event.preventDefault()
-            navigate(storage.id)
+            navigate(workspace.id)
           },
           onContextMenu: (event) => {
             event.preventDefault()
@@ -159,17 +165,32 @@ const TopLevelNavigator = () => {
                 type: 'normal',
                 label: t('storage.rename'),
                 click: async () => {
-                  prompt({
-                    title: `Rename "${storage.name}" storage`,
-                    message: t('storage.renameMessage'),
-                    iconType: DialogIconTypes.Question,
-                    defaultValue: storage.name,
-                    submitButtonLabel: t('storage.rename'),
-                    onClose: async (value: string | null) => {
-                      if (value == null) return
-                      await renameStorage(storage.id, value)
-                    },
-                  })
+                  openModal(
+                    <BasicInputFormLocal
+                      defaultIcon={mdiMessageQuestion}
+                      defaultInputValue={workspace.name}
+                      defaultEmoji={undefined}
+                      placeholder='Workspace name'
+                      submitButtonProps={{
+                        label: t('storage.rename'),
+                      }}
+                      onSubmit={async (workspaceName: string | null) => {
+                        if (workspaceName == '' || workspaceName == null) {
+                          pushMessage({
+                            title: 'Cannot rename workspace',
+                            description: 'Workspace name should not be empty.',
+                          })
+                          return
+                        }
+                        await renameStorage(workspace.id, workspaceName)
+                        closeLastModal()
+                      }}
+                    />,
+                    {
+                      showCloseIcon: true,
+                      title: `Rename "${workspace.name}" storage`,
+                    }
+                  )
                 },
               },
               { type: 'separator' },
@@ -177,21 +198,24 @@ const TopLevelNavigator = () => {
                 type: 'normal',
                 label: t('storage.remove'),
                 click: async () => {
+                  // todo: [komediruzecki-22/05/2021] Test storage remove, message, action and errors
                   messageBox({
-                    title: `Remove "${storage.name}" storage`,
+                    title: `Remove "${workspace.name}" storage`,
                     message:
-                      storage.type === 'fs'
+                      workspace.type === 'fs'
                         ? "This operation won't delete the actual storage folder. You can add it to the app again."
                         : t('storage.removeMessage'),
                     iconType: DialogIconTypes.Warning,
-                    buttons: [t('storage.remove'), t('general.cancel')],
-                    defaultButtonIndex: 0,
-                    cancelButtonIndex: 1,
-                    onClose: (value: number | null) => {
-                      if (value === 0) {
-                        removeStorage(storage.id)
-                      }
-                    },
+                    buttons: [
+                      {
+                        label: t('storage.remove'),
+                        defaultButton: true,
+                        onClick: () => {
+                          removeStorage(workspace.id)
+                        },
+                      },
+                      { label: t('general.cancel'), cancelButton: true },
+                    ],
                   })
                 },
               },
@@ -222,17 +246,19 @@ const TopLevelNavigator = () => {
 
     return spaces
   }, [
-    activeStorageId,
     storageMap,
-    activeBoostHubTeamDomain,
     generalStatus.boostHubTeams,
-    messageBox,
-    prompt,
-    removeStorage,
-    renameStorage,
+    activeStorageId,
     navigate,
-    push,
     t,
+    openModal,
+    renameStorage,
+    closeLastModal,
+    pushMessage,
+    messageBox,
+    removeStorage,
+    activeBoostHubTeamDomain,
+    push,
   ])
 
   const openState = useCallback((state: SidebarState) => {

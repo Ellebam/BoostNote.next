@@ -15,7 +15,6 @@ import { filenamify, parseNumberStringOrReturnZero } from '../../lib/string'
 import { useTranslation } from 'react-i18next'
 import { usePreferences } from '../../lib/preferences'
 import { usePreviewStyle } from '../../lib/preview'
-import { useToast } from '../../lib/toast'
 import { mapTopBarTree } from '../../lib/v2/mappers/local/topbarTree'
 import { useLocalUI } from '../../lib/v2/hooks/local/useLocalUI'
 import {
@@ -40,9 +39,13 @@ import {
   mdiViewSplitVertical,
 } from '@mdi/js'
 import { mapTopbarBreadcrumbs } from '../../lib/v2/mappers/local/topbarBreadcrumbs'
-import { TopbarProps } from '../../shared/components/organisms/Topbar'
+import {
+  TopbarProps,
+  TopbarControlButtonProps,
+} from '../../shared/components/organisms/Topbar'
 import NoteContextView from '../organisms/NoteContextView'
 import Application from '../Application'
+import { useToast } from '../../shared/lib/stores/toast'
 
 interface WikiNotePageProps {
   storage: NoteStorage
@@ -57,6 +60,18 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
   const { hash } = useRouter()
   const { generalStatus, setGeneralStatus } = useGeneralStatus()
   const { noteViewMode, preferredEditingViewMode } = generalStatus
+
+  const { t } = useTranslation()
+  const { bookmarkNote, unbookmarkNote } = useDb()
+  const { preferences } = usePreferences()
+
+  const { previewStyle } = usePreviewStyle()
+
+  const { pushMessage } = useToast()
+  const storageId = storage.id
+  const { updateNote, addAttachments } = useDb()
+
+  const { push, goBack, goForward } = useRouter()
 
   const note = useMemo(() => {
     switch (routeParams.name) {
@@ -99,8 +114,7 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
     }
     return undefined
   }, [routeParams, storage.noteMap])
-
-  const { updateNote, addAttachments } = useDb()
+  const noteId = note?._id
 
   const getCurrentPositionFromRoute = useCallback(() => {
     let focusLine = 0
@@ -121,18 +135,6 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
     }
   }, [hash])
 
-  const { t } = useTranslation()
-  const { bookmarkNote, unbookmarkNote } = useDb()
-  const { preferences } = usePreferences()
-
-  const { previewStyle } = usePreviewStyle()
-
-  const { pushMessage } = useToast()
-  const storageId = storage.id
-
-  const noteId = note?._id
-
-  const { push, goBack, goForward } = useRouter()
   const topbarTree = useMemo(() => {
     return mapTopBarTree(storage.noteMap, storage.folderMap, storage, push)
   }, [push, storage])
@@ -267,6 +269,7 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
               previewStyle
             )
             pushMessage({
+              type: 'success',
               title: 'HTML export',
               description: 'HTML file exported successfully.',
             })
@@ -282,6 +285,11 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
                 previewStyle
               )
               await writeFile(result.filePath, pdfBuffer)
+              pushMessage({
+                type: 'success',
+                title: 'PDF export',
+                description: 'PDF file exported successfully.',
+              })
             } catch (error) {
               console.error(error)
               pushMessage({
@@ -300,6 +308,7 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
               includeFrontMatter
             )
             pushMessage({
+              type: 'success',
               title: 'Markdown export',
               description: 'Markdown file exported successfully.',
             })
@@ -395,6 +404,7 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
   const topbar = useMemo(() => {
     const sharedControls = [
       {
+        type: 'button',
         variant: 'icon' as const,
         iconPath: generalStatus.showingNoteContextMenu
           ? mdiChevronRight
@@ -403,7 +413,7 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
         active: generalStatus.showingNoteContextMenu,
         onClick: () => toggleContextView(),
       },
-    ]
+    ] as TopbarControlButtonProps[]
     return {
       ...({
         breadcrumbs: mapTopbarBreadcrumbs(
@@ -430,8 +440,9 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
       controls:
         note == null
           ? []
-          : [
+          : ([
               {
+                type: 'button',
                 variant: 'icon' as const,
                 iconPath: mdiPencil,
                 tooltip: t('note.edit'),
@@ -439,6 +450,7 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
                 onClick: () => selectEditMode(),
               },
               {
+                type: 'button',
                 variant: 'icon' as const,
                 iconPath: mdiViewSplitVertical,
                 tooltip: t('note.splitView'),
@@ -446,6 +458,7 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
                 onClick: () => selectSplitMode(),
               },
               {
+                type: 'button',
                 variant: 'icon' as const,
                 iconPath: mdiEyeOutline,
                 tooltip: t('note.preview'),
@@ -453,7 +466,7 @@ const WikiNotePage = ({ storage }: WikiNotePageProps) => {
                 onClick: () => selectPreviewMode(),
               },
               ...sharedControls,
-            ],
+            ] as TopbarControlButtonProps[]),
     }
   }, [
     deleteFolder,

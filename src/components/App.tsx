@@ -7,7 +7,6 @@ import { usePreferences } from '../lib/preferences'
 import '../lib/i18n'
 import '../lib/analytics'
 import CodeMirrorStyle from './CodeMirrorStyle'
-import ToastList from './Toast'
 import styled from '../lib/styled'
 import { useEffectOnce } from 'react-use'
 import { useRouter } from '../lib/router'
@@ -53,6 +52,7 @@ import ContextMenu from '../shared/components/molecules/ContextMenu'
 import { useCloudIntroModal } from '../lib/cloudIntroModal'
 import CloudIntroModal from './organisms/CloudIntroModal'
 import AppNavigator from './organisms/AppNavigator'
+import Toast from '../shared/components/organisms/Toast'
 
 const LoadingText = styled.div`
   margin: 30px;
@@ -412,15 +412,16 @@ const App = () => {
         ) : (
           <LoadingText>Loading Data...</LoadingText>
         )}
-        <Modal />
-        <ContextMenu />
         <GlobalStyle />
-        <Dialog />
-
-        <PreferencesModal />
-        <ToastList />
         <CodeMirrorStyle />
         <ExternalStyle />
+
+        <Toast />
+        <PreferencesModal />
+        <ContextMenu />
+
+        <Dialog />
+        <Modal />
       </AppContainer>
     </ThemeProvider>
   )

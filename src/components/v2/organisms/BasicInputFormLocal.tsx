@@ -6,7 +6,7 @@ import { ButtonProps } from '../../../shared/components/atoms/Button'
 interface EmojiInputFormProps {
   prevRows?: FormRowProps[]
   defaultInputValue?: string
-  placeholder: string
+  placeholder?: string
   defaultEmoji?: string
   defaultIcon: string
   inputIsDisabled?: boolean

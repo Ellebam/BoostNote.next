@@ -3,7 +3,6 @@ import { useDb } from '../../lib/db'
 import { NoteStorage } from '../../lib/db/types'
 import { useRouter } from '../../lib/router'
 import { useDialog, DialogIconTypes } from '../../lib/dialog'
-import { useToast } from '../../lib/toast'
 import { useTranslation } from 'react-i18next'
 import {
   FormHeading,
@@ -25,6 +24,7 @@ import {
 } from '../../lib/boosthub'
 import Alert from '../atoms/Alert'
 import InlineLinkButton from '../atoms/InlineLinkButton'
+import { useToast } from '../../shared/lib/stores/toast'
 
 interface StorageEditPageProps {
   storage: NoteStorage

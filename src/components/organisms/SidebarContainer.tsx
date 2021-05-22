@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from '../../lib/router'
 import { useDb } from '../../lib/db'
-import { useDialog, DialogIconTypes } from '../../lib/dialog'
 import { usePreferences } from '../../lib/preferences'
 import { NoteStorage } from '../../lib/db/types'
 import {
@@ -14,9 +13,11 @@ import { MenuItemConstructorOptions } from 'electron'
 import { useStorageRouter } from '../../lib/storageRouter'
 import { useRouteParams } from '../../lib/routeParams'
 import {
+  mdiFolderOutline,
   mdiLogin,
   mdiLogout,
   mdiMenu,
+  mdiMessageQuestion,
   mdiPlus,
   mdiTextBoxPlusOutline,
 } from '@mdi/js'
@@ -63,6 +64,10 @@ import {
   SidebarSpaceContentRow,
 } from '../../shared/components/organisms/Sidebar/molecules/SidebarSpaces'
 import { useBoostHub } from '../../lib/boosthub'
+import { DialogIconTypes, useDialog } from '../../shared/lib/stores/dialog'
+import BasicInputFormLocal from '../v2/organisms/BasicInputFormLocal'
+import { useToast } from '../../shared/lib/stores/toast'
+import { useModal } from '../../shared/lib/stores/modal'
 
 interface SidebarContainerProps {
   initialSidebarState?: SidebarState
@@ -80,7 +85,9 @@ const SidebarContainer = ({
     renameStorage,
     removeStorage,
   } = useDb()
-  const { prompt, messageBox } = useDialog()
+  const { pushMessage } = useToast()
+  const { openModal, closeLastModal } = useModal()
+  const { messageBox } = useDialog()
   const { push, hash, pathname } = useRouter()
   const { navigate } = useStorageRouter()
   const { preferences, openTab, togglePreferencesModal } = usePreferences()
@@ -89,19 +96,37 @@ const SidebarContainer = ({
   const boostHubUserInfo = preferences['cloud.user']
   const { signOut } = useBoostHub()
 
+  // todo: [komediruzecki-22/05/2021] add this to local UI as well
   const openCreateStorageDialog = useCallback(() => {
-    prompt({
-      title: 'Create a Space',
-      message: 'Enter name of a space to create',
-      iconType: DialogIconTypes.Question,
-      submitButtonLabel: 'Create Space',
-      onClose: async (value: string | null) => {
-        if (value == null) return
-        const storage = await createStorage(value)
-        push(`/app/storages/${storage.id}/notes`)
-      },
-    })
-  }, [prompt, createStorage, push])
+    openModal(
+      <BasicInputFormLocal
+        defaultIcon={mdiFolderOutline}
+        defaultInputValue={''}
+        defaultEmoji={undefined}
+        placeholder='Workspace name'
+        submitButtonProps={{
+          label: 'Create Space',
+        }}
+        onSubmit={async (workspaceName: string) => {
+          if (workspaceName == '') {
+            pushMessage({
+              title: 'Cannot rename workspace',
+              description: 'Workspace name should not be empty.',
+            })
+            closeLastModal()
+            return
+          }
+          const storage = await createStorage(workspaceName)
+          push(`/app/storages/${storage.id}/notes`)
+          closeLastModal()
+        }}
+      />,
+      {
+        showCloseIcon: true,
+        title: 'Create a space',
+      }
+    )
+  }, [closeLastModal, createStorage, openModal, push, pushMessage])
 
   const openStorageContextMenu = useCallback(
     (event: React.MouseEvent) => {
@@ -119,17 +144,31 @@ const SidebarContainer = ({
             type: 'normal',
             label: t('storage.rename'),
             click: async () => {
-              prompt({
-                title: `Rename "${storage.name}" Space`,
-                message: t('storage.renameMessage'),
-                iconType: DialogIconTypes.Question,
-                defaultValue: storage.name,
-                submitButtonLabel: t('storage.rename'),
-                onClose: async (value: string | null) => {
-                  if (value == null) return
-                  renameStorage(storage.id, value)
-                },
-              })
+              openModal(
+                <BasicInputFormLocal
+                  defaultIcon={mdiMessageQuestion}
+                  defaultInputValue={storage.name}
+                  submitButtonProps={{
+                    label: t('storage.rename'),
+                  }}
+                  onSubmit={async (workspaceName: string) => {
+                    if (workspaceName == '') {
+                      pushMessage({
+                        title: 'Cannot rename workspace',
+                        description: 'Workspace name should not be empty.',
+                      })
+                      closeLastModal()
+                      return
+                    }
+                    renameStorage(storage.id, workspaceName)
+                    closeLastModal()
+                  }}
+                />,
+                {
+                  showCloseIcon: true,
+                  title: `Rename "${storage.name}" Space`,
+                }
+              )
             },
           },
           {
@@ -143,14 +182,15 @@ const SidebarContainer = ({
                     ? "This operation won't delete the actual space folder. You can add it to the app again."
                     : t('storage.removeMessage'),
                 iconType: DialogIconTypes.Warning,
-                buttons: [t('storage.remove'), t('general.cancel')],
-                defaultButtonIndex: 0,
-                cancelButtonIndex: 1,
-                onClose: (value: number | null) => {
-                  if (value === 0) {
-                    removeStorage(storage.id)
-                  }
-                },
+                buttons: [
+                  {
+                    label: t('storage.remove'),
+                    onClick: () => {
+                      removeStorage(storage.id)
+                    },
+                  },
+                  { label: t('general.cancel') },
+                ],
               })
             },
           },
@@ -197,8 +237,10 @@ const SidebarContainer = ({
       storage,
       storageMap,
       t,
-      prompt,
+      openModal,
       renameStorage,
+      closeLastModal,
+      pushMessage,
       messageBox,
       removeStorage,
       togglePreferencesModal,
@@ -544,17 +586,31 @@ const SidebarContainer = ({
           type: 'normal',
           label: t('storage.rename'),
           click: async () => {
-            prompt({
-              title: `Rename "${workspace.name}" storage`,
-              message: t('storage.renameMessage'),
-              iconType: DialogIconTypes.Question,
-              defaultValue: workspace.name,
-              submitButtonLabel: t('storage.rename'),
-              onClose: async (value: string | null) => {
-                if (value == null) return
-                await renameStorage(workspace.id, value)
-              },
-            })
+            openModal(
+              <BasicInputFormLocal
+                defaultIcon={mdiMessageQuestion}
+                defaultInputValue={workspace.name}
+                submitButtonProps={{
+                  label: t('storage.rename'),
+                }}
+                onSubmit={async (workspaceName: string) => {
+                  if (workspaceName == '') {
+                    pushMessage({
+                      title: 'Cannot rename workspace',
+                      description: 'Workspace name should not be empty.',
+                    })
+                    closeLastModal()
+                    return
+                  }
+                  await renameStorage(workspace.id, workspaceName)
+                  closeLastModal()
+                }}
+              />,
+              {
+                showCloseIcon: true,
+                title: `Rename "${workspace.name}" storage`,
+              }
+            )
           },
         },
         { type: 'separator' },
@@ -569,14 +625,16 @@ const SidebarContainer = ({
                   ? "This operation won't delete the actual storage folder. You can add it to the app again."
                   : t('storage.removeMessage'),
               iconType: DialogIconTypes.Warning,
-              buttons: [t('storage.remove'), t('general.cancel')],
-              defaultButtonIndex: 0,
-              cancelButtonIndex: 1,
-              onClose: (value: number | null) => {
-                if (value === 0) {
-                  removeStorage(workspace.id)
-                }
-              },
+              // todo: [komediruzecki-22/05/2021] Test, maybe move to localUI and test remove..
+              buttons: [
+                {
+                  label: t('storage.remove'),
+                  onClick: () => {
+                    removeStorage(workspace.id)
+                  },
+                },
+                { label: t('general.cancel') },
+              ],
             })
           },
         },
@@ -615,12 +673,14 @@ const SidebarContainer = ({
     return allSpaces
   }, [
     activeBoostHubTeamDomain,
+    closeLastModal,
     generalStatus.boostHubTeams,
     localSpaces,
     messageBox,
     navigate,
-    prompt,
+    openModal,
     push,
+    pushMessage,
     removeStorage,
     renameStorage,
     storage,

@@ -8,9 +8,9 @@ import {
 import { useTranslation } from 'react-i18next'
 import { useRouter } from '../../lib/router'
 import { useDb } from '../../lib/db'
-import { useToast } from '../../lib/toast'
 import { useAnalytics, analyticsEvents } from '../../lib/analytics'
 import FormFolderSelector from '../atoms/FormFolderSelector'
+import { useToast } from '../../shared/lib/stores/toast'
 
 const FSStorageCreateForm = () => {
   const [name, setName] = useState('')

@@ -52,6 +52,8 @@ export function useLocalUI() {
                 title: 'Cannot rename workspace',
                 description: 'Workspace name should not be empty.',
               })
+              closeLastModal()
+              return
             }
             await renameStorage(workspace.id, workspaceName)
             closeLastModal()
@@ -59,7 +61,6 @@ export function useLocalUI() {
         />,
         {
           showCloseIcon: true,
-          size: 'default',
           title: 'Rename workspace',
         }
       )
@@ -86,6 +87,8 @@ export function useLocalUI() {
                 title: 'Cannot rename folder',
                 description: 'Folder name should not be empty.',
               })
+              closeLastModal()
+              return
             }
             const newFolderPathname = join(
               getParentFolderPathname(folderPathname),
@@ -105,6 +108,7 @@ export function useLocalUI() {
                       : `${err}`
                     : 'Unknown error',
               })
+              return
             })
 
             // Should update the UI, again works weirdly in pouch DB, works ok in FS storage
@@ -116,7 +120,6 @@ export function useLocalUI() {
         />,
         {
           showCloseIcon: true,
-          size: 'default',
           title: 'Rename folder',
         }
       )
@@ -143,18 +146,25 @@ export function useLocalUI() {
           }}
           inputIsDisabled={false}
           onSubmit={async (inputValue: string) => {
-            await updateNote(workspaceId, doc._id, { title: inputValue })
+            // todo: [komediruzecki-22/05/2021] handle empty values - test
+            if (inputValue == '') {
+              pushMessage({
+                title: 'Cannot rename document',
+                description: 'Document name should not be empty.',
+              })
+            } else {
+              await updateNote(workspaceId, doc._id, { title: inputValue })
+            }
             closeLastModal()
           }}
         />,
         {
           showCloseIcon: true,
-          size: 'default',
           title: 'Rename document',
         }
       )
     },
-    [closeLastModal, openModal, updateNote]
+    [closeLastModal, openModal, pushMessage, updateNote]
   )
 
   const openNewFolderForm = useCallback(
@@ -190,7 +200,6 @@ export function useLocalUI() {
         />,
         {
           showCloseIcon: true,
-          size: 'default',
           title: 'Create new folder',
         }
       )
@@ -225,7 +234,6 @@ export function useLocalUI() {
         />,
         {
           showCloseIcon: true,
-          size: 'default',
           title: 'Create new document',
         }
       )

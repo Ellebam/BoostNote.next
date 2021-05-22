@@ -16,7 +16,6 @@ import {
 import { isTagNameValid } from '../../lib/db/utils'
 import NoteDetailTagNavigator from '../molecules/NoteDetailTagNavigator'
 import { useDb } from '../../lib/db'
-import { useToast } from '../../lib/toast'
 import { getFormattedDateTime } from '../../lib/time'
 import { useTranslation } from 'react-i18next'
 import { useAnalytics, analyticsEvents } from '../../lib/analytics'
@@ -31,6 +30,7 @@ import { usePreviewStyle } from '../../lib/preview'
 import { useCloudIntroModal } from '../../lib/cloudIntroModal'
 import styled from '../../shared/lib/styled'
 import Icon from '../../shared/components/atoms/Icon'
+import { useToast } from '../../shared/lib/stores/toast'
 
 interface NoteContextViewProps {
   storage: NoteStorage
@@ -148,6 +148,7 @@ const NoteContextView = ({ storage, note }: NoteContextViewProps) => {
       includeFrontMatter
     )
     pushMessage({
+      type: 'success',
       title: 'Markdown export',
       description: 'Markdown file exported successfully.',
     })
@@ -169,6 +170,7 @@ const NoteContextView = ({ storage, note }: NoteContextViewProps) => {
       previewStyle
     )
     pushMessage({
+      type: 'success',
       title: 'HTML export',
       description: 'HTML file exported successfully.',
     })
@@ -183,6 +185,12 @@ const NoteContextView = ({ storage, note }: NoteContextViewProps) => {
       storage.attachmentMap,
       previewStyle
     )
+    // todo: [komediruzecki-23/05/2021] Pushes message after export is generated but not after user saved the file in dialog!
+    pushMessage({
+      type: 'success',
+      title: 'PDF export',
+      description: 'PDF file exported successfully.',
+    })
   }, [note, preferences, pushMessage, storage.attachmentMap, previewStyle])
 
   return (

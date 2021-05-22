@@ -10,10 +10,10 @@ import {
   KeymapItemEditableProps,
 } from '../../lib/keymap'
 import cc from 'classcat'
-import { useToast } from '../../lib/toast'
 import { KeymapItemButton } from '../PreferencesModal/KeymapTab'
 import styled from '../../shared/lib/styled'
 import { inputStyle } from '../../shared/lib/styled/styleFunctions'
+import { useToast } from '../../shared/lib/stores/toast'
 
 const invalidShortcutInputs = [' ']
 const rejectedShortcutInputs = [' ', 'control', 'alt', 'shift']
