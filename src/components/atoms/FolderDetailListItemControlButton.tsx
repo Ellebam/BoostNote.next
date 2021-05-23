@@ -1,6 +1,6 @@
 import React, { MouseEventHandler } from 'react'
-import styled from '../../shared/lib/styled'
-import Icon from '../../shared/components/atoms/Icon'
+import Button from '../../shared/components/atoms/Button'
+import WithTooltip from '../../shared/components/atoms/WithTooltip'
 
 interface FolderDetailListItemControlButtonProps {
   onClick?: MouseEventHandler<HTMLButtonElement>
@@ -16,39 +16,17 @@ const FolderDetailListItemControlButton = ({
   active = false,
 }: FolderDetailListItemControlButtonProps) => {
   return (
-    <Container
-      className={active ? 'active' : ''}
-      onClick={onClick}
-      title={title}
-    >
-      <Icon path={iconPath} />
-    </Container>
+    <WithTooltip tooltip={title} side='bottom'>
+      <Button
+        variant={'icon-secondary'}
+        iconSize={20}
+        size={'sm'}
+        iconPath={iconPath}
+        active={active}
+        onClick={onClick}
+      />
+    </WithTooltip>
   )
 }
 
 export default FolderDetailListItemControlButton
-
-const Container = styled.button`
-  width: 32px;
-  height: 32px;
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background-color: transparent;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-
-  transition: color 200ms ease-in-out;
-  color: ${({ theme }) => theme.colors.text.secondary};
-  &:hover {
-    color: ${({ theme }) => theme.colors.text.primary};
-  }
-
-  &:active,
-  &.active {
-    color: ${({ theme }) => theme.colors.text.link};
-  }
-`

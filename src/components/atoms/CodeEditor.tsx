@@ -36,7 +36,8 @@ const StyledContainer = styled.div`
   }
 
   .marked {
-    background-color: #ffdb70;
+    background-color: ${({ theme }) =>
+      theme.codeEditorMarkedTextBackgroundColor};
     color: #212121 !important;
     padding: 3px;
   }
@@ -47,7 +48,8 @@ const StyledContainer = styled.div`
   }
 
   .selected {
-    background-color: #ffc107;
+    background-color: ${({ theme }) =>
+      theme.codeEditorSelectedTextBackgroundColor};
     border: 1px solid #fffae3;
   }
 `
