@@ -2,10 +2,9 @@ import React, { useCallback, useState, CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getPathByName, showOpenDialog } from '../../lib/electronOnly'
 import styled from '../../shared/lib/styled'
-import {
-  border,
-  secondaryButtonStyle,
-} from '../../shared/lib/styled/styleFunctions'
+import { border } from '../../shared/lib/styled/styleFunctions'
+import Button from '../../shared/components/atoms/Button'
+import { formButtonStyle } from './form'
 
 const FormFolderSelectorInput = styled.input`
   display: block;
@@ -25,17 +24,9 @@ const FormFolderSelectorInput = styled.input`
 
 const FormFolderSelectorContainer = styled.div`
   display: flex;
-`
 
-const FormFolderSelectorButton = styled.button`
-  ${secondaryButtonStyle};
-  padding: 0.375rem 0.75rem;
-  font-size: 1rem;
-  line-height: 1.5;
-  border-top-right-radius: 0.25rem;
-  border-bottom-right-radius: 0.25rem;
-  &:first-child {
-    margin-left: 0;
+  .folder__selector__select_folder__button {
+    ${formButtonStyle};
   }
 `
 
@@ -84,9 +75,13 @@ const FormFolderSelector = ({ value, style, setValue }: FormFolderSelector) => {
           value.trim().length === 0 ? t('folder.noLocationSelected') : value
         }
       />
-      <FormFolderSelectorButton onClick={openDialog}>
+      <Button
+        className='folder__selector__select_folder__button'
+        variant='primary'
+        onClick={openDialog}
+      >
         Select Folder
-      </FormFolderSelectorButton>
+      </Button>
     </FormFolderSelectorContainer>
   )
 }

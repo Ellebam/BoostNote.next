@@ -1,16 +1,12 @@
 import React, { useState, useCallback } from 'react'
-import {
-  FormGroup,
-  FormLabel,
-  FormPrimaryButton,
-  FormTextInput,
-} from '../atoms/form'
+import { FormGroup, FormLabel, FormTextInput } from '../atoms/form'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from '../../lib/router'
 import { useDb } from '../../lib/db'
 import { useAnalytics, analyticsEvents } from '../../lib/analytics'
 import FormFolderSelector from '../atoms/FormFolderSelector'
 import { useToast } from '../../shared/lib/stores/toast'
+import Button from '../../shared/components/atoms/Button'
 
 const FSStorageCreateForm = () => {
   const [name, setName] = useState('')
@@ -52,12 +48,13 @@ const FSStorageCreateForm = () => {
         <FormFolderSelector value={location} setValue={setLocation} />
       </FormGroup>
       <FormGroup>
-        <FormPrimaryButton
-          onClick={createStorageCallback}
+        <Button
+          className='form__group__form_button'
           disabled={name.trim().length === 0 || location.trim().length === 0}
+          onClick={createStorageCallback}
         >
           {t('storage.create')}
-        </FormPrimaryButton>
+        </Button>
       </FormGroup>
     </>
   )

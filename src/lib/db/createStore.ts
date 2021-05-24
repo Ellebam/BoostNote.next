@@ -1139,8 +1139,9 @@ export function getStorageDataList(
   const serializedStorageDataList = liteStorage.getItem(storageDataListKey)
   try {
     const parsedStorageDataList = JSON.parse(serializedStorageDataList || '[]')
-    if (!Array.isArray(parsedStorageDataList))
+    if (!Array.isArray(parsedStorageDataList)) {
       throw new Error('storage data is corrupted')
+    }
 
     return parsedStorageDataList.reduce<PouchNoteStorageData[]>(
       (validatedList, parsedStorageData) => {

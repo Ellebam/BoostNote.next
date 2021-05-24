@@ -43,10 +43,26 @@ export const FormHeading = ({
   return React.createElement(elementName, { className, style }, children)
 }
 
+export const formButtonStyle = () => `
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5 !important;
+  border-top-right-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
+  
+  &:first-child {
+    margin-left: 0;
+  }
+`
+
 export const FormGroup = styled.div`
   margin-bottom: 1rem;
   &:last-child {
     margin-bottom: 0;
+  }
+
+  .form__group__form_button {
+    ${formButtonStyle};
   }
 `
 export const FormControlGroup = styled.div`
@@ -98,13 +114,6 @@ export const FormBlockquote = styled.blockquote<{
   }
 `
 
-export const FormCheckInlineItemContainer = styled.div`
-  display: inline-flex;
-  align-items: center;
-  padding-left: 0;
-  margin-right: 0.75rem;
-`
-
 export const FormCheckInput = styled.input`
   margin-top: 0;
   margin-right: 0.3125rem;
@@ -125,30 +134,6 @@ interface FormCheckItemProps {
   style?: React.CSSProperties
   disabled?: boolean
   onChange?: React.ChangeEventHandler<HTMLInputElement>
-}
-
-export const FormCheckInlineItem = ({
-  children,
-  id,
-  type = 'checkbox',
-  checked,
-  className,
-  style,
-  disabled,
-  onChange,
-}: FormCheckItemProps) => {
-  return (
-    <FormCheckInlineItemContainer className={className} style={style}>
-      <FormCheckInput
-        type={type}
-        id={id}
-        onChange={onChange}
-        checked={checked}
-        disabled={disabled}
-      />
-      <FormCheckLabel htmlFor={id}>{children}</FormCheckLabel>
-    </FormCheckInlineItemContainer>
-  )
 }
 
 export const FormCheckItemContainer = styled.div`
@@ -178,8 +163,6 @@ export const FormCheckItem = ({
     </FormCheckItemContainer>
   )
 }
-
-export const FormCheckList = styled.div``
 
 export const FormPrimaryButton = styled.button`
   ${primaryButtonStyle};
@@ -233,12 +216,6 @@ export const FormSelect = styled.select`
   height: 32px;
   border-radius: 2px;
   font-size: 14px;
-`
-
-export const FormField = styled.div`
-  padding: 1rem;
-  border-radius: 0.25rem;
-  ${border}
 `
 
 export const FormLabelGroup = styled.div`
