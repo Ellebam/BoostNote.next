@@ -18,12 +18,14 @@ interface ApplicationProps {
   content: ContentLayoutProps
   className?: string
   initialSidebarState?: SidebarState
+  hideSidebar?: boolean
 }
 
 const Application = ({
   content: { topbar, ...content },
   children,
   initialSidebarState,
+  hideSidebar,
 }: React.PropsWithChildren<ApplicationProps>) => {
   const { storageMap } = useDb()
   const routeParams = useRouteParams() as StorageNotesRouteParams
@@ -170,6 +172,7 @@ const Application = ({
       <ApplicationLayout
         sidebar={
           <SidebarContainer
+            hideSidebar={hideSidebar}
             initialSidebarState={initialSidebarState}
             storage={storage}
           />

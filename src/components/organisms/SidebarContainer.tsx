@@ -70,6 +70,7 @@ import { useToast } from '../../shared/lib/stores/toast'
 import { useModal } from '../../shared/lib/stores/modal'
 
 interface SidebarContainerProps {
+  hideSidebar?: boolean
   initialSidebarState?: SidebarState
   storage?: NoteStorage
 }
@@ -77,6 +78,7 @@ interface SidebarContainerProps {
 const SidebarContainer = ({
   initialSidebarState,
   storage,
+  hideSidebar,
 }: SidebarContainerProps) => {
   const {
     createNote,
@@ -340,7 +342,9 @@ const SidebarContainer = ({
   const { popup } = useContextMenu()
   const [showSpaces, setShowSpaces] = useState(false)
   const [sidebarState, setSidebarState] = useState<SidebarState | undefined>(
-    initialSidebarState != null
+    hideSidebar != null && hideSidebar
+      ? undefined
+      : initialSidebarState != null
       ? initialSidebarState
       : generalStatus.lastSidebarState
   )

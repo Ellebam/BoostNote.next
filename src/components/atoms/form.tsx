@@ -43,26 +43,10 @@ export const FormHeading = ({
   return React.createElement(elementName, { className, style }, children)
 }
 
-export const formButtonStyle = () => `
-  padding: 0.375rem 0.75rem;
-  font-size: 1rem;
-  line-height: 1.5 !important;
-  border-top-right-radius: 0.25rem;
-  border-bottom-right-radius: 0.25rem;
-  
-  &:first-child {
-    margin-left: 0;
-  }
-`
-
 export const FormGroup = styled.div`
   margin-bottom: 1rem;
   &:last-child {
     margin-bottom: 0;
-  }
-
-  .form__group__form_button {
-    ${formButtonStyle};
   }
 `
 export const FormControlGroup = styled.div`
@@ -83,7 +67,6 @@ export const FormTextInput = styled.input`
   display: block;
   width: 100%;
   padding: 0.375rem 0.75rem;
-  line-height: 1.5;
   border-radius: 0.25rem;
   ${border};
   background-color: white;

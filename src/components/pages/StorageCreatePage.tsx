@@ -7,6 +7,7 @@ import EmojiIcon from '../../cloud/components/atoms/EmojiIcon'
 const StorageCreatePage = () => {
   return (
     <Application
+      hideSidebar={true}
       content={{
         reduced: true,
         header: (

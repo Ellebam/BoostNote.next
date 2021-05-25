@@ -10,7 +10,6 @@ import {
 } from '../../../db/utils'
 import { join } from 'path'
 import BasicInputFormLocal from '../../../../components/v2/organisms/BasicInputFormLocal'
-import { FormRowProps } from '../../../../shared/components/molecules/Form'
 import { useModal } from '../../../../shared/lib/stores/modal'
 import {
   DialogIconTypes,
@@ -18,6 +17,7 @@ import {
 } from '../../../../shared/lib/stores/dialog'
 import { useToast } from '../../../../shared/lib/stores/toast'
 import { useGeneralStatus } from '../../../generalStatus'
+import { FormRowProps } from '../../../../shared/components/molecules/Form/templates/FormRow'
 
 export function useLocalUI() {
   const { openSideNavFolderItemRecursively } = useGeneralStatus()
