@@ -20,10 +20,6 @@ export const SectionSubtleText = styled.p`
   color: ${({ theme }) => theme.colors.text.disabled};
 `
 
-export const PrimaryAnchor = styled.a`
-  color: ${({ theme }) => theme.colors.text.primary};
-`
-
 export const SectionMargin = styled.section`
   margin: 100px;
 `
@@ -91,8 +87,8 @@ export const SectionListSelect = styled.div`
 `
 
 export const SearchMatchHighlight = styled.span`
-  background-color: #ffc107;
-  color: #ffdb70;
-
+  background-color: ${({ theme }) =>
+    theme.codeEditorSelectedTextBackgroundColor};
+  color: #212121 !important;
   padding: 2px;
 `

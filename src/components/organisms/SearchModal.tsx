@@ -88,7 +88,7 @@ const SearchModal = ({ storage }: SearchModalProps) => {
       }
       const searchResultData = getSearchResultItems(storage, searchValue)
       searchResultData.forEach((searchResult) => {
-        if (searchResult.item.type === 'note') {
+        if (searchResult.item.type === 'noteContent') {
           const noteResultKey = excludeNoteIdPrefix(
             searchResult.item.result._id
           )
@@ -263,7 +263,7 @@ const SearchModal = ({ storage }: SearchModalProps) => {
           )}
           {!searching &&
             resultList.map((searchData) => {
-              if (searchData.item.type !== 'note') {
+              if (searchData.item.type === 'folder') {
                 return
               }
               const noteResult: NoteDoc = searchData.item.result
@@ -403,8 +403,9 @@ const Container = styled.div<BaseTheme & TextAreaProps>`
 
 const EditorPreview = styled.div`
   .marked {
-    background-color: #ffdb70;
-    color: ${({ theme }) => theme.colors.background.tertiary} !important;
+    background-color: ${({ theme }) =>
+      theme.codeEditorMarkedTextBackgroundColor};
+    color: #212121 !important;
     padding: 3px;
   }
 
@@ -414,7 +415,8 @@ const EditorPreview = styled.div`
   }
 
   .selected {
-    background-color: #ffc107;
+    background-color: ${({ theme }) =>
+      theme.codeEditorSelectedTextBackgroundColor};
   }
 
   background-color: ${({ theme }) => theme.colors.background.primary};

@@ -30,8 +30,6 @@ export function getSearchResultItems(
     return []
   }
 
-  // console.log('Got search query', searchQuery)
-
   const notes = values(storage.noteMap)
   const folders = values(storage.folderMap)
   const regex = getSearchRegex(searchQuery)
@@ -96,7 +94,6 @@ export function getSearchResultItems(
     }
   })
 
-  console.log('Got serach results ', searchResultData)
   return searchResultData
 }
 
