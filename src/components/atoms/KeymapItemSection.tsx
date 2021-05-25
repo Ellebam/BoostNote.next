@@ -10,10 +10,10 @@ import {
   KeymapItemEditableProps,
 } from '../../lib/keymap'
 import cc from 'classcat'
-import { KeymapItemButton } from '../PreferencesModal/KeymapTab'
 import styled from '../../shared/lib/styled'
 import { inputStyle } from '../../shared/lib/styled/styleFunctions'
 import { useToast } from '../../shared/lib/stores/toast'
+import Button from '../../shared/components/atoms/Button'
 
 const invalidShortcutInputs = [' ']
 const rejectedShortcutInputs = [' ', 'control', 'alt', 'shift']
@@ -152,23 +152,19 @@ const KeymapItemSection = ({
             onKeyDown={fetchInputShortcuts}
           />
         )}
-        <KeymapItemButton onClick={toggleChangingShortcut}>
+        <Button variant={'primary'} onClick={toggleChangingShortcut}>
           {currentShortcut == null
             ? 'Assign'
             : changingShortcut
             ? 'Apply'
             : 'Change'}
-        </KeymapItemButton>
+        </Button>
         {changingShortcut && (
-          <KeymapItemButton onClick={handleCancelKeymapChange}>
-            Cancel
-          </KeymapItemButton>
+          <Button onClick={handleCancelKeymapChange}>Cancel</Button>
         )}
 
         {currentShortcut != null && !changingShortcut && (
-          <KeymapItemButton onClick={handleRemoveKeymap}>
-            Un-assign
-          </KeymapItemButton>
+          <Button onClick={handleRemoveKeymap}>Un-assign</Button>
         )}
       </KeymapItemInputSection>
     </KeymapItemSectionContainer>
