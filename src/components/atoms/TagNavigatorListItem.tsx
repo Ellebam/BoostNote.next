@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from 'react'
-import Icon from './Icon'
 import { mdiClose } from '@mdi/js'
 import {
   flexCenter,
@@ -15,6 +14,7 @@ import { BaseTheme } from '../../lib/styled/BaseTheme'
 import { isColorBright } from '../../lib/colors'
 import { tagBackgroundColor } from '../../shared/lib/styled/styleFunctions'
 import styled from '../../shared/lib/styled'
+import Icon from '../../shared/components/atoms/Icon'
 
 const TagItem = styled.li<BaseTheme & TagStyleProps>`
   border-radius: 4px;

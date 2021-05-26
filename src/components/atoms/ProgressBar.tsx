@@ -1,5 +1,5 @@
 import React from 'react'
-import styled from '../../lib/styled'
+import styled from '../../shared/lib/styled'
 
 interface ProgressBarProps {
   progress: number
@@ -10,7 +10,7 @@ const ProgressBar = ({ progress }: ProgressBarProps) => {
 }
 
 const ProgressBarStyled = styled.div`
-  border: 2px solid ${({ theme }) => theme.borderColor};
+  border: 2px solid ${({ theme }) => theme.colors.border.main};
   height: 30px;
   position: relative;
   width: 100%;
@@ -22,7 +22,7 @@ const ProgressBarStyled = styled.div`
     position: absolute;
     top: 0;
     height: 100%;
-    background-color: ${({ theme }) => theme.primaryColor};
+    background-color: ${({ theme }) => theme.colors.variants.primary.base};
     width: ${({ progress }) => progress}%;
   }
 `
